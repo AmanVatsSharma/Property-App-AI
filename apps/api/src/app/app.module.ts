@@ -15,6 +15,7 @@ import { APP_FILTER } from '@nestjs/core';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AppConfigModule } from '../shared/config';
+import { HealthModule } from '../modules/health/health.module';
 import { PropertyModule } from '../modules/property/property.module';
 import { RequestIdMiddleware } from '../common/middleware/request-id.middleware';
 import { HttpExceptionFilter } from '../common/filters/http-exception.filter';
@@ -45,6 +46,7 @@ import { HttpExceptionFilter } from '../common/filters/http-exception.filter';
         synchronize: config.get<string>('NODE_ENV') !== 'production',
       }),
     }),
+    HealthModule,
     PropertyModule,
   ],
   controllers: [AppController],
