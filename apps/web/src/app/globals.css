@@ -28,6 +28,32 @@
   --radius-sm: 10px;
 }
 
+/* Light theme — same variable names, matching light palette */
+.light {
+  --night: #f5f7fa;
+  --dark: #eef1f5;
+  --dark-2: #e4e8ee;
+  --dark-3: #d8dde5;
+  --glass: rgba(0, 0, 0, 0.04);
+  --glass-border: rgba(0, 0, 0, 0.08);
+  --teal: #00b894;
+  --teal-dim: rgba(0, 184, 148, 0.12);
+  --teal-glow: rgba(0, 184, 148, 0.2);
+  --coral: #e85d4c;
+  --coral-dim: rgba(232, 93, 76, 0.12);
+  --gold: #d4a82e;
+  --gold-dim: rgba(212, 168, 46, 0.12);
+  --green: #2ecc71;
+  --green-dim: rgba(46, 204, 113, 0.12);
+  --white: #ffffff;
+  --text: #1a1d24;
+  --text-muted: #5c6370;
+  --text-dim: #8b92a0;
+  --border: rgba(0, 0, 0, 0.08);
+  --radius: 18px;
+  --radius-sm: 10px;
+}
+
 html { scroll-behavior: smooth; }
 
 body {

@@ -11,6 +11,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useTheme } from "next-themes";
 
 const NAV_LINKS = [
   { href: "/search", label: "Buy" },
@@ -35,6 +36,7 @@ function getActiveLabel(pathname: string): string | null {
 export default function Nav() {
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
+  const { theme, setTheme } = useTheme();
   const activeLabel = getActiveLabel(pathname ?? "");
 
   useEffect(() => {
@@ -68,6 +70,15 @@ export default function Nav() {
         ))}
       </div>
       <div className="nav-r">
+        <button
+          type="button"
+          className="nbtn-ghost"
+          onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+          aria-label={theme === "dark" ? "Switch to light theme" : "Switch to dark theme"}
+          title={theme === "dark" ? "Switch to light theme" : "Switch to dark theme"}
+        >
+          {theme === "dark" ? "☀️" : "🌙"}
+        </button>
         <Link href="/about" className="nbtn-ghost">
           About
         </Link>
