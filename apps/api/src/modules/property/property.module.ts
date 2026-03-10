@@ -9,8 +9,8 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Property } from './entities/property.entity';
-import { PropertyService } from './property.service';
-import { PropertyResolver } from './property.resolver';
+import { PropertyService } from './services/property.service';
+import { PropertyResolver } from './resolvers/property.resolver';
 import { PropertyRepository } from './repository/property.repository';
 
 @Module({

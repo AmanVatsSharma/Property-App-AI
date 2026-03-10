@@ -7,9 +7,9 @@
  */
 
 export { PropertyModule } from './property.module';
-export { PropertyService } from './property.service';
-export { PropertyResolver } from './property.resolver';
+export { PropertyService } from './services/property.service';
+export { PropertyResolver } from './resolvers/property.resolver';
 export { Property } from './entities/property.entity';
-export { CreatePropertyDto } from './dto/create-property.dto';
-export { UpdatePropertyDto } from './dto/update-property.dto';
-export { PropertyFilterDto } from './dto/property-filter.dto';
+export { CreatePropertyDto } from './dtos/create-property.dto';
+export { UpdatePropertyDto } from './dtos/update-property.dto';
+export { PropertyFilterDto } from './dtos/property-filter.dto';
