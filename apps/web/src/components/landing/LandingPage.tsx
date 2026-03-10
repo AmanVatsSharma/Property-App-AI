@@ -330,6 +330,9 @@ export default function LandingPage() {
           <Link href="/search" className="btn-nav-primary" style={{ marginTop: 32, padding: "14px 28px", fontSize: 15, borderRadius: 14 }}>See Score for Any Property</Link>
         </div>
         <div className="score-visual reveal">
+          <div className="score-property-thumb-wrap">
+            <Image src={DEMO_IMAGES.properties["prestige-sunrise-park"].cover} alt="Prestige Sunrise Park" fill className="score-property-thumb" sizes="280px" />
+          </div>
           <div className="score-property-name">
             <span>Prestige Sunrise Park, Whitefield</span>
             <span style={{ background: "var(--teal-dim)", border: "1px solid rgba(0,212,170,0.3)", padding: "5px 14px", borderRadius: "100px", fontSize: 13, color: "var(--teal)" }}>Excellent</span>

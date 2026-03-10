@@ -7,8 +7,10 @@
  */
 
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import PostPropertyForm from "@/components/post-property/PostPropertyForm";
+import { DEMO_IMAGES } from "@/lib/demo-images";
 
 export const metadata: Metadata = {
   title: "Post Property Free — UrbanNest.ai",
@@ -28,7 +30,9 @@ export default function PostPropertyPage() {
             <button type="button" className="btn-outline lg" style={{ padding: "15px 28px" }}>View Pricing Plans</button>
           </div>
         </div>
-        <div className="post-hero-img">🏗️</div>
+        <div className="post-hero-img-wrap">
+          <Image src={DEMO_IMAGES.properties["brigade-cornerstone-utopia"].cover} alt="" fill className="post-hero-img-img" sizes="320px" />
+        </div>
       </div>
 
       <div className="benefits-strip">
