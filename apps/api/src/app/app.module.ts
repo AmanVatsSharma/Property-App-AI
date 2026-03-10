@@ -46,6 +46,13 @@ import { TimeoutInterceptor } from '../common/interceptors/timeout.interceptor';
         sortSchema: true,
         playground: config.get<string>('NODE_ENV') !== 'production',
         context: ({ req }: { req: { requestId?: string } }) => ({ req, requestId: req?.requestId }),
+        formatError: (formatted: { message: string; extensions?: Record<string, unknown> }, error: unknown) => {
+          const orig = error as { extensions?: { code?: string; statusCode?: number }; message?: string };
+          if (orig?.extensions?.code != null) {
+            return { ...formatted, extensions: { ...formatted.extensions, code: orig.extensions.code, statusCode: orig.extensions.statusCode } };
+          }
+          return formatted;
+        },
       }),
     }),
     TypeOrmModule.forRootAsync({
