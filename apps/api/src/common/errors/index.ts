@@ -7,3 +7,4 @@
  */
 
 export { AppError, PropertyNotFoundError, ValidationError } from './app.error';
+export { ERROR_CODES, ERROR_STATUS } from './errors.constants';
