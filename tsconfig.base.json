@@ -14,7 +14,9 @@
     "jsx": "react-jsx",
     "incremental": true,
     "paths": {
-      "@property-app-ai/web/*": ["apps/web/src/*"]
+      "@property-app-ai/web/*": ["apps/web/src/*"],
+      "@property-app-ai/shared": ["libs/shared/src/index.ts"],
+      "@property-app-ai/shared/*": ["libs/shared/src/*"]
     }
   },
   "exclude": ["node_modules", "**/*.spec.ts", "**/*.spec.tsx"]
