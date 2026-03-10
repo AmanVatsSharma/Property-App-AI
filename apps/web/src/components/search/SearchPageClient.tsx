@@ -1,7 +1,7 @@
 /**
  * @file SearchPageClient.tsx
  * @module search
- * @description Search page client content — filters, grid, pagination
+ * @description Search page client — filters, grid, pagination; URL state for shareable links
  * @author BharatERP
  * @created 2025-03-10
  */
@@ -9,53 +9,158 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 
-const PROPERTIES = [
-  { price: "₹2.85 Cr", name: "Sobha City Vista — 4 BHK Ultra Luxury", loc: "Sector 108, Gurgaon · 2,850 sqft", specs: ["4 BHK", "4 Bath", "2 Park", "RERA"], tip: "18% appreciation expected. Metro 1.2km. Priced 8% below market.", badges: ["badge-gold", "badge-teal"], badgeLabels: ["⭐ Premium", "✦ AI Pick"], score: 94, bg: "linear-gradient(135deg,#132238,#1e3a5f)" },
-  { price: "₹78 L", name: "DLF MyPad — 2 BHK Studio, Noida", loc: "Sector 59, Noida · 1,100 sqft", specs: ["2 BHK", "2 Bath", "1,100"], tip: "Best value in locality. 92% of seekers shortlisted this.", badges: ["badge-green", "badge-coral"], badgeLabels: ["✓ Verified", "🔥 Hot"], score: 88, bg: "linear-gradient(135deg,#1a2e1a,#2a4a2a)" },
-  { price: "₹1.45 Cr", name: "M3M Golf Hills — 3 BHK Premium", loc: "Sector 79, Gurgaon · 1,890 sqft", specs: ["3 BHK", "3 Bath", "1 Park"], tip: "37 views today. Price rising after DDJK highway opens Q2.", badges: ["badge-white", "badge-teal"], badgeLabels: ["NEW", "✦ AI Pick"], score: 91, bg: "linear-gradient(135deg,#1a1a30,#2a2a50)" },
-  { price: "₹62 L", name: "Prestige Sunrise Park — 2 BHK", loc: "Whitefield, Bangalore · 1,250 sqft", specs: ["2 BHK", "2 Bath", "RERA"], tip: "IT corridor adjacency. 28% YoY appreciation recorded.", badges: ["badge-gold"], badgeLabels: ["⭐ Featured"], score: 86, bg: "linear-gradient(135deg,#2a1a1a,#4a2a2a)" },
-  { price: "₹95 L", name: "Brigade Cornerstone Utopia — 3 BHK", loc: "Yelahanka, Bangalore · 1,580 sqft", specs: ["3 BHK", "3 Bath", "Dec 2026"], tip: "Launch price — 22% gains likely at possession.", badges: ["badge-coral"], badgeLabels: ["Under Construction"], score: 79, bg: "linear-gradient(135deg,#1a2a1a,#253a25)" },
-  { price: "₹1.8 Cr", name: "Godrej Meridian — 4 BHK, Gurgaon", loc: "Sector 106, Gurgaon · 2,200 sqft", specs: ["4 BHK", "4 Bath", "2 Park"], tip: "Golf course views. Excellent school access score of 88.", badges: ["badge-green"], badgeLabels: ["✓ Verified"], score: 83, bg: "linear-gradient(135deg,#0d1a2a,#162a3a)" },
+const PROPERTIES: Array<{
+  id: string;
+  price: string;
+  name: string;
+  loc: string;
+  specs: string[];
+  tip: string;
+  badges: string[];
+  badgeLabels: string[];
+  score: number;
+  bg: string;
+}> = [
+  { id: "sobha-city-vista", price: "₹2.85 Cr", name: "Sobha City Vista — 4 BHK Ultra Luxury", loc: "Sector 108, Gurgaon · 2,850 sqft", specs: ["4 BHK", "4 Bath", "2 Park", "RERA"], tip: "18% appreciation expected. Metro 1.2km. Priced 8% below market.", badges: ["badge-gold", "badge-teal"], badgeLabels: ["⭐ Premium", "✦ AI Pick"], score: 94, bg: "linear-gradient(135deg,#132238,#1e3a5f)" },
+  { id: "dlf-mypad", price: "₹78 L", name: "DLF MyPad — 2 BHK Studio, Noida", loc: "Sector 59, Noida · 1,100 sqft", specs: ["2 BHK", "2 Bath", "1,100"], tip: "Best value in locality. 92% of seekers shortlisted this.", badges: ["badge-green", "badge-coral"], badgeLabels: ["✓ Verified", "🔥 Hot"], score: 88, bg: "linear-gradient(135deg,#1a2e1a,#2a4a2a)" },
+  { id: "m3m-golf-hills", price: "₹1.45 Cr", name: "M3M Golf Hills — 3 BHK Premium", loc: "Sector 79, Gurgaon · 1,890 sqft", specs: ["3 BHK", "3 Bath", "1 Park"], tip: "37 views today. Price rising after DDJK highway opens Q2.", badges: ["badge-white", "badge-teal"], badgeLabels: ["NEW", "✦ AI Pick"], score: 91, bg: "linear-gradient(135deg,#1a1a30,#2a2a50)" },
+  { id: "prestige-sunrise-park", price: "₹62 L", name: "Prestige Sunrise Park — 2 BHK", loc: "Whitefield, Bangalore · 1,250 sqft", specs: ["2 BHK", "2 Bath", "RERA"], tip: "IT corridor adjacency. 28% YoY appreciation recorded.", badges: ["badge-gold"], badgeLabels: ["⭐ Featured"], score: 86, bg: "linear-gradient(135deg,#2a1a1a,#4a2a2a)" },
+  { id: "brigade-cornerstone-utopia", price: "₹95 L", name: "Brigade Cornerstone Utopia — 3 BHK", loc: "Yelahanka, Bangalore · 1,580 sqft", specs: ["3 BHK", "3 Bath", "Dec 2026"], tip: "Launch price — 22% gains likely at possession.", badges: ["badge-coral"], badgeLabels: ["Under Construction"], score: 79, bg: "linear-gradient(135deg,#1a2a1a,#253a25)" },
+  { id: "godrej-meridian", price: "₹1.8 Cr", name: "Godrej Meridian — 4 BHK, Gurgaon", loc: "Sector 106, Gurgaon · 2,200 sqft", specs: ["4 BHK", "4 Bath", "2 Park"], tip: "Golf course views. Excellent school access score of 88.", badges: ["badge-green"], badgeLabels: ["✓ Verified"], score: 83, bg: "linear-gradient(135deg,#0d1a2a,#162a3a)" },
 ];
 
+const BHK_OPTIONS = ["1", "2", "3", "4+"];
+const SORT_OPTIONS = [
+  { value: "relevance", label: "Sort: Relevance" },
+  { value: "price-asc", label: "Price: Low to High" },
+  { value: "price-desc", label: "Price: High to Low" },
+  { value: "newest", label: "Newest First" },
+  { value: "ai-score", label: "AI Score" },
+];
+
+function parseSearchParams(searchParams: URLSearchParams) {
+  return {
+    city: searchParams.get("city") ?? "",
+    bhk: searchParams.get("bhk") ?? "",
+    minPrice: searchParams.get("minPrice") ?? "",
+    maxPrice: searchParams.get("maxPrice") ?? "",
+    page: Math.max(1, parseInt(searchParams.get("page") ?? "1", 10) || 1),
+    sort: searchParams.get("sort") ?? "relevance",
+    ready: searchParams.get("ready") === "1",
+    verified: searchParams.get("verified") === "1",
+  };
+}
+
+function buildActiveFilters(params: ReturnType<typeof parseSearchParams>) {
+  const list: { key: string; label: string }[] = [];
+  if (params.city) list.push({ key: "city", label: params.city });
+  if (params.bhk) list.push({ key: "bhk", label: `${params.bhk} BHK` });
+  if (params.minPrice || params.maxPrice) list.push({ key: "budget", label: params.maxPrice ? `Under ₹${params.maxPrice}` : params.minPrice ? `From ₹${params.minPrice}` : "Budget" });
+  if (params.ready) list.push({ key: "ready", label: "Ready to Move" });
+  if (params.verified) list.push({ key: "verified", label: "Verified" });
+  return list;
+}
+
 export default function SearchPageClient() {
-  const [viewMode, setViewMode] = useState("grid");
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [viewMode, setViewMode] = useState<"grid" | "list" | "map">("grid");
+
+  const params = parseSearchParams(searchParams);
+  const activeFilters = buildActiveFilters(params);
+
+  const setParams = useCallback(
+    (updates: Partial<ReturnType<typeof parseSearchParams>>) => {
+      const next = new URLSearchParams(searchParams.toString());
+      const apply = (k: string, v: string | number | boolean) => {
+        if (v === "" || v === false) next.delete(k);
+        else next.set(k, String(v));
+      };
+      if (updates.city !== undefined) apply("city", updates.city);
+      if (updates.bhk !== undefined) apply("bhk", updates.bhk);
+      if (updates.minPrice !== undefined) apply("minPrice", updates.minPrice);
+      if (updates.maxPrice !== undefined) apply("maxPrice", updates.maxPrice);
+      if (updates.page !== undefined) apply("page", updates.page);
+      if (updates.sort !== undefined) apply("sort", updates.sort);
+      if (updates.ready !== undefined) apply("ready", updates.ready ? "1" : "");
+      if (updates.verified !== undefined) apply("verified", updates.verified ? "1" : "");
+      router.replace(`/search?${next.toString()}`, { scroll: false });
+    },
+    [router, searchParams]
+  );
+
+  const removeFilter = useCallback(
+    (key: string) => {
+      if (key === "city") setParams({ city: "" });
+      else if (key === "bhk") setParams({ bhk: "" });
+      else if (key === "budget") setParams({ minPrice: "", maxPrice: "" });
+      else if (key === "ready") setParams({ ready: false });
+      else if (key === "verified") setParams({ verified: false });
+    },
+    [setParams]
+  );
+
+  const clearAllFilters = useCallback(() => {
+    router.replace("/search", { scroll: false });
+  }, [router]);
+
+  const [propertyTypeIndex, setPropertyTypeIndex] = useState(0);
+  const [bhkIndex, setBhkIndex] = useState(2);
+  useEffect(() => {
+    const i = BHK_OPTIONS.indexOf(params.bhk);
+    if (i >= 0) setBhkIndex(i);
+  }, [params.bhk]);
 
   return (
     <>
       <div className="search-top-bar">
         <div className="search-query-box">
           <span style={{ color: "var(--teal)", fontSize: 16 }}>✦</span>
-          <input className="search-q-input" placeholder="AI Search: 3BHK near metro under ₹1Cr in Gurgaon..." />
+          <input
+            className="search-q-input"
+            placeholder="AI Search: 3BHK near metro under ₹1Cr in Gurgaon..."
+            defaultValue={params.city ? `${params.bhk ? params.bhk + " BHK " : ""}in ${params.city}` : undefined}
+          />
           <button type="button" style={{ background: "var(--teal)", border: "none", color: "var(--night)", padding: "6px 14px", borderRadius: 8, fontFamily: "inherit", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>Search</button>
         </div>
         <span className="results-meta" style={{ marginLeft: 20 }}>Showing <strong>2,847</strong> properties</span>
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginLeft: "auto" }}>
-          <select className="sort-select">
-            <option>Sort: Relevance</option>
-            <option>Price: Low to High</option>
-            <option>Price: High to Low</option>
-            <option>Newest First</option>
-            <option>AI Score</option>
+          <select
+            className="sort-select"
+            value={params.sort}
+            onChange={(e) => setParams({ sort: e.target.value })}
+            aria-label="Sort results"
+          >
+            {SORT_OPTIONS.map((o) => (
+              <option key={o.value} value={o.value}>{o.label}</option>
+            ))}
           </select>
           <div className="view-toggle">
-            <button type="button" className={`vt-btn ${viewMode === "grid" ? "active" : ""}`} title="Grid view" onClick={() => setViewMode("grid")}>⊞</button>
-            <button type="button" className={`vt-btn ${viewMode === "list" ? "active" : ""}`} title="List view" onClick={() => setViewMode("list")}>☰</button>
-            <button type="button" className={`vt-btn ${viewMode === "map" ? "active" : ""}`} title="Map view" onClick={() => setViewMode("map")}>🗺️</button>
+            <button type="button" className={`vt-btn ${viewMode === "grid" ? "active" : ""}`} title="Grid view" onClick={() => setViewMode("grid")} aria-pressed={viewMode === "grid"}>⊞</button>
+            <button type="button" className={`vt-btn ${viewMode === "list" ? "active" : ""}`} title="List view" onClick={() => setViewMode("list")} aria-pressed={viewMode === "list"}>☰</button>
+            <button type="button" className={`vt-btn ${viewMode === "map" ? "active" : ""}`} title="Map view" onClick={() => setViewMode("map")} aria-pressed={viewMode === "map"}>🗺️</button>
           </div>
         </div>
       </div>
 
       <div className="active-filters">
         <span style={{ fontSize: 12, color: "var(--text-muted)", marginRight: 4 }}>Filters:</span>
-        <span className="af-tag">Gurgaon <span className="af-remove">×</span></span>
-        <span className="af-tag">3 BHK <span className="af-remove">×</span></span>
-        <span className="af-tag">Under ₹2Cr <span className="af-remove">×</span></span>
-        <span className="af-tag">Ready to Move <span className="af-remove">×</span></span>
-        <span className="af-tag">Verified <span className="af-remove">×</span></span>
-        <button type="button" style={{ fontSize: 12, color: "var(--coral)", marginLeft: 8, background: "none", border: "none", cursor: "pointer", fontWeight: 600 }}>Clear all</button>
+        {activeFilters.length === 0 ? (
+          <span style={{ fontSize: 12, color: "var(--text-dim)" }}>No filters applied</span>
+        ) : (
+          <>
+            {activeFilters.map((f) => (
+              <span key={f.key} className="af-tag">
+                {f.label}
+                <button type="button" className="af-remove" onClick={() => removeFilter(f.key)} aria-label={`Remove ${f.label}`}>×</button>
+              </span>
+            ))}
+            <button type="button" style={{ fontSize: 12, color: "var(--coral)", marginLeft: 8, background: "none", border: "none", cursor: "pointer", fontWeight: 600 }} onClick={clearAllFilters}>Clear all</button>
+          </>
+        )}
       </div>
 
       <div className="search-layout">
@@ -68,15 +173,25 @@ export default function SearchPageClient() {
             <div className="filter-title">Property Type</div>
             <div className="bhk-grid" style={{ gridTemplateColumns: "repeat(2,1fr)" }}>
               {["Apartment", "Villa", "Plot", "Builder Floor", "Office", "PG/Co-living"].map((t, i) => (
-                <button key={t} type="button" className={`bhk-btn ${i === 0 ? "active" : ""}`}>{t}</button>
+                <button key={t} type="button" className={`bhk-btn ${propertyTypeIndex === i ? "active" : ""}`} onClick={() => setPropertyTypeIndex(i)}>{t}</button>
               ))}
             </div>
           </div>
           <div className="filter-block">
             <div className="filter-title">Bedrooms (BHK)</div>
             <div className="bhk-grid">
-              {["1", "2", "3", "4+"].map((b, i) => (
-                <button key={b} type="button" className={`bhk-btn ${i === 2 ? "active" : ""}`}>{b}</button>
+              {BHK_OPTIONS.map((b, i) => (
+                <button
+                  key={b}
+                  type="button"
+                  className={`bhk-btn ${bhkIndex === i ? "active" : ""}`}
+                  onClick={() => {
+                    setBhkIndex(i);
+                    setParams({ bhk: b === "4+" ? "4" : b });
+                  }}
+                >
+                  {b}
+                </button>
               ))}
             </div>
           </div>
@@ -97,9 +212,21 @@ export default function SearchPageClient() {
           <div className="filter-block">
             <div className="filter-title">Status</div>
             <div className="checkbox-list">
-              <label className="checkbox-item"><input type="checkbox" defaultChecked /> Ready to Move</label>
+              <label className="checkbox-item">
+                <input type="checkbox" checked={params.ready} onChange={(e) => setParams({ ready: e.target.checked })} />
+                Ready to Move
+              </label>
               <label className="checkbox-item"><input type="checkbox" /> Under Construction</label>
               <label className="checkbox-item"><input type="checkbox" /> New Launch</label>
+            </div>
+          </div>
+          <div className="filter-block">
+            <div className="filter-title">Quality</div>
+            <div className="checkbox-list">
+              <label className="checkbox-item">
+                <input type="checkbox" checked={params.verified} onChange={(e) => setParams({ verified: e.target.checked })} />
+                Verified only
+              </label>
             </div>
           </div>
           <div className="filter-block">
@@ -114,8 +241,8 @@ export default function SearchPageClient() {
         <div className="search-main">
           <div className="listings-wrap">
             <div className="prop-grid">
-              {PROPERTIES.map((p, i) => (
-                <Link key={i} href="/property/detail" className="prop-card reveal">
+              {PROPERTIES.map((p) => (
+                <Link key={p.id} href={`/property/${p.id}`} className="prop-card reveal">
                   <div className="prop-img">
                     <div className="prop-img-bg" style={{ background: p.bg }} />
                     <div className="prop-emoji">🏡</div>
@@ -139,13 +266,13 @@ export default function SearchPageClient() {
               ))}
             </div>
             <div className="pagination">
-              <button type="button" className="page-btn">‹</button>
-              <button type="button" className="page-btn active">1</button>
-              <button type="button" className="page-btn">2</button>
-              <button type="button" className="page-btn">3</button>
+              <button type="button" className="page-btn" onClick={() => setParams({ page: params.page - 1 })} disabled={params.page <= 1}>‹</button>
+              {[1, 2, 3].map((n) => (
+                <button key={n} type="button" className={`page-btn ${params.page === n ? "active" : ""}`} onClick={() => setParams({ page: n })}>{n}</button>
+              ))}
               <span style={{ color: "var(--text-dim)", padding: "0 4px", display: "flex", alignItems: "center" }}>…</span>
-              <button type="button" className="page-btn">24</button>
-              <button type="button" className="page-btn">›</button>
+              <button type="button" className="page-btn" onClick={() => setParams({ page: 24 })}>24</button>
+              <button type="button" className="page-btn" onClick={() => setParams({ page: params.page + 1 })}>›</button>
             </div>
           </div>
         </div>
