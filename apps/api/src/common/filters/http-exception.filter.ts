@@ -16,7 +16,7 @@ import {
 import { GqlArgumentsHost } from '@nestjs/graphql';
 import { Request } from 'express';
 import { AppError } from '../errors/app.error';
-import { logger } from '../../shared/logger';
+import { logger } from '../../shared/logger/logger.service';
 
 @Catch()
 export class HttpExceptionFilter implements ExceptionFilter {

@@ -17,6 +17,7 @@ import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AppConfigModule } from '../shared/config';
+import { LoggerModule } from '../shared/logger';
 import { HealthModule } from '../modules/health/health.module';
 import { PropertyModule } from '../modules/property/property.module';
 import { RequestIdMiddleware } from '../common/middleware/request-id.middleware';
@@ -27,6 +28,7 @@ import { TimeoutInterceptor } from '../common/interceptors/timeout.interceptor';
 @Module({
   imports: [
     AppConfigModule,
+    LoggerModule,
     ThrottlerModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (config: ConfigService) => [
