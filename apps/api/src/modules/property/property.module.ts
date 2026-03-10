@@ -11,10 +11,11 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Property } from './entities/property.entity';
 import { PropertyService } from './property.service';
 import { PropertyResolver } from './property.resolver';
+import { PropertyRepository } from './repository/property.repository';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Property])],
-  providers: [PropertyService, PropertyResolver],
+  providers: [PropertyRepository, PropertyService, PropertyResolver],
   exports: [PropertyService],
 })
 export class PropertyModule {}
