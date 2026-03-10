@@ -27,9 +27,8 @@ export class HttpExceptionFilter implements ExceptionFilter {
 
     if (exception instanceof AppError) {
       logger.error(
+        { requestId, context: 'HttpExceptionFilter', stack: exception.stack },
         `${exception.code}: ${exception.message}`,
-        exception.stack,
-        { requestId, context: 'HttpExceptionFilter' },
       );
       this.respond(host, exception.statusCode, {
         statusCode: exception.statusCode,
@@ -45,7 +44,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
       const message = typeof res === 'object' && res !== null && 'message' in res
         ? (res as { message: string | string[] }).message
         : exception.message;
-      logger.warn(`${status}: ${JSON.stringify(message)}`, { requestId, context: 'HttpExceptionFilter' });
+      logger.warn({ requestId, context: 'HttpExceptionFilter' }, `${status}: ${JSON.stringify(message)}`);
       this.respond(host, status, {
         statusCode: status,
         message: Array.isArray(message) ? message[0] : message,
@@ -54,7 +53,10 @@ export class HttpExceptionFilter implements ExceptionFilter {
     }
 
     const err = exception as Error;
-    logger.error(err?.message ?? 'Unknown error', err?.stack, { requestId, context: 'HttpExceptionFilter' });
+    logger.error(
+      { requestId, context: 'HttpExceptionFilter', stack: err?.stack },
+      err?.message ?? 'Unknown error',
+    );
     this.respond(host, HttpStatus.INTERNAL_SERVER_ERROR, {
       statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
       message: 'Internal server error',
