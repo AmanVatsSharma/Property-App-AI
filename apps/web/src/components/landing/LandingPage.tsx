@@ -10,6 +10,9 @@
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
+import Image from "next/image";
+import { DEMO_IMAGES } from "@/lib/demo-images";
+import { PropertyImage } from "@/components/ui/PropertyImage";
 
 const SEARCH_TABS = [
   { id: "buy", label: "🏠 Buy" },
@@ -181,8 +184,18 @@ export default function LandingPage() {
         <div className="cities-row">
           {CITIES.map((c) => (
             <div key={c.name} className="city-card reveal">
-              <div className="city-img" style={{ background: c.bg }}>
-                <span style={{ fontSize: 52, position: "relative", zIndex: 1 }}>{c.emoji}</span>
+              <div className="city-img">
+                {DEMO_IMAGES.cities[c.name as keyof typeof DEMO_IMAGES.cities] ? (
+                  <Image
+                    src={DEMO_IMAGES.cities[c.name as keyof typeof DEMO_IMAGES.cities]}
+                    alt={c.name}
+                    fill
+                    sizes="200px"
+                    className="object-cover"
+                  />
+                ) : (
+                  <span style={{ fontSize: 52, position: "relative", zIndex: 1 }}>{c.emoji}</span>
+                )}
                 <div className="city-overlay" />
               </div>
               <div className="city-info">
@@ -206,8 +219,12 @@ export default function LandingPage() {
         <div className="listings-grid">
           <Link href="/property/detail" className="l-card featured reveal">
             <div className="l-img">
-              <div className="l-img-bg" style={{ background: "linear-gradient(135deg,#132238,#1e3a5f,#152840)", width: "100%", height: "100%", position: "absolute", inset: 0 }} />
-              <div className="l-img-content">🏡</div>
+              <PropertyImage
+                src={DEMO_IMAGES.properties["sobha-city-vista"].cover}
+                alt="Sobha City Vista — 4 BHK Ultra Luxury"
+                className="l-img-bg"
+                sizes="(max-width: 768px) 100vw, 50vw"
+              />
               <div className="l-img-gradient" />
               <div className="l-badges">
                 <span className="lb lb-premium">⭐ PREMIUM</span>
@@ -235,8 +252,12 @@ export default function LandingPage() {
           </Link>
           <Link href="/property/detail" className="l-card reveal">
             <div className="l-img">
-              <div className="l-img-bg" style={{ background: "linear-gradient(135deg,#1a2e1a,#2a4a2a,#1a2e1a)", width: "100%", height: "100%", position: "absolute", inset: 0 }} />
-              <div className="l-img-content">🏢</div>
+              <PropertyImage
+                src={DEMO_IMAGES.properties["dlf-mypad"].cover}
+                alt="DLF MyPad — 2 BHK Studio, Noida"
+                className="l-img-bg"
+                sizes="(max-width: 768px) 100vw, 33vw"
+              />
               <div className="l-img-gradient" />
               <div className="l-badges">
                 <span className="lb lb-verified">✓ Verified</span>
@@ -262,8 +283,12 @@ export default function LandingPage() {
           </Link>
           <Link href="/property/detail" className="l-card reveal">
             <div className="l-img">
-              <div className="l-img-bg" style={{ background: "linear-gradient(135deg,#1a1a30,#2a2a50,#1a1a30)", width: "100%", height: "100%", position: "absolute", inset: 0 }} />
-              <div className="l-img-content">🏠</div>
+              <PropertyImage
+                src={DEMO_IMAGES.properties["m3m-golf-hills"].cover}
+                alt="M3M Golf Hills — 3 BHK Premium"
+                className="l-img-bg"
+                sizes="(max-width: 768px) 100vw, 33vw"
+              />
               <div className="l-img-gradient" />
               <div className="l-badges">
                 <span className="lb lb-new">NEW</span>

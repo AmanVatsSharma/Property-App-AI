@@ -10,6 +10,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getPropertyById } from "@/lib/property-api";
+import { PropertyImage } from "@/components/ui/PropertyImage";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -43,14 +44,36 @@ export default async function PropertyDetailPage({ params }: PageProps) {
         </div>
         <div className="gallery">
           <div className="gallery-main">
-            🏡
+            <PropertyImage
+              src={property.coverImage}
+              alt={property.title}
+              className="gallery-main-img"
+              sizes="(max-width: 768px) 100vw, 66vw"
+              placeholderGradient="linear-gradient(135deg,#132238,#1e3a5f,#0d1e3a)"
+            />
             <div className="gallery-actions">
               <button type="button" className="gal-btn">📸 All Photos (24)</button>
               <button type="button" className="gal-btn">🎬 Video Tour</button>
             </div>
           </div>
-          <div className="gallery-sub" style={{ background: "linear-gradient(135deg,#1a3020,#243a2a)" }}>🌿</div>
-          <div className="gallery-sub" style={{ background: "linear-gradient(135deg,#1a2030,#242a40)" }}>🏊</div>
+          <div className="gallery-sub">
+            <PropertyImage
+              src={property.galleryImages?.[0]}
+              alt={`${property.title} — view 2`}
+              className="gallery-sub-img"
+              sizes="(max-width: 768px) 50vw, 33vw"
+              placeholderGradient="linear-gradient(135deg,#1a3020,#243a2a)"
+            />
+          </div>
+          <div className="gallery-sub">
+            <PropertyImage
+              src={property.galleryImages?.[1]}
+              alt={`${property.title} — view 3`}
+              className="gallery-sub-img"
+              sizes="(max-width: 768px) 50vw, 33vw"
+              placeholderGradient="linear-gradient(135deg,#1a2030,#242a40)"
+            />
+          </div>
         </div>
       </div>
       <div className="detail-layout">
