@@ -20,6 +20,7 @@ import { AppConfigModule } from '../shared/config';
 import { LoggerModule } from '../shared/logger';
 import { HealthModule } from '../modules/health/health.module';
 import { PropertyModule } from '../modules/property/property.module';
+import { AgentModule } from '../modules/agent/agent.module';
 import { RequestIdMiddleware } from '../common/middleware/request-id.middleware';
 import { HttpExceptionFilter } from '../common/filters/http-exception.filter';
 import { LoggingInterceptor } from '../common/interceptors/logging.interceptor';
@@ -72,6 +73,7 @@ import { TimeoutInterceptor } from '../common/interceptors/timeout.interceptor';
     }),
     HealthModule,
     PropertyModule,
+    AgentModule,
   ],
   controllers: [AppController],
   providers: [

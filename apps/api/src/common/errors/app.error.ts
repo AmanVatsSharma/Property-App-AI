@@ -31,3 +31,10 @@ export class ValidationError extends AppError {
     this.name = 'ValidationError';
   }
 }
+
+export class AgentError extends AppError {
+  constructor(message: string, statusCode: number = 503) {
+    super(message, 'AGENT_ERROR', statusCode);
+    this.name = 'AgentError';
+  }
+}
