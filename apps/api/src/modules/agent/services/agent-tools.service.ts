@@ -41,13 +41,13 @@ export class AgentToolsService {
         {
           name: 'search_properties',
           description:
-            'Search properties by natural language or filters. Use for "find 3BHK in Bangalore under 1Cr", "listings in Mumbai", etc. Returns a summary of matching properties.',
+            'Search listings by BHK, budget in ₹/lakh/Cr, city or locality. E.g. "3BHK in Bangalore under 1 Cr", "2 BHK Mumbai under 50 lakh". Returns summary with price, BHK, location.',
           schema: z.object({
-            query: z.string().describe('Natural language search or keywords'),
-            location: z.string().optional().describe('City or locality name'),
-            max_price: z.number().optional().describe('Maximum price in INR'),
-            bedrooms: z.number().optional().describe('Number of bedrooms'),
-            limit: z.number().optional().default(10).describe('Max results to return'),
+            query: z.string().describe('Natural language or keywords (e.g. 3BHK Bangalore 1 Cr)'),
+            location: z.string().optional().describe('City or locality (e.g. Whitefield, Mumbai)'),
+            max_price: z.number().optional().describe('Max budget in INR'),
+            bedrooms: z.number().optional().describe('Number of BHK'),
+            limit: z.number().optional().default(10).describe('Max results'),
           }),
         },
       ),
@@ -57,7 +57,8 @@ export class AgentToolsService {
         },
         {
           name: 'get_property',
-          description: 'Get full details of a single property by its ID. Use when user asks about a specific listing.',
+          description:
+            'Get full listing details by ID: title, location, price in INR, BHK, bathrooms, sqft, type, AI score/tip if available.',
           schema: z.object({
             property_id: z.string().describe('UUID of the property'),
           }),
@@ -70,7 +71,7 @@ export class AgentToolsService {
         {
           name: 'score_property',
           description:
-            'Generate an AI score (0-100) and tip for a property. Use when user wants valuation or "is this a good deal" for a listing.',
+            'Valuation and "good deal" check: AI score (0-100) and tip. Use for "is this a good deal", price per sqft context, investment view.',
           schema: z.object({
             property_id: z.string().describe('UUID of the property to score'),
           }),
@@ -83,7 +84,7 @@ export class AgentToolsService {
         {
           name: 'get_neighbourhood_score',
           description:
-            'Get livability score and narrative for a locality. Use for "how is Whitefield", "neighbourhood score for Koramangala".',
+            'Livability score for a locality: connectivity, schools, safety, amenities. Use for "how is Whitefield", "Koramangala vs Indiranagar".',
           schema: z.object({
             locality: z.string().describe('Locality or area name'),
             city: z.string().optional().describe('City name'),
@@ -97,11 +98,11 @@ export class AgentToolsService {
         {
           name: 'get_price_forecast',
           description:
-            'Get price forecast narrative for a locality over 12-36 months. Use for "price forecast for Whitefield", "will prices go up in Koramangala".',
+            'Price appreciation forecast for a locality over 12–36 months. Investment outlook, demand trends. Use for "price forecast Whitefield", "will prices go up".',
           schema: z.object({
             locality: z.string().describe('Locality or area name'),
             city: z.string().optional().describe('City name'),
-            horizon_months: z.number().optional().default(24).describe('Forecast horizon in months (12, 24, or 36)'),
+            horizon_months: z.number().optional().default(24).describe('Forecast horizon: 12, 24, or 36 months'),
           }),
         },
       ),
@@ -112,7 +113,7 @@ export class AgentToolsService {
         {
           name: 'check_rera',
           description:
-            'Check RERA registration status for a project. Use for "is this project RERA registered", "verify RERA for Sobha City".',
+            'RERA registration status for a project. Use for "is this project RERA registered", builder compliance, project verification.',
           schema: z.object({
             project_name_or_number: z.string().describe('Project name or RERA registration number'),
           }),
@@ -125,7 +126,7 @@ export class AgentToolsService {
         {
           name: 'analyze_document',
           description:
-            'Analyze a legal document (sale deed, title, NOC) for risk summary. Pass extracted text or summary.',
+            'Legal document risk summary: sale deed, title report, NOC. Pass extracted text or summary for legal risk analysis.',
           schema: z.object({
             document_summary_or_text: z.string().describe('Document text or summary to analyze'),
           }),
@@ -138,10 +139,23 @@ export class AgentToolsService {
         {
           name: 'get_negotiation_advice',
           description:
-            'Get negotiation or bid strategy for a property. Use for "what price should I offer", "negotiation tips for this listing".',
+            'Offer price and bid strategy: comparables, negotiation margin (e.g. 3–5% below list). Use for "what price should I offer", negotiation tips.',
           schema: z.object({
             property_id: z.string().describe('UUID of the property'),
-            context: z.string().optional().describe('Additional context e.g. budget, urgency'),
+            context: z.string().optional().describe('E.g. budget, urgency, ready-to-move'),
+          }),
+        },
+      ),
+      tool(
+        async (input: { property_ids: string[] }) => {
+          return self.comparePropertiesImpl(input.property_ids);
+        },
+        {
+          name: 'compare_properties',
+          description:
+            'Compare 2–5 properties side by side: price, BHK, location, sqft, AI score. Use when user asks "compare these" or "which of these is better".',
+          schema: z.object({
+            property_ids: z.array(z.string()).min(2).max(5).describe('2 to 5 property UUIDs to compare'),
           }),
         },
       ),
