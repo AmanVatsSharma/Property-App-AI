@@ -51,6 +51,8 @@
     "joi": "^17.13.3",
     "@nestjs/config": "^3.3.0",
     "@nestjs/terminus": "^10.2.3",
+    "@nestjs/throttler": "^6.2.1",
+    "helmet": "^8.0.0",
     "pg": "^8.13.0",
     "pino": "^9.5.0",
     "pino-http": "^10.3.0",

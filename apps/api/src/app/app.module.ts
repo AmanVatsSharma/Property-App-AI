@@ -8,10 +8,12 @@
 
 import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { APP_GUARD } from '@nestjs/core';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { GraphQLModule } from '@nestjs/graphql';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { APP_FILTER } from '@nestjs/core';
+import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AppConfigModule } from '../shared/config';
@@ -19,6 +21,8 @@ import { HealthModule } from '../modules/health/health.module';
 import { PropertyModule } from '../modules/property/property.module';
 import { RequestIdMiddleware } from '../common/middleware/request-id.middleware';
 import { HttpExceptionFilter } from '../common/filters/http-exception.filter';
+import { LoggingInterceptor } from '../common/interceptors/logging.interceptor';
+import { TimeoutInterceptor } from '../common/interceptors/timeout.interceptor';
 
 @Module({
   imports: [
@@ -53,6 +57,8 @@ import { HttpExceptionFilter } from '../common/filters/http-exception.filter';
   providers: [
     AppService,
     { provide: APP_FILTER, useClass: HttpExceptionFilter },
+    { provide: APP_INTERCEPTOR, useClass: LoggingInterceptor },
+    { provide: APP_INTERCEPTOR, useClass: TimeoutInterceptor },
   ],
 })
 export class AppModule implements NestModule {

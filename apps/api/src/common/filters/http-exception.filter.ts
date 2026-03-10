@@ -12,26 +12,24 @@ import {
   ArgumentsHost,
   HttpException,
   HttpStatus,
-  Logger,
 } from '@nestjs/common';
 import { GqlArgumentsHost } from '@nestjs/graphql';
 import { Request } from 'express';
 import { AppError } from '../errors/app.error';
+import { logger } from '../../shared/logger';
 
 @Catch()
 export class HttpExceptionFilter implements ExceptionFilter {
-  private readonly logger = new Logger(HttpExceptionFilter.name);
-
   catch(exception: unknown, host: ArgumentsHost): void {
     const gqlHost = GqlArgumentsHost.create(host);
     const ctx = gqlHost.getContext();
     const requestId = (ctx?.req && (ctx.req as Request).requestId) ?? ctx?.requestId ?? 'unknown';
 
     if (exception instanceof AppError) {
-      this.logger.error(
+      logger.error(
         `${exception.code}: ${exception.message}`,
         exception.stack,
-        { requestId },
+        { requestId, context: 'HttpExceptionFilter' },
       );
       this.respond(host, exception.statusCode, {
         statusCode: exception.statusCode,
@@ -47,7 +45,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
       const message = typeof res === 'object' && res !== null && 'message' in res
         ? (res as { message: string | string[] }).message
         : exception.message;
-      this.logger.warn(`${status}: ${JSON.stringify(message)}`, { requestId });
+      logger.warn(`${status}: ${JSON.stringify(message)}`, { requestId, context: 'HttpExceptionFilter' });
       this.respond(host, status, {
         statusCode: status,
         message: Array.isArray(message) ? message[0] : message,
@@ -56,7 +54,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
     }
 
     const err = exception as Error;
-    this.logger.error(err?.message ?? 'Unknown error', err?.stack, { requestId });
+    logger.error(err?.message ?? 'Unknown error', err?.stack, { requestId, context: 'HttpExceptionFilter' });
     this.respond(host, HttpStatus.INTERNAL_SERVER_ERROR, {
       statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
       message: 'Internal server error',
