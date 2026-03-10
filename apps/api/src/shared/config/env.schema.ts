@@ -25,6 +25,11 @@ export const envSchema = Joi.object({
   AGENT_MAX_STEPS: Joi.number().min(1).max(20).default(10),
   AGENT_QUEUE_ENABLED: Joi.boolean().default(false),
   REDIS_URL: Joi.string().uri().optional().allow(''),
+  AGENT_PROVIDER: Joi.string().valid('openai', 'anthropic').default('openai'),
+  ANTHROPIC_API_KEY: Joi.string().optional().allow(''),
+  AGENT_ANTHROPIC_MODEL: Joi.string().default('claude-sonnet-4-20250514'),
+  AGENT_THINKING_BUDGET_TOKENS: Joi.number().min(0).max(32000).optional(),
+  AGENT_PLAN_FIRST: Joi.boolean().default(false),
 }).unknown(true);
 
 export type EnvSchema = {
@@ -44,4 +49,9 @@ export type EnvSchema = {
   AGENT_MAX_STEPS: number;
   AGENT_QUEUE_ENABLED: boolean;
   REDIS_URL?: string;
+  AGENT_PROVIDER: 'openai' | 'anthropic';
+  ANTHROPIC_API_KEY?: string;
+  AGENT_ANTHROPIC_MODEL: string;
+  AGENT_THINKING_BUDGET_TOKENS?: number;
+  AGENT_PLAN_FIRST: boolean;
 };
