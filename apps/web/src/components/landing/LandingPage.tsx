@@ -516,14 +516,24 @@ export default function LandingPage() {
             <div className="phone-notch" />
             <div className="phone-screen">
               <div className="phone-bar teal" style={{ width: "50%", margin: "0 auto 4px" }} />
-              <div style={{ fontSize: 28, textAlign: "center", margin: "8px 0" }}>🏙️</div>
+              <div className="phone-hero-img-wrap">
+                <Image src={DEMO_IMAGES.cities.Bangalore} alt="" fill className="phone-hero-img" sizes="200px" />
+              </div>
               <div className="phone-bar med" />
               <div className="phone-bar short" />
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6, flex: 1 }}>
-                <div style={{ background: "var(--teal-dim)", border: "1px solid rgba(0,212,170,0.2)", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}>🔮</div>
-                <div style={{ background: "var(--coral-dim)", border: "1px solid rgba(255,107,74,0.2)", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}>📊</div>
-                <div style={{ background: "var(--gold-dim)", border: "1px solid rgba(245,200,66,0.2)", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}>🗺️</div>
-                <div style={{ background: "var(--glass)", border: "1px solid var(--glass-border)", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}>🤖</div>
+                <div className="phone-feat-cell" style={{ background: "var(--teal-dim)", border: "1px solid rgba(0,212,170,0.2)" }}>
+                  <Image src={DEMO_IMAGES.properties["prestige-sunrise-park"].cover} alt="" fill className="phone-feat-img" sizes="80px" />
+                </div>
+                <div className="phone-feat-cell" style={{ background: "var(--coral-dim)", border: "1px solid rgba(255,107,74,0.2)" }}>
+                  <Image src={DEMO_IMAGES.properties["m3m-golf-hills"].cover} alt="" fill className="phone-feat-img" sizes="80px" />
+                </div>
+                <div className="phone-feat-cell" style={{ background: "var(--gold-dim)", border: "1px solid rgba(245,200,66,0.2)" }}>
+                  <Image src={DEMO_IMAGES.cities["Delhi NCR"]} alt="" fill className="phone-feat-img" sizes="80px" />
+                </div>
+                <div className="phone-feat-cell" style={{ background: "var(--glass)", border: "1px solid var(--glass-border)" }}>
+                  <Image src={DEMO_IMAGES.properties["godrej-meridian"].cover} alt="" fill className="phone-feat-img" sizes="80px" />
+                </div>
               </div>
             </div>
           </div>

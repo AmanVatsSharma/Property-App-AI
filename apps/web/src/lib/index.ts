@@ -15,3 +15,4 @@ export {
   type ApiClientConfig,
 } from "./api-client";
 export { getPropertyById, type PropertyDetail } from "./property-api";
+export { DEMO_IMAGES, type CityName, type PropertyId } from "./demo-images";
