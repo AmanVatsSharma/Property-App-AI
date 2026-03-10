@@ -12,24 +12,37 @@ import { PropertyService } from '../services/property.service';
 import { CreatePropertyDto } from '../dtos/create-property.dto';
 import { UpdatePropertyDto } from '../dtos/update-property.dto';
 import { PropertyFilterDto } from '../dtos/property-filter.dto';
+import { LoggerService } from '../../../shared/logger';
 
 @Resolver(() => Property)
 export class PropertyResolver {
-  constructor(private readonly propertyService: PropertyService) {}
+  constructor(
+    private readonly propertyService: PropertyService,
+    private readonly logger: LoggerService,
+  ) {}
 
   @Query(() => [Property], { name: 'properties' })
   async properties(@Args() filter: PropertyFilterDto): Promise<Property[]> {
-    return this.propertyService.findAll(filter);
+    this.logger.debug('properties query entry', { method: 'properties' });
+    const result = await this.propertyService.findAll(filter);
+    this.logger.debug('properties query exit', { method: 'properties' });
+    return result;
   }
 
   @Query(() => Property, { name: 'property', nullable: true })
   async property(@Args('id') id: string): Promise<Property> {
-    return this.propertyService.findOne(id);
+    this.logger.debug('property query entry', { method: 'property', id });
+    const result = await this.propertyService.findOne(id);
+    this.logger.debug('property query exit', { method: 'property', id });
+    return result;
   }
 
   @Mutation(() => Property)
   async createProperty(@Args('input') input: CreatePropertyDto): Promise<Property> {
-    return this.propertyService.create(input);
+    this.logger.debug('createProperty mutation entry', { method: 'createProperty' });
+    const result = await this.propertyService.create(input);
+    this.logger.debug('createProperty mutation exit', { method: 'createProperty' });
+    return result;
   }
 
   @Mutation(() => Property)
@@ -37,11 +50,17 @@ export class PropertyResolver {
     @Args('id') id: string,
     @Args('input') input: UpdatePropertyDto,
   ): Promise<Property> {
-    return this.propertyService.update(id, input);
+    this.logger.debug('updateProperty mutation entry', { method: 'updateProperty', id });
+    const result = await this.propertyService.update(id, input);
+    this.logger.debug('updateProperty mutation exit', { method: 'updateProperty', id });
+    return result;
   }
 
   @Mutation(() => Boolean)
   async deleteProperty(@Args('id') id: string): Promise<boolean> {
-    return this.propertyService.remove(id);
+    this.logger.debug('deleteProperty mutation entry', { method: 'deleteProperty', id });
+    const result = await this.propertyService.remove(id);
+    this.logger.debug('deleteProperty mutation exit', { method: 'deleteProperty', id });
+    return result;
   }
 }
