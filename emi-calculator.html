@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>EMI Calculator — UrbanNest.ai</title>
+<link rel="stylesheet" href="shared.css">
+<style>
+.emi-layout { display: grid; grid-template-columns: 480px 1fr; gap: 32px; padding: 40px 52px; max-width: 1300px; margin: 0 auto; }
+
+.emi-form-card { background: var(--dark-2); border: 1px solid var(--border); border-radius: 20px; padding: 32px; height: fit-content; }
+.emi-form-card h2 { font-family:'Playfair Display',serif; font-size:26px; color:var(--white); letter-spacing:-0.5px; margin-bottom:6px; }
+.emi-form-card p { font-size:13px; color:var(--text-muted); margin-bottom:28px; }
+
+.slider-group { margin-bottom:28px; }
+.slider-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
+.slider-label { font-size:13px; font-weight:600; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.06em; }
+.slider-value { font-family:'Playfair Display',serif; font-size:22px; font-weight:700; color:var(--teal); letter-spacing:-0.5px; }
+
+.emi-result-hero { background:linear-gradient(135deg,var(--teal-dim),rgba(0,212,170,0.05)); border:1px solid rgba(0,212,170,0.25); border-radius:18px; padding:28px; margin-bottom:24px; text-align:center; }
+.emi-main { font-family:'Playfair Display',serif; font-size:52px; font-weight:700; color:var(--teal); letter-spacing:-2px; line-height:1; }
+.emi-main-label { font-size:14px; color:var(--text-muted); margin-top:6px; }
+.emi-breakdown { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-top:20px; padding-top:20px; border-top:1px solid rgba(0,212,170,0.15); }
+.emib-item { text-align:center; }
+.emib-val { font-family:'Playfair Display',serif; font-size:20px; font-weight:700; color:var(--white); letter-spacing:-0.5px; }
+.emib-label { font-size:11px; color:var(--text-muted); margin-top:3px; }
+
+/* DONUT CHART */
+.donut-wrap { display:flex; align-items:center; justify-content:center; gap:28px; margin-bottom:28px; }
+.donut { width:160px; height:160px; border-radius:50%; background:conic-gradient(var(--teal) 0deg 162deg, var(--coral) 162deg 324deg, #3a4560 324deg 360deg); position:relative; display:flex; align-items:center; justify-content:center; }
+.donut::after { content:''; position:absolute; width:100px; height:100px; border-radius:50%; background:var(--dark-2); }
+.donut-center { position:relative; z-index:1; text-align:center; }
+.donut-center-num { font-size:20px; font-weight:700; color:var(--white); font-family:'Playfair Display',serif; }
+.donut-center-label { font-size:10px; color:var(--text-muted); }
+.donut-legend { display:flex; flex-direction:column; gap:10px; }
+.dl-item { display:flex; align-items:center; gap:10px; }
+.dl-dot { width:10px; height:10px; border-radius:2px; flex-shrink:0; }
+.dl-label { font-size:13px; color:var(--text-muted); }
+.dl-val { font-size:13px; font-weight:700; color:var(--white); margin-left:auto; }
+
+/* AMORTIZATION */
+.amort-table { width:100%; border-collapse:collapse; font-size:13px; }
+.amort-table th { text-align:left; padding:10px 14px; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-dim); border-bottom:1px solid var(--border); font-weight:600; }
+.amort-table td { padding:11px 14px; border-bottom:1px solid var(--border); color:var(--text-muted); }
+.amort-table tr:hover td { background:var(--glass); color:var(--text); }
+.amort-table td:first-child { color:var(--white); font-weight:600; }
+.amort-table td:last-child { color:var(--teal); font-weight:700; }
+
+/* BANK COMPARISON */
+.bank-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-top:16px; }
+.bank-card { background:var(--dark-2); border:1px solid var(--border); border-radius:14px; padding:18px; transition:all 0.2s; cursor:pointer; }
+.bank-card:hover, .bank-card.best { border-color:rgba(0,212,170,0.3); }
+.bank-card.best { background:var(--teal-dim); }
+.bank-name { font-size:14px; font-weight:700; color:var(--white); margin-bottom:6px; }
+.bank-rate { font-family:'Playfair Display',serif; font-size:24px; font-weight:700; color:var(--teal); letter-spacing:-0.5px; }
+.bank-rate span { font-size:14px; font-family:'Outfit',sans-serif; color:var(--text-muted); }
+.bank-emi { font-size:13px; color:var(--text-muted); margin-top:4px; }
+.bank-best-badge { display:inline-block; background:var(--teal); color:var(--night); font-size:10px; font-weight:700; padding:2px 8px; border-radius:100px; margin-top:8px; }
+
+/* AFFORDABILITY */
+.afford-bar { height:12px; border-radius:100px; background:var(--dark-3); margin-top:10px; overflow:hidden; }
+.afford-fill { height:100%; border-radius:100px; background:linear-gradient(90deg,var(--teal),#00f5c4); transition:width 1s ease; }
+</style>
+</head>
+<body>
+<div class="page-wrap">
+  <div class="page-hero">
+    <div class="eyebrow">AI Tools</div>
+    <h1 class="h1">EMI & <em class="teal">Loan Calculator</em></h1>
+    <p class="sub">Calculate your monthly EMI, compare bank rates, and check your loan eligibility — all powered by real-time data.</p>
+  </div>
+
+  <div class="emi-layout">
+    <!-- LEFT: FORM -->
+    <div>
+      <div class="emi-form-card reveal">
+        <h2>Calculate Your EMI</h2>
+        <p>Adjust the sliders to instantly calculate your monthly payment</p>
+
+        <div class="slider-group">
+          <div class="slider-header"><span class="slider-label">Home Price</span><span class="slider-value" id="priceVal">₹1.5 Cr</span></div>
+          <input type="range" class="range" min="20" max="1000" value="150" id="priceRange" oninput="calc()">
+          <div class="range-labels"><span>₹20L</span><span>₹10 Cr</span></div>
+        </div>
+
+        <div class="slider-group">
+          <div class="slider-header"><span class="slider-label">Down Payment</span><span class="slider-value" id="downVal">₹30L (20%)</span></div>
+          <input type="range" class="range" min="10" max="40" value="20" id="downRange" oninput="calc()">
+          <div class="range-labels"><span>10%</span><span>40%</span></div>
+        </div>
+
+        <div class="slider-group">
+          <div class="slider-header"><span class="slider-label">Interest Rate</span><span class="slider-value" id="rateVal">8.5%</span></div>
+          <input type="range" class="range" min="60" max="150" value="85" id="rateRange" oninput="calc()">
+          <div class="range-labels"><span>6%</span><span>15%</span></div>
+        </div>
+
+        <div class="slider-group">
+          <div class="slider-header"><span class="slider-label">Loan Tenure</span><span class="slider-value" id="tenureVal">20 Years</span></div>
+          <input type="range" class="range" min="5" max="30" value="20" id="tenureRange" oninput="calc()">
+          <div class="range-labels"><span>5 Yrs</span><span>30 Yrs</span></div>
+        </div>
+
+        <div style="margin-top:4px;">
+          <label class="label">Affordability Check — Monthly Income</label>
+          <input type="range" class="range" min="30" max="500" value="150" id="incomeRange" oninput="calcAfford()">
+          <div class="range-labels"><span>₹30K</span><span id="incomeVal" class="range-val">₹1.5L /month</span><span>₹5L</span></div>
+          <div class="afford-bar"><div class="afford-fill" id="affordFill" style="width:52%;"></div></div>
+          <div style="display:flex;justify-content:space-between;margin-top:6px;font-size:12px;"><span style="color:var(--text-muted);">EMI is <span id="affordPct" style="color:var(--teal);font-weight:700;">52%</span> of income</span><span style="color:var(--text-dim);">Ideal: below 40%</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: RESULTS -->
+    <div class="reveal">
+      <!-- HERO RESULT -->
+      <div class="emi-result-hero">
+        <div class="emi-main" id="emiMain">₹1,07,340</div>
+        <div class="emi-main-label">Monthly EMI for 20 years</div>
+        <div class="emi-breakdown">
+          <div class="emib-item"><div class="emib-val" id="loanAmtDisp">₹1.2 Cr</div><div class="emib-label">Loan Amount</div></div>
+          <div class="emib-item"><div class="emib-val" id="totalInterest">₹1.38 Cr</div><div class="emib-label">Total Interest</div></div>
+          <div class="emib-item"><div class="emib-val" id="totalPayment">₹2.58 Cr</div><div class="emib-label">Total Payment</div></div>
+        </div>
+      </div>
+
+      <!-- DONUT -->
+      <div style="background:var(--dark-2);border:1px solid var(--border);border-radius:18px;padding:24px;margin-bottom:24px;">
+        <div class="eyebrow">Payment Breakdown</div>
+        <div class="donut-wrap" style="margin-top:20px;">
+          <div class="donut"><div class="donut-center"><div class="donut-center-num">₹2.58Cr</div><div class="donut-center-label">Total Payment</div></div></div>
+          <div class="donut-legend">
+            <div class="dl-item"><div class="dl-dot" style="background:var(--teal);"></div><span class="dl-label">Principal</span><span class="dl-val">₹1.2 Cr</span></div>
+            <div class="dl-item"><div class="dl-dot" style="background:var(--coral);"></div><span class="dl-label">Interest</span><span class="dl-val">₹1.38 Cr</span></div>
+            <div class="dl-item"><div class="dl-dot" style="background:#3a4560;"></div><span class="dl-label">Down Payment</span><span class="dl-val">₹30 L</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- BANK COMPARISON -->
+      <div style="background:var(--dark-2);border:1px solid var(--border);border-radius:18px;padding:24px;margin-bottom:24px;">
+        <div class="eyebrow">Bank Comparison</div>
+        <div class="h3" style="margin-bottom:4px;">Best Home Loan Rates</div>
+        <p style="font-size:13px;color:var(--text-muted);margin-bottom:0;">Live rates updated daily</p>
+        <div class="bank-grid">
+          <div class="bank-card best">
+            <div class="bank-name">SBI Home Loan</div>
+            <div class="bank-rate">8.40% <span>p.a.</span></div>
+            <div class="bank-emi">EMI: ₹1,04,500/mo</div>
+            <div class="bank-best-badge">✦ Best Rate</div>
+          </div>
+          <div class="bank-card">
+            <div class="bank-name">HDFC Bank</div>
+            <div class="bank-rate">8.50% <span>p.a.</span></div>
+            <div class="bank-emi">EMI: ₹1,07,340/mo</div>
+          </div>
+          <div class="bank-card">
+            <div class="bank-name">ICICI Bank</div>
+            <div class="bank-rate">8.60% <span>p.a.</span></div>
+            <div class="bank-emi">EMI: ₹1,08,180/mo</div>
+          </div>
+          <div class="bank-card">
+            <div class="bank-name">Axis Bank</div>
+            <div class="bank-rate">8.75% <span>p.a.</span></div>
+            <div class="bank-emi">EMI: ₹1,09,560/mo</div>
+          </div>
+          <div class="bank-card">
+            <div class="bank-name">Kotak Mahindra</div>
+            <div class="bank-rate">8.85% <span>p.a.</span></div>
+            <div class="bank-emi">EMI: ₹1,10,440/mo</div>
+          </div>
+          <div class="bank-card">
+            <div class="bank-name">PNB Housing</div>
+            <div class="bank-rate">9.00% <span>p.a.</span></div>
+            <div class="bank-emi">EMI: ₹1,12,000/mo</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- AMORTIZATION -->
+      <div style="background:var(--dark-2);border:1px solid var(--border);border-radius:18px;padding:24px;">
+        <div class="eyebrow">Amortization Schedule</div>
+        <div class="h3" style="margin-bottom:16px;">Year-by-Year Breakdown</div>
+        <div style="overflow-x:auto;">
+          <table class="amort-table">
+            <thead><tr><th>Year</th><th>Principal</th><th>Interest</th><th>Total Paid</th><th>Balance</th></tr></thead>
+            <tbody>
+              <tr><td>Year 1</td><td>₹3.2L</td><td>₹9.7L</td><td>₹12.9L</td><td>₹1.17 Cr</td></tr>
+              <tr><td>Year 2</td><td>₹3.5L</td><td>₹9.4L</td><td>₹12.9L</td><td>₹1.13 Cr</td></tr>
+              <tr><td>Year 3</td><td>₹3.8L</td><td>₹9.1L</td><td>₹12.9L</td><td>₹1.10 Cr</td></tr>
+              <tr><td>Year 5</td><td>₹4.5L</td><td>₹8.4L</td><td>₹12.9L</td><td>₹99L</td></tr>
+              <tr><td>Year 10</td><td>₹6.8L</td><td>₹6.1L</td><td>₹12.9L</td><td>₹68L</td></tr>
+              <tr><td>Year 15</td><td>₹10.2L</td><td>₹2.7L</td><td>₹12.9L</td><td>₹28L</td></tr>
+              <tr><td>Year 20</td><td>₹12.9L</td><td>₹0</td><td>₹12.9L</td><td>₹0</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="shared.js"></script>
+<script>
+injectNav('Buy');
+injectFooter();
+revealOnScroll();
+function calc() {
+  const price = document.getElementById('priceRange').value;
+  const down = document.getElementById('downRange').value;
+  const rate = document.getElementById('rateRange').value / 10;
+  const tenure = document.getElementById('tenureRange').value;
+  document.getElementById('priceVal').textContent = price >= 100 ? '₹'+(price/100).toFixed(1)+' Cr' : '₹'+price+'L';
+  document.getElementById('downVal').textContent = '₹'+(price*down/100/100).toFixed(1)+'Cr ('+down+'%)';
+  document.getElementById('rateVal').textContent = rate.toFixed(1)+'%';
+  document.getElementById('tenureVal').textContent = tenure+' Years';
+  const loan = price*(1-down/100)*100000;
+  const r = rate/(12*100);
+  const n = tenure*12;
+  const emi = loan*r*Math.pow(1+r,n)/(Math.pow(1+r,n)-1);
+  document.getElementById('emiMain').textContent = '₹'+Math.round(emi).toLocaleString('en-IN');
+  document.getElementById('loanAmtDisp').textContent = '₹'+(loan/100000).toFixed(1)+'L';
+  const totalPaid = emi*n;
+  const interest = totalPaid - loan;
+  document.getElementById('totalInterest').textContent = '₹'+(interest/10000000).toFixed(2)+'Cr';
+  document.getElementById('totalPayment').textContent = '₹'+(totalPaid/10000000).toFixed(2)+'Cr';
+}
+function calcAfford() {
+  const income = document.getElementById('incomeRange').value;
+  document.getElementById('incomeVal').textContent = income>=100?'₹'+(income/100).toFixed(1)+'L /month':'₹'+income+'K /month';
+}
+</script>
+</body>
+</html>

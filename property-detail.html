@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sobha City Vista — Property Detail — UrbanNest.ai</title>
+<link rel="stylesheet" href="shared.css">
+<style>
+.detail-layout { display: grid; grid-template-columns: 1fr 380px; gap: 32px; padding: 32px 52px; max-width: 1400px; margin: 0 auto; }
+
+/* GALLERY */
+.gallery { display: grid; grid-template-columns: 2fr 1fr; grid-template-rows: 260px 260px; gap: 10px; border-radius: 20px; overflow: hidden; margin-bottom: 32px; }
+.gallery-main { grid-row: 1/3; background: linear-gradient(135deg,#132238,#1e3a5f,#0d1e3a); display: flex; align-items: center; justify-content: center; font-size: 80px; position: relative; cursor: pointer; }
+.gallery-sub { background: linear-gradient(135deg,#1a2940,#243550); display: flex; align-items: center; justify-content: center; font-size: 44px; position: relative; cursor: pointer; transition: opacity 0.2s; }
+.gallery-sub:hover { opacity: 0.85; }
+.gallery-count { position: absolute; bottom: 14px; right: 14px; background: rgba(8,12,20,0.85); border: 1px solid var(--glass-border); border-radius: 8px; padding: 6px 12px; font-size: 12px; font-weight: 600; color: var(--text); backdrop-filter: blur(8px); }
+.gallery-actions { position: absolute; top: 14px; right: 14px; display: flex; gap: 8px; }
+.gal-btn { background: rgba(8,12,20,0.75); border: 1px solid var(--glass-border); border-radius: 8px; padding: 7px 14px; font-size: 12px; color: var(--text); cursor: pointer; backdrop-filter: blur(8px); transition: all 0.2s; }
+.gal-btn:hover { border-color: var(--teal); color: var(--teal); }
+
+/* PROPERTY INFO */
+.prop-header { margin-bottom: 24px; }
+.prop-title-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; }
+.prop-main-title { font-family: 'Playfair Display', serif; font-size: 30px; font-weight: 700; color: var(--white); letter-spacing: -0.8px; line-height: 1.2; }
+.prop-price-big { font-family: 'Playfair Display', serif; font-size: 32px; font-weight: 700; color: var(--teal); letter-spacing: -1px; white-space: nowrap; }
+.prop-price-per { font-size: 13px; color: var(--text-muted); font-family: 'Outfit',sans-serif; font-weight: 400; display: block; text-align: right; margin-top: 2px; }
+.prop-address { font-size: 14px; color: var(--text-muted); margin-top: 10px; display: flex; align-items: center; gap: 6px; }
+
+.prop-quick-specs { display: flex; gap: 20px; margin-top: 20px; padding: 18px 20px; background: var(--dark-2); border: 1px solid var(--border); border-radius: 14px; }
+.qs-item { display: flex; flex-direction: column; align-items: center; gap: 4px; flex: 1; text-align: center; border-right: 1px solid var(--border); padding-right: 20px; }
+.qs-item:last-child { border-right: none; padding-right: 0; }
+.qs-icon { font-size: 20px; }
+.qs-val { font-size: 15px; font-weight: 700; color: var(--white); }
+.qs-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; }
+
+/* TABS */
+.detail-tabs { display: flex; gap: 0; border-bottom: 1px solid var(--border); margin-bottom: 28px; }
+.dtab { padding: 12px 22px; font-size: 14px; font-weight: 500; color: var(--text-muted); cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.2s; }
+.dtab.active { color: var(--teal); border-bottom-color: var(--teal); }
+.dtab:hover:not(.active) { color: var(--text); }
+
+/* OVERVIEW */
+.overview-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; margin-bottom: 24px; }
+.ov-item { background: var(--dark-2); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; }
+.ov-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; }
+.ov-val { font-size: 15px; font-weight: 600; color: var(--white); margin-top: 4px; }
+
+/* DESCRIPTION */
+.desc-text { font-size: 15px; color: var(--text-muted); line-height: 1.75; font-weight: 300; }
+
+/* AMENITIES */
+.amenities-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; margin-top: 20px; }
+.am-item { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 16px 10px; background: var(--dark-2); border: 1px solid var(--border); border-radius: 12px; font-size: 12px; color: var(--text-muted); text-align: center; }
+.am-icon { font-size: 22px; }
+
+/* PRICE HISTORY CHART */
+.price-chart-area { background: var(--dark-2); border: 1px solid var(--border); border-radius: 16px; padding: 24px; margin-top: 24px; }
+.chart-bars { display: flex; align-items: flex-end; gap: 8px; height: 140px; margin-top: 20px; }
+.chart-bar-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.chart-bar { width: 100%; border-radius: 6px 6px 0 0; background: linear-gradient(180deg, var(--teal), rgba(0,212,170,0.3)); transition: opacity 0.2s; cursor: pointer; }
+.chart-bar:hover { opacity: 0.8; }
+.chart-label { font-size: 10px; color: var(--text-dim); }
+.chart-val { font-size: 10px; color: var(--teal); font-weight: 600; }
+
+/* SIDEBAR STICKY */
+.detail-sidebar { position: sticky; top: 110px; height: fit-content; display: flex; flex-direction: column; gap: 16px; }
+
+.contact-card { background: var(--dark-2); border: 1px solid var(--border); border-radius: 18px; padding: 24px; }
+.contact-card h4 { font-family: 'Playfair Display',serif; font-size: 20px; color: var(--white); margin-bottom: 4px; }
+.contact-card p { font-size: 13px; color: var(--text-muted); margin-bottom: 20px; }
+.contact-form { display: flex; flex-direction: column; gap: 12px; }
+.contact-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.contact-btns { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
+.call-btn { padding: 13px; border: 1.5px solid var(--green); background: var(--green-dim); border-radius: 12px; font-family: 'Outfit',sans-serif; font-size: 14px; font-weight: 700; color: var(--green); cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+.call-btn:hover { background: rgba(74,222,128,0.2); }
+.whatsapp-btn { padding: 13px; border: none; background: #25d366; border-radius: 12px; font-family: 'Outfit',sans-serif; font-size: 14px; font-weight: 700; color: white; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+.whatsapp-btn:hover { background: #22c55e; }
+
+.ai-score-card { background: var(--dark-2); border: 1px solid rgba(0,212,170,0.2); border-radius: 18px; padding: 22px; }
+.big-score-row { display: flex; align-items: center; gap: 16px; margin-bottom: 20px; }
+.score-circle { width: 72px; height: 72px; border-radius: 50%; background: conic-gradient(var(--teal) 338deg, var(--dark-3) 0deg); display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: 700; color: var(--teal); font-family: 'Playfair Display',serif; flex-shrink: 0; }
+.score-bars-mini { flex: 1; display: flex; flex-direction: column; gap: 8px; }
+.sb-row { display: flex; align-items: center; gap: 8px; }
+.sb-label { font-size: 11px; color: var(--text-muted); width: 80px; flex-shrink: 0; }
+.sb-track { flex: 1; height: 4px; background: var(--dark-3); border-radius: 2px; }
+.sb-fill { height: 100%; border-radius: 2px; background: var(--teal); }
+.sb-fill.orange { background: var(--gold); }
+.sb-val { font-size: 11px; font-weight: 700; color: var(--white); width: 20px; text-align: right; }
+
+.emi-widget { background: var(--dark-2); border: 1px solid var(--border); border-radius: 18px; padding: 22px; }
+.emi-widget h4 { font-size: 15px; font-weight: 700; color: var(--white); margin-bottom: 16px; }
+.emi-result { text-align: center; padding: 16px; background: var(--teal-dim); border: 1px solid rgba(0,212,170,0.2); border-radius: 12px; margin-top: 12px; }
+.emi-num { font-family: 'Playfair Display',serif; font-size: 28px; font-weight: 700; color: var(--teal); letter-spacing: -1px; }
+.emi-label { font-size: 12px; color: var(--text-muted); }
+
+/* SIMILAR PROPS */
+.similar-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; margin-top: 24px; }
+.sim-card { background: var(--dark-2); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; cursor: pointer; transition: all 0.3s; }
+.sim-card:hover { border-color: rgba(0,212,170,0.2); transform: translateY(-3px); }
+.sim-img { height: 110px; display: flex; align-items: center; justify-content: center; font-size: 38px; }
+.sim-body { padding: 12px; }
+.sim-price { font-family: 'Playfair Display',serif; font-size: 16px; font-weight: 700; color: var(--white); }
+.sim-name { font-size: 12px; color: var(--text-muted); margin-top: 3px; }
+</style>
+</head>
+<body>
+<div class="page-wrap">
+  <div style="padding: 20px 52px 0; background: var(--dark); border-bottom: 1px solid var(--border);">
+    <div class="breadcrumb">
+      <a href="index.html">Home</a><span>/</span>
+      <a href="search.html">Buy in Gurgaon</a><span>/</span>
+      <a href="#">Sector 108</a><span>/</span>
+      <span style="color:var(--text-muted);">Sobha City Vista</span>
+    </div>
+
+    <!-- GALLERY -->
+    <div class="gallery">
+      <div class="gallery-main">
+        🏡
+        <div class="gallery-actions">
+          <button class="gal-btn">📸 All Photos (24)</button>
+          <button class="gal-btn">🎬 Video Tour</button>
+          <button class="gal-btn">🥽 3D Walkthrough</button>
+        </div>
+      </div>
+      <div class="gallery-sub" style="background:linear-gradient(135deg,#1a3020,#243a2a);">🌿<div class="gallery-count">+22 more</div></div>
+      <div class="gallery-sub" style="background:linear-gradient(135deg,#1a2030,#242a40);">🏊</div>
+    </div>
+  </div>
+
+  <div class="detail-layout">
+    <!-- MAIN CONTENT -->
+    <div>
+      <div class="prop-header">
+        <div class="prop-title-row">
+          <div>
+            <div style="display:flex;gap:8px;margin-bottom:10px;">
+              <span class="badge badge-gold">⭐ Premium</span>
+              <span class="badge badge-teal">✦ AI Pick</span>
+              <span class="badge badge-green">✓ RERA Verified</span>
+            </div>
+            <div class="prop-main-title">Sobha City Vista — 4 BHK Ultra Luxury Apartment</div>
+            <div class="prop-address">📍 Sector 108, Dwarka Expressway, Gurgaon, Haryana 122017</div>
+          </div>
+          <div style="text-align:right;">
+            <div class="prop-price-big">₹2.85 Cr</div>
+            <span class="prop-price-per">₹10,000 / sq.ft</span>
+            <div style="display:flex;gap:8px;margin-top:12px;">
+              <button class="btn-ghost-sm">♡ Save</button>
+              <button class="btn-ghost-sm">⤴ Share</button>
+              <button class="btn-ghost-sm">⚖ Compare</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="prop-quick-specs">
+          <div class="qs-item"><div class="qs-icon">🛏</div><div class="qs-val">4 BHK</div><div class="qs-label">Bedrooms</div></div>
+          <div class="qs-item"><div class="qs-icon">🚿</div><div class="qs-val">4</div><div class="qs-label">Bathrooms</div></div>
+          <div class="qs-item"><div class="qs-icon">📐</div><div class="qs-val">2,850</div><div class="qs-label">Sq.ft</div></div>
+          <div class="qs-item"><div class="qs-icon">🚗</div><div class="qs-val">2</div><div class="qs-label">Parking</div></div>
+          <div class="qs-item"><div class="qs-icon">🏢</div><div class="qs-val">14th</div><div class="qs-label">Floor</div></div>
+          <div class="qs-item"><div class="qs-icon">📅</div><div class="qs-val">Ready</div><div class="qs-label">Status</div></div>
+        </div>
+      </div>
+
+      <!-- TABS -->
+      <div class="detail-tabs">
+        <div class="dtab active">Overview</div>
+        <div class="dtab">Amenities</div>
+        <div class="dtab">Price History</div>
+        <div class="dtab">Neighbourhood</div>
+        <div class="dtab">Legal Info</div>
+        <div class="dtab">Similar Properties</div>
+      </div>
+
+      <!-- OVERVIEW GRID -->
+      <div class="overview-grid">
+        <div class="ov-item"><div class="ov-label">Project</div><div class="ov-val">Sobha City Vista</div></div>
+        <div class="ov-item"><div class="ov-label">Builder</div><div class="ov-val">Sobha Ltd.</div></div>
+        <div class="ov-item"><div class="ov-label">Possession</div><div class="ov-val">Ready to Move</div></div>
+        <div class="ov-item"><div class="ov-label">Total Floors</div><div class="ov-val">G + 32</div></div>
+        <div class="ov-item"><div class="ov-label">Age of Property</div><div class="ov-val">2 Years</div></div>
+        <div class="ov-item"><div class="ov-label">Facing</div><div class="ov-val">East Facing</div></div>
+        <div class="ov-item"><div class="ov-label">Furnishing</div><div class="ov-val">Semi-furnished</div></div>
+        <div class="ov-item"><div class="ov-label">Society</div><div class="ov-val">Sobha City</div></div>
+        <div class="ov-item"><div class="ov-label">RERA No.</div><div class="ov-val" style="color:var(--green);">HRERA-PKL-NOV-...</div></div>
+      </div>
+
+      <!-- AI INSIGHT BOX -->
+      <div style="background:var(--teal-dim);border:1px solid rgba(0,212,170,0.2);border-radius:14px;padding:20px;margin-bottom:24px;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+          <span style="font-size:20px;">✦</span>
+          <span style="font-weight:700;color:var(--teal);font-size:15px;">UrbanNest AI Analysis</span>
+          <span class="badge badge-teal" style="margin-left:auto;">AI Confidence: 94%</span>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;font-size:13px;">
+          <div style="color:var(--text-muted);"><strong style="color:var(--white);display:block;margin-bottom:4px;">📈 Price Forecast</strong>18% appreciation expected over 24 months. Infra-driven growth near Dwarka Expressway.</div>
+          <div style="color:var(--text-muted);"><strong style="color:var(--white);display:block;margin-bottom:4px;">💰 Price Fairness</strong>Listed at ₹10,000/sqft. Market rate is ₹10,800/sqft. This property is <span style="color:var(--green);">8% below market</span>.</div>
+          <div style="color:var(--text-muted);"><strong style="color:var(--white);display:block;margin-bottom:4px;">🏘️ Neighbourhood</strong>Livability: 94/100. Schools within 2km: 4. Hospitals: 3. Metro: 1.2km walk.</div>
+        </div>
+      </div>
+
+      <p class="desc-text" style="margin-bottom:24px;">Sobha City Vista presents ultra-luxury 4 BHK apartments designed with unmatched precision and quality. Located on Dwarka Expressway, one of Gurgaon's fastest appreciating corridors, these homes offer panoramic views, world-class amenities and a lifestyle that few properties can match. The development features 32-storey towers with sky lounges, a rooftop infinity pool, and over 60 amenities across a 25-acre integrated township.</p>
+
+      <!-- AMENITIES -->
+      <div class="eyebrow">Amenities</div>
+      <div class="amenities-grid">
+        <div class="am-item"><div class="am-icon">🏊</div>Infinity Pool</div>
+        <div class="am-item"><div class="am-icon">🏋️</div>Fitness Centre</div>
+        <div class="am-item"><div class="am-icon">🎾</div>Tennis Court</div>
+        <div class="am-item"><div class="am-icon">🏸</div>Badminton</div>
+        <div class="am-item"><div class="am-icon">🧘</div>Yoga Studio</div>
+        <div class="am-item"><div class="am-icon">🚗</div>2 Parking</div>
+        <div class="am-item"><div class="am-icon">🔒</div>24/7 Security</div>
+        <div class="am-item"><div class="am-icon">🌳</div>Landscaped Park</div>
+        <div class="am-item"><div class="am-icon">🎮</div>Games Room</div>
+        <div class="am-item"><div class="am-icon">👶</div>Kids Play Area</div>
+        <div class="am-item"><div class="am-icon">🏪</div>Clubhouse</div>
+        <div class="am-item"><div class="am-icon">☕</div>Café / Lounge</div>
+      </div>
+
+      <!-- PRICE HISTORY CHART -->
+      <div class="price-chart-area">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div>
+            <div class="eyebrow">Price History</div>
+            <div class="h3">₹7,200 → ₹10,000 /sqft</div>
+            <div style="color:var(--teal);font-size:13px;font-weight:600;margin-top:4px;">↑ 38.9% appreciation in 4 years</div>
+          </div>
+          <div class="tabs">
+            <button class="tab active">1Y</button>
+            <button class="tab">3Y</button>
+            <button class="tab">5Y</button>
+          </div>
+        </div>
+        <div class="chart-bars">
+          <div class="chart-bar-wrap"><div class="chart-val">₹7.2K</div><div class="chart-bar" style="height:60%;"></div><div class="chart-label">2021</div></div>
+          <div class="chart-bar-wrap"><div class="chart-val">₹7.8K</div><div class="chart-bar" style="height:68%;"></div><div class="chart-label">Q1'22</div></div>
+          <div class="chart-bar-wrap"><div class="chart-val">₹8.1K</div><div class="chart-bar" style="height:72%;"></div><div class="chart-label">Q2'22</div></div>
+          <div class="chart-bar-wrap"><div class="chart-val">₹8.5K</div><div class="chart-bar" style="height:77%;"></div><div class="chart-label">Q3'22</div></div>
+          <div class="chart-bar-wrap"><div class="chart-val">₹8.9K</div><div class="chart-bar" style="height:82%;"></div><div class="chart-label">Q4'22</div></div>
+          <div class="chart-bar-wrap"><div class="chart-val">₹9.2K</div><div class="chart-bar" style="height:87%;"></div><div class="chart-label">Q1'23</div></div>
+          <div class="chart-bar-wrap"><div class="chart-val">₹9.5K</div><div class="chart-bar" style="height:90%;"></div><div class="chart-label">Q2'23</div></div>
+          <div class="chart-bar-wrap"><div class="chart-val">₹9.8K</div><div class="chart-bar" style="height:95%;"></div><div class="chart-label">Q3'23</div></div>
+          <div class="chart-bar-wrap"><div class="chart-val">₹10K</div><div class="chart-bar" style="height:100%;background:linear-gradient(180deg,#00f5c4,rgba(0,212,170,0.5));"></div><div class="chart-label">Now</div></div>
+        </div>
+      </div>
+
+      <!-- SIMILAR PROPERTIES -->
+      <div style="margin-top:36px;">
+        <div class="eyebrow">Similar Properties</div>
+        <div class="h3" style="margin-bottom:20px;">You May Also Like</div>
+        <div class="similar-grid">
+          <div class="sim-card"><div class="sim-img" style="background:linear-gradient(135deg,#1a2e1a,#2a4a2a);">🏢</div><div class="sim-body"><div class="sim-price">₹1.8 Cr</div><div class="sim-name">DLF The Crest — 4 BHK, Sector 54</div></div></div>
+          <div class="sim-card"><div class="sim-img" style="background:linear-gradient(135deg,#1a1a30,#2a2a50);">🏠</div><div class="sim-body"><div class="sim-price">₹3.2 Cr</div><div class="sim-name">Ireo Grand Arch — 4 BHK, Sector 58</div></div></div>
+          <div class="sim-card"><div class="sim-img" style="background:linear-gradient(135deg,#2a1a2a,#3a2a3a);">🏡</div><div class="sim-body"><div class="sim-price">₹2.4 Cr</div><div class="sim-name">ATS Pristine — 3 BHK, Sector 89</div></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STICKY SIDEBAR -->
+    <div class="detail-sidebar">
+      <!-- AI SCORE CARD -->
+      <div class="ai-score-card reveal">
+        <div class="eyebrow" style="margin-bottom:14px;">AI Property Score</div>
+        <div class="big-score-row">
+          <div class="score-circle">94</div>
+          <div><div style="font-size:16px;font-weight:700;color:var(--white);">Excellent</div><div style="font-size:12px;color:var(--text-muted);margin-top:4px;">Top 6% of Gurgaon listings</div></div>
+        </div>
+        <div class="score-bars-mini">
+          <div class="sb-row"><span class="sb-label">Livability</span><div class="sb-track"><div class="sb-fill" style="width:92%;"></div></div><span class="sb-val">92</span></div>
+          <div class="sb-row"><span class="sb-label">Price Value</span><div class="sb-track"><div class="sb-fill" style="width:88%;"></div></div><span class="sb-val">88</span></div>
+          <div class="sb-row"><span class="sb-label">Appreciation</span><div class="sb-track"><div class="sb-fill" style="width:96%;"></div></div><span class="sb-val">96</span></div>
+          <div class="sb-row"><span class="sb-label">Connectivity</span><div class="sb-track"><div class="sb-fill orange" style="width:78%;"></div></div><span class="sb-val">78</span></div>
+          <div class="sb-row"><span class="sb-label">Safety</span><div class="sb-track"><div class="sb-fill" style="width:85%;"></div></div><span class="sb-val">85</span></div>
+          <div class="sb-row"><span class="sb-label">Schools</span><div class="sb-track"><div class="sb-fill orange" style="width:72%;"></div></div><span class="sb-val">72</span></div>
+        </div>
+      </div>
+
+      <!-- EMI WIDGET -->
+      <div class="emi-widget reveal">
+        <h4>💰 Quick EMI Estimate</h4>
+        <div style="display:grid;gap:10px;">
+          <div><label class="label">Loan Amount</label><input type="range" class="range" min="10" max="300" value="220" oninput="updateEMI()"><div class="range-labels"><span>₹10L</span><span id="loanAmt" class="range-val">₹220L</span><span>₹300L</span></div></div>
+          <div><label class="label">Tenure</label>
+            <div class="tabs" style="width:100%;margin-top:4px;">
+              <button class="tab" onclick="setTenure(10)">10Y</button>
+              <button class="tab active" onclick="setTenure(20)">20Y</button>
+              <button class="tab" onclick="setTenure(30)">30Y</button>
+            </div>
+          </div>
+        </div>
+        <div class="emi-result">
+          <div class="emi-num" id="emiResult">₹1.74L</div>
+          <div class="emi-label">Estimated Monthly EMI</div>
+        </div>
+        <a href="emi-calculator.html" style="display:block;text-align:center;margin-top:10px;font-size:12px;color:var(--teal);text-decoration:none;font-weight:600;">Full EMI Calculator →</a>
+      </div>
+
+      <!-- CONTACT CARD -->
+      <div class="contact-card reveal">
+        <h4>Contact Builder</h4>
+        <p>Get callback from Sobha Ltd. within 15 minutes</p>
+        <div class="contact-form">
+          <div class="contact-row">
+            <input class="input" placeholder="Your Name">
+            <input class="input" placeholder="Phone Number">
+          </div>
+          <input class="input" placeholder="Email Address">
+          <select class="select"><option>I want to Buy</option><option>Site Visit</option><option>More Details</option></select>
+          <div class="contact-btns">
+            <button class="btn-primary" style="width:100%;padding:13px;border-radius:12px;">📩 Request Callback</button>
+            <button class="call-btn">📞 Call Now: +91 98765 43210</button>
+            <button class="whatsapp-btn">💬 WhatsApp</button>
+          </div>
+        </div>
+        <p style="font-size:11px;color:var(--text-dim);margin-top:12px;text-align:center;">🔒 Your data is safe. No spam, ever.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="shared.js"></script>
+<script>
+injectNav('Buy');
+injectFooter();
+revealOnScroll();
+document.querySelectorAll('.dtab').forEach(t => t.addEventListener('click',()=>{ document.querySelectorAll('.dtab').forEach(x=>x.classList.remove('active')); t.classList.add('active'); }));
+document.querySelectorAll('.tab').forEach(t => t.addEventListener('click',()=>{ t.closest('.tabs').querySelectorAll('.tab').forEach(x=>x.classList.remove('active')); t.classList.add('active'); }));
+function updateEMI(){ const v=document.getElementById('loanAmt'); if(v) v.parentElement.querySelector('.range-val').textContent='₹'+document.querySelector('.emi-widget .range').value+'L'; }
+function setTenure(y){ document.getElementById('emiResult').textContent = y===10?'₹2.41L':y===20?'₹1.74L':'₹1.48L'; }
+</script>
+</body>
+</html>

@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Post Property Free — UrbanNest.ai</title>
+<link rel="stylesheet" href="shared.css">
+<style>
+.post-hero { min-height: 500px; background: linear-gradient(135deg, #0a1628 0%, #0f2040 50%, #0a1a30 100%); display: flex; align-items: center; padding: 100px 52px 60px; position: relative; overflow: hidden; }
+.post-hero::before { content: ''; position: absolute; inset: 0; background-image: linear-gradient(rgba(0,212,170,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(0,212,170,0.04) 1px, transparent 1px); background-size: 50px 50px; }
+.post-hero-content { position: relative; z-index: 1; max-width: 640px; }
+.post-hero-img { position: absolute; right: 52px; bottom: 0; font-size: 200px; opacity: 0.15; z-index: 0; }
+
+.benefits-strip { display: grid; grid-template-columns: repeat(4,1fr); gap: 0; border-bottom: 1px solid var(--border); }
+.bs-item { padding: 32px 28px; border-right: 1px solid var(--border); text-align: center; }
+.bs-item:last-child { border-right: none; }
+.bs-icon { font-size: 32px; margin-bottom: 12px; }
+.bs-val { font-family: 'Playfair Display',serif; font-size: 28px; font-weight: 700; color: var(--teal); letter-spacing: -0.5px; }
+.bs-label { font-size: 13px; color: var(--text-muted); margin-top: 4px; }
+
+/* PRICING */
+.pricing-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 20px; margin-top: 48px; }
+.price-card { background: var(--dark-2); border: 1px solid var(--border); border-radius: 20px; padding: 32px; transition: all 0.3s; position: relative; }
+.price-card:hover { transform: translateY(-4px); box-shadow: 0 20px 50px rgba(0,0,0,0.4); }
+.price-card.featured { border-color: rgba(0,212,170,0.35); background: linear-gradient(160deg, rgba(0,212,170,0.05), var(--dark-2)); }
+.price-badge { position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: var(--teal); color: var(--night); padding: 4px 16px; border-radius: 100px; font-size: 12px; font-weight: 700; white-space: nowrap; }
+.plan-name { font-family: 'Playfair Display',serif; font-size: 24px; font-weight: 700; color: var(--white); }
+.plan-price { font-family: 'Playfair Display',serif; font-size: 48px; font-weight: 700; color: var(--teal); letter-spacing: -2px; margin: 12px 0 4px; line-height: 1; }
+.plan-price span { font-size: 20px; font-family: 'Outfit',sans-serif; color: var(--text-muted); }
+.plan-period { font-size: 13px; color: var(--text-muted); margin-bottom: 24px; }
+.plan-features { list-style: none; display: flex; flex-direction: column; gap: 10px; margin-bottom: 28px; }
+.plan-features li { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-muted); }
+.plan-features li::before { content: '✓'; color: var(--teal); font-weight: 700; font-size: 12px; }
+.plan-features li.muted::before { content: '×'; color: var(--text-dim); }
+.plan-features li.muted { color: var(--text-dim); }
+
+/* LISTING FORM */
+.form-wrap { max-width: 900px; margin: 0 auto; }
+.form-section { background: var(--dark-2); border: 1px solid var(--border); border-radius: 20px; padding: 32px; margin-bottom: 20px; }
+.form-section h3 { font-family: 'Playfair Display',serif; font-size: 22px; font-weight: 700; color: var(--white); margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; }
+.form-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.form-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+.form-field { display: flex; flex-direction: column; gap: 6px; }
+.fgroup { display: flex; gap: 8px; }
+.fgroup .input { flex: 1; }
+.photo-upload { border: 2px dashed var(--border); border-radius: 12px; padding: 32px; text-align: center; cursor: pointer; transition: all 0.2s; }
+.photo-upload:hover { border-color: var(--teal); background: var(--teal-dim); }
+
+/* BUILDER LOGOS */
+.builders-row { display: flex; gap: 20px; align-items: center; justify-content: center; margin-top: 32px; flex-wrap: wrap; }
+.builder-logo { padding: 14px 24px; background: var(--dark-2); border: 1px solid var(--border); border-radius: 12px; font-size: 15px; font-weight: 700; color: var(--text-muted); }
+
+/* STEPS */
+.steps-row { display: grid; grid-template-columns: repeat(4,1fr); gap: 24px; margin-top: 48px; position: relative; }
+.steps-row::before { content: ''; position: absolute; top: 28px; left: 12%; right: 12%; height: 1px; background: linear-gradient(90deg, transparent, var(--teal), transparent); z-index: 0; }
+.step-card { text-align: center; position: relative; z-index: 1; }
+.step-num { width: 56px; height: 56px; border-radius: 50%; background: linear-gradient(135deg, var(--teal), #00b890); color: var(--night); font-size: 20px; font-weight: 700; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; box-shadow: 0 0 20px var(--teal-glow); font-family: 'Playfair Display',serif; }
+.step-title { font-size: 15px; font-weight: 700; color: var(--white); margin-bottom: 6px; }
+.step-desc { font-size: 13px; color: var(--text-muted); line-height: 1.5; }
+</style>
+</head>
+<body>
+<div class="page-wrap">
+  <!-- HERO -->
+  <div class="post-hero">
+    <div class="post-hero-content">
+      <span class="badge badge-teal" style="margin-bottom:16px;">✦ 100% Free for Owners</span>
+      <h1 class="h1" style="margin-bottom:16px;">Post Your Property.<br><em class="teal">Reach Millions.</em></h1>
+      <p style="font-size:18px;color:var(--text-muted);line-height:1.65;font-weight:300;max-width:500px;margin-bottom:32px;">2.4 million active buyers on UrbanNest.ai. Verified leads. AI-matched to your property. Zero spam.</p>
+      <div style="display:flex;gap:12px;">
+        <a href="#post-form"><button class="btn-primary lg">Post Property Free →</button></a>
+        <button class="btn-outline lg" style="padding:15px 28px;">View Pricing Plans</button>
+      </div>
+    </div>
+    <div class="post-hero-img">🏗️</div>
+  </div>
+
+  <!-- BENEFITS STRIP -->
+  <div class="benefits-strip">
+    <div class="bs-item"><div class="bs-icon">👥</div><div class="bs-val">2.4M+</div><div class="bs-label">Active Buyers Monthly</div></div>
+    <div class="bs-item"><div class="bs-icon">⚡</div><div class="bs-val">4 hrs</div><div class="bs-label">Avg. First Lead Time</div></div>
+    <div class="bs-item"><div class="bs-icon">✅</div><div class="bs-val">98%</div><div class="bs-label">Lead Quality Score</div></div>
+    <div class="bs-item"><div class="bs-icon">🏙️</div><div class="bs-val">340+</div><div class="bs-label">Cities Covered</div></div>
+  </div>
+
+  <!-- HOW IT WORKS -->
+  <div class="section">
+    <div style="text-align:center;"><div class="eyebrow" style="justify-content:center;">How It Works</div><h2 class="h2">Listed in 4 Simple Steps</h2></div>
+    <div class="steps-row reveal">
+      <div class="step-card"><div class="step-num">1</div><div class="step-title">Create Listing</div><div class="step-desc">Add property details, photos and price. Takes 5 minutes.</div></div>
+      <div class="step-card"><div class="step-num">2</div><div class="step-title">AI Enhancement</div><div class="step-desc">Our AI auto-improves your listing with market data and scores.</div></div>
+      <div class="step-card"><div class="step-num">3</div><div class="step-title">Get Matched</div><div class="step-desc">AI matches your property to qualified buyers instantly.</div></div>
+      <div class="step-card"><div class="step-num">4</div><div class="step-title">Close the Deal</div><div class="step-desc">Receive verified enquiries and close faster. Average: 18 days.</div></div>
+    </div>
+  </div>
+
+  <!-- PRICING -->
+  <div class="section" style="background:var(--dark);padding-top:60px;padding-bottom:80px;">
+    <div style="text-align:center;"><div class="eyebrow" style="justify-content:center;">Pricing</div><h2 class="h2">Choose Your Plan</h2><p class="sub" style="margin:10px auto 0;text-align:center;">Owners post free. Builders and agents get power tools.</p></div>
+    <div class="pricing-grid">
+      <div class="price-card reveal">
+        <div class="plan-name">Free</div>
+        <div class="plan-price">₹0 <span>/listing</span></div>
+        <div class="plan-period">Forever free for individual owners</div>
+        <ul class="plan-features">
+          <li>1 active listing</li>
+          <li>Basic property details</li>
+          <li>10 photos upload</li>
+          <li>Standard visibility</li>
+          <li class="muted">AI listing enhancement</li>
+          <li class="muted">Priority placement</li>
+          <li class="muted">Lead analytics dashboard</li>
+        </ul>
+        <button class="btn-outline" style="width:100%;padding:13px;border-radius:12px;">Get Started Free</button>
+      </div>
+      <div class="price-card featured reveal">
+        <div class="price-badge">✦ Most Popular</div>
+        <div class="plan-name">Professional</div>
+        <div class="plan-price">₹999 <span>/mo</span></div>
+        <div class="plan-period">Per project · Billed monthly</div>
+        <ul class="plan-features">
+          <li>10 active listings</li>
+          <li>AI listing enhancement</li>
+          <li>30 photos + 1 video</li>
+          <li>Priority placement</li>
+          <li>Lead analytics dashboard</li>
+          <li>WhatsApp lead alerts</li>
+          <li class="muted">Dedicated account manager</li>
+        </ul>
+        <button class="btn-primary" style="width:100%;padding:13px;border-radius:12px;">Start Free Trial</button>
+      </div>
+      <div class="price-card reveal">
+        <div class="plan-name">Builder Pro</div>
+        <div class="plan-price">₹4,999 <span>/mo</span></div>
+        <div class="plan-period">For developers & large agents</div>
+        <ul class="plan-features">
+          <li>Unlimited listings</li>
+          <li>AI-powered lead scoring</li>
+          <li>Virtual tour embed</li>
+          <li>Top-of-search placement</li>
+          <li>CRM integration</li>
+          <li>Dedicated account manager</li>
+          <li>Custom builder microsite</li>
+        </ul>
+        <button class="btn-outline" style="width:100%;padding:13px;border-radius:12px;">Contact Sales</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- LISTING FORM -->
+  <div class="section" id="post-form">
+    <div style="text-align:center;margin-bottom:48px;"><div class="eyebrow" style="justify-content:center;">Post Now</div><h2 class="h2">Create Your Listing</h2></div>
+    <div class="form-wrap">
+      <!-- STEP 1 -->
+      <div class="form-section reveal">
+        <h3>🏠 Step 1 — Basic Details</h3>
+        <div class="form-grid-2" style="margin-bottom:16px;">
+          <div class="form-field"><label class="label">Listing For</label><select class="select"><option>Sell</option><option>Rent / Lease</option><option>PG</option></select></div>
+          <div class="form-field"><label class="label">Property Type</label><select class="select"><option>Apartment / Flat</option><option>Independent House / Villa</option><option>Builder Floor</option><option>Plot / Land</option><option>Office Space</option><option>Shop / Retail</option></select></div>
+        </div>
+        <div class="form-grid-3">
+          <div class="form-field"><label class="label">City</label><select class="select"><option>Gurgaon</option><option>Noida</option><option>Mumbai</option><option>Bangalore</option><option>Pune</option><option>Hyderabad</option></select></div>
+          <div class="form-field"><label class="label">Locality / Area</label><input class="input" placeholder="e.g. Sector 65, DLF Phase..."></div>
+          <div class="form-field"><label class="label">Project / Society Name</label><input class="input" placeholder="e.g. Sobha City Vista"></div>
+        </div>
+      </div>
+
+      <!-- STEP 2 -->
+      <div class="form-section reveal">
+        <h3>📐 Step 2 — Property Specs</h3>
+        <div class="form-grid-3" style="margin-bottom:16px;">
+          <div class="form-field"><label class="label">BHK / Bedrooms</label><select class="select"><option>1 BHK / 1 Bedroom</option><option>2 BHK</option><option>3 BHK</option><option>4 BHK</option><option>5+ BHK</option></select></div>
+          <div class="form-field"><label class="label">Bathrooms</label><select class="select"><option>1</option><option>2</option><option>3</option><option>4+</option></select></div>
+          <div class="form-field"><label class="label">Balconies</label><select class="select"><option>None</option><option>1</option><option>2</option><option>3+</option></select></div>
+        </div>
+        <div class="form-grid-3" style="margin-bottom:16px;">
+          <div class="form-field"><label class="label">Carpet Area (sqft)</label><input class="input" type="number" placeholder="e.g. 1200"></div>
+          <div class="form-field"><label class="label">Super Built-up Area</label><input class="input" type="number" placeholder="e.g. 1450"></div>
+          <div class="form-field"><label class="label">Floor Number</label><input class="input" type="number" placeholder="e.g. 12"></div>
+        </div>
+        <div class="form-grid-3">
+          <div class="form-field"><label class="label">Furnishing Status</label><select class="select"><option>Unfurnished</option><option>Semi-Furnished</option><option>Fully Furnished</option></select></div>
+          <div class="form-field"><label class="label">Availability</label><select class="select"><option>Ready to Move</option><option>Under Construction</option></select></div>
+          <div class="form-field"><label class="label">Parking</label><select class="select"><option>None</option><option>1 Covered</option><option>2 Covered</option><option>Open</option></select></div>
+        </div>
+      </div>
+
+      <!-- STEP 3 -->
+      <div class="form-section reveal">
+        <h3>💰 Step 3 — Price & Contact</h3>
+        <div class="form-grid-2" style="margin-bottom:16px;">
+          <div class="form-field"><label class="label">Expected Price (₹)</label>
+            <div class="fgroup"><input class="input" type="number" placeholder="e.g. 12500000"><select style="padding:12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--dark-3);color:var(--text);font-family:'Outfit',sans-serif;font-size:14px;outline:none;"><option>₹ Total</option><option>₹/sqft</option></select></div>
+          </div>
+          <div class="form-field"><label class="label">Price Negotiable?</label><select class="select"><option>Yes, price is negotiable</option><option>No, fixed price</option></select></div>
+        </div>
+        <div class="form-grid-2">
+          <div class="form-field"><label class="label">Your Name</label><input class="input" placeholder="Full Name"></div>
+          <div class="form-field"><label class="label">Phone Number</label><input class="input" type="tel" placeholder="+91 XXXXXXXXXX"></div>
+        </div>
+      </div>
+
+      <!-- STEP 4: PHOTOS -->
+      <div class="form-section reveal">
+        <h3>📸 Step 4 — Photos & Description</h3>
+        <div class="photo-upload" style="margin-bottom:16px;">
+          <div style="font-size:36px;margin-bottom:10px;">📸</div>
+          <div style="font-size:15px;font-weight:600;color:var(--white);margin-bottom:6px;">Upload Photos</div>
+          <div style="font-size:13px;color:var(--text-muted);">Listings with 10+ photos get 5x more enquiries. Max 30 photos.</div>
+          <button class="btn-ghost-sm" style="margin-top:14px;">Browse Files</button>
+        </div>
+        <div class="form-field"><label class="label">Property Description</label><textarea class="input" rows="4" style="resize:vertical;" placeholder="Describe the property, highlights, nearby landmarks, why it's special..."></textarea></div>
+        <div style="margin-top:24px;display:flex;gap:12px;">
+          <button class="btn-primary lg" style="flex:1;padding:16px;">✦ Submit & Get AI Enhancement</button>
+          <button class="btn-outline" style="padding:16px 28px;">Save Draft</button>
+        </div>
+        <p style="font-size:12px;color:var(--text-dim);margin-top:12px;text-align:center;">Our AI will automatically enhance your listing with market data, scoring, and optimized descriptions.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- TRUSTED BY BUILDERS -->
+  <div style="padding:48px 52px;background:var(--dark);text-align:center;border-top:1px solid var(--border);">
+    <div style="font-size:12px;font-weight:600;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.12em;margin-bottom:24px;">Trusted by India's Top Builders</div>
+    <div class="builders-row">
+      <div class="builder-logo">Sobha Ltd.</div>
+      <div class="builder-logo">DLF</div>
+      <div class="builder-logo">Godrej Properties</div>
+      <div class="builder-logo">M3M India</div>
+      <div class="builder-logo">Prestige Group</div>
+      <div class="builder-logo">Brigade Group</div>
+      <div class="builder-logo">+ 2,400 more</div>
+    </div>
+  </div>
+</div>
+
+<script src="shared.js"></script>
+<script>
+injectNav('Buy');
+injectFooter();
+revealOnScroll();
+</script>
+</body>
+</html>

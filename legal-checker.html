@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Legal Checker & RERA — UrbanNest.ai</title>
+<link rel="stylesheet" href="shared.css">
+<style>
+.legal-wrap { padding: 40px 52px; display: grid; grid-template-columns: 1fr 380px; gap: 32px; }
+
+.rera-search-card { background: var(--dark-2); border: 1px solid var(--border); border-radius: 20px; padding: 28px; margin-bottom: 24px; }
+.rera-search-row { display: flex; gap: 12px; margin-top: 16px; }
+.rera-input { flex: 1; padding: 14px 18px; border: 1px solid var(--border); border-radius: 12px; background: var(--dark-3); color: var(--white); font-family:'Outfit',sans-serif; font-size: 15px; outline: none; transition: border-color 0.2s; }
+.rera-input:focus { border-color: var(--teal); }
+.rera-input::placeholder { color: var(--text-dim); }
+.rera-search-btn { padding: 14px 24px; border: none; background: linear-gradient(135deg,var(--teal),#00c49a); border-radius: 12px; font-family:'Outfit',sans-serif; font-size: 14px; font-weight: 700; color: var(--night); cursor: pointer; white-space: nowrap; }
+.rera-search-btn:hover { box-shadow: 0 4px 20px var(--teal-glow); }
+
+/* RERA RESULT CARD */
+.rera-result { background: var(--dark-3); border: 1px solid rgba(0,212,170,0.2); border-radius: 16px; padding: 24px; margin-top: 20px; }
+.rera-header { display: flex; align-items: flex-start; justify-content: space-between; }
+.rera-project-name { font-family: 'Playfair Display',serif; font-size: 22px; font-weight: 700; color: var(--white); }
+.rera-id { font-size: 12px; color: var(--text-muted); margin-top: 4px; font-family: monospace; }
+.rera-status { display: flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 100px; font-size: 12px; font-weight: 700; }
+.rera-active { background: rgba(74,222,128,0.15); border: 1px solid rgba(74,222,128,0.3); color: var(--green); }
+.rera-details-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; margin-top: 20px; }
+.rd-item { background: rgba(0,0,0,0.2); border-radius: 10px; padding: 12px 14px; }
+.rd-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-dim); }
+.rd-val { font-size: 14px; font-weight: 700; color: var(--white); margin-top: 4px; }
+
+/* CHECKLIST */
+.checklist { display: flex; flex-direction: column; gap: 10px; margin-top: 16px; }
+.check-item { display: flex; align-items: center; gap: 12px; padding: 14px 16px; background: var(--dark-2); border: 1px solid var(--border); border-radius: 12px; transition: all 0.2s; }
+.check-item:hover { border-color: rgba(255,255,255,0.1); }
+.check-icon { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
+.ci-pass { background: rgba(74,222,128,0.15); border: 1.5px solid rgba(74,222,128,0.3); }
+.ci-warn { background: rgba(245,200,66,0.15); border: 1.5px solid rgba(245,200,66,0.3); }
+.ci-fail { background: rgba(255,107,74,0.15); border: 1.5px solid rgba(255,107,74,0.3); }
+.check-name { font-size: 14px; font-weight: 600; color: var(--white); }
+.check-desc { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+.check-action { margin-left: auto; font-size: 12px; font-weight: 600; cursor: pointer; transition: color 0.2s; flex-shrink: 0; }
+.ca-pass { color: var(--green); }
+.ca-warn { color: var(--gold); }
+.ca-fail { color: var(--coral); }
+
+/* DOC UPLOAD */
+.upload-zone { border: 2px dashed var(--border); border-radius: 16px; padding: 40px 24px; text-align: center; transition: all 0.2s; cursor: pointer; background: var(--glass); }
+.upload-zone:hover { border-color: var(--teal); background: var(--teal-dim); }
+.upload-icon { font-size: 40px; margin-bottom: 12px; }
+.upload-title { font-size: 15px; font-weight: 600; color: var(--white); margin-bottom: 6px; }
+.upload-sub { font-size: 13px; color: var(--text-muted); }
+.upload-types { display: flex; gap: 8px; justify-content: center; margin-top: 14px; flex-wrap: wrap; }
+
+/* RISK SCORE */
+.risk-score-card { background: var(--dark-2); border: 1px solid var(--border); border-radius: 18px; padding: 24px; margin-bottom: 16px; }
+.risk-meter { width: 100%; height: 12px; border-radius: 100px; background: linear-gradient(90deg, var(--green), var(--gold), var(--coral)); position: relative; margin: 16px 0; }
+.risk-needle { position: absolute; top: 50%; transform: translate(-50%, -50%); width: 20px; height: 20px; border-radius: 50%; background: var(--white); border: 3px solid var(--dark); box-shadow: 0 2px 8px rgba(0,0,0,0.4); left: 20%; transition: left 0.8s ease; }
+.risk-labels { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-dim); margin-top: 4px; }
+.risk-summary { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px; }
+.rs-item { padding: 12px; background: var(--dark-3); border-radius: 10px; text-align: center; }
+.rs-num { font-family: 'Playfair Display',serif; font-size: 24px; font-weight: 700; }
+.rs-label { font-size: 11px; color: var(--text-muted); margin-top: 3px; }
+
+/* GLOSSARY */
+.glossary-card { background: var(--dark-2); border: 1px solid var(--border); border-radius: 18px; padding: 24px; }
+.glossary-card h3 { font-size: 15px; font-weight: 700; color: var(--white); margin-bottom: 16px; }
+.gloss-item { padding: 12px 0; border-bottom: 1px solid var(--border); }
+.gloss-item:last-child { border-bottom: none; }
+.gloss-term { font-size: 13px; font-weight: 700; color: var(--teal); margin-bottom: 4px; }
+.gloss-def { font-size: 12px; color: var(--text-muted); line-height: 1.5; }
+</style>
+</head>
+<body>
+<div class="page-wrap">
+  <div class="page-hero">
+    <div class="eyebrow">AI Tools</div>
+    <h1 class="h1">Legal <em class="teal">Shield</em></h1>
+    <p class="sub">Instant RERA project lookup, AI document scanner, legal risk assessment and compliance checklist. Know every risk before you sign.</p>
+  </div>
+
+  <div class="legal-wrap">
+    <div>
+      <!-- RERA SEARCH -->
+      <div class="rera-search-card reveal">
+        <div class="eyebrow">RERA Lookup</div>
+        <div class="h3">Search Any Project</div>
+        <p style="font-size:14px;color:var(--text-muted);margin-top:6px;">Enter a RERA registration number or project name to check its legal standing.</p>
+        <div class="rera-search-row">
+          <select style="padding:14px 16px;border:1px solid var(--border);border-radius:12px;background:var(--dark-3);color:var(--text);font-family:'Outfit',sans-serif;font-size:14px;outline:none;cursor:pointer;appearance:none;min-width:140px;">
+            <option>Haryana (HRERA)</option><option>UP (UP-RERA)</option><option>Maharashtra (MahaRERA)</option><option>Karnataka (K-RERA)</option><option>Telangana (TSRERA)</option>
+          </select>
+          <input class="rera-input" placeholder="RERA No. or Project Name...">
+          <button class="rera-search-btn">🔍 Verify</button>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;">
+          <span style="font-size:12px;color:var(--text-dim);">Try:</span>
+          <span style="font-size:12px;color:var(--teal);cursor:pointer;" onclick="document.querySelector('.rera-input').value='HRERA-PKL-NOV-2023-00124'">HRERA-PKL-NOV-2023-00124</span>
+          <span style="font-size:12px;color:var(--teal);cursor:pointer;" onclick="document.querySelector('.rera-input').value='Sobha City Vista'">Sobha City Vista</span>
+        </div>
+
+        <!-- RERA RESULT -->
+        <div class="rera-result">
+          <div class="rera-header">
+            <div>
+              <div class="rera-project-name">Sobha City Vista</div>
+              <div class="rera-id">RERA ID: HRERA-PKL-NOV-2023-00124</div>
+            </div>
+            <div class="rera-status rera-active">✓ Active & Compliant</div>
+          </div>
+          <div class="rera-details-grid">
+            <div class="rd-item"><div class="rd-label">Promoter</div><div class="rd-val">Sobha Ltd.</div></div>
+            <div class="rd-item"><div class="rd-label">Location</div><div class="rd-val">Sec 108, Gurgaon</div></div>
+            <div class="rd-item"><div class="rd-label">Reg. Date</div><div class="rd-val">Nov 14, 2023</div></div>
+            <div class="rd-item"><div class="rd-label">Valid Until</div><div class="rd-val">Dec 31, 2026</div></div>
+            <div class="rd-item"><div class="rd-label">Total Units</div><div class="rd-val">480 Units</div></div>
+            <div class="rd-item"><div class="rd-label">Completion</div><div class="rd-val">Ready to Move</div></div>
+          </div>
+          <div style="display:flex;gap:10px;margin-top:16px;">
+            <button class="btn-primary">📄 Download Certificate</button>
+            <button class="btn-outline">🔗 View on RERA Portal</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- AI DOC SCANNER -->
+      <div style="background:var(--dark-2);border:1px solid var(--border);border-radius:20px;padding:28px;margin-bottom:24px;" class="reveal">
+        <div class="eyebrow">AI Document Scanner</div>
+        <div class="h3">Upload Property Documents</div>
+        <p style="font-size:14px;color:var(--text-muted);margin:10px 0 18px;">Our AI scans sale deeds, agreement of sale, encumbrance certificates and more for red flags.</p>
+        <div class="upload-zone">
+          <div class="upload-icon">📋</div>
+          <div class="upload-title">Drop your documents here</div>
+          <div class="upload-sub">Drag & drop or click to upload. AI analyzes in seconds.</div>
+          <div class="upload-types">
+            <span class="badge badge-white">Sale Deed</span>
+            <span class="badge badge-white">Agreement of Sale</span>
+            <span class="badge badge-white">EC Certificate</span>
+            <span class="badge badge-white">Title Report</span>
+            <span class="badge badge-white">Khata</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- COMPLIANCE CHECKLIST -->
+      <div style="background:var(--dark-2);border:1px solid var(--border);border-radius:20px;padding:28px;" class="reveal">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+          <div><div class="eyebrow">Due Diligence</div><div class="h3">Compliance Checklist</div></div>
+          <div style="text-align:right;"><div style="font-family:'Playfair Display',serif;font-size:28px;color:var(--teal);font-weight:700;">8/10</div><div style="font-size:12px;color:var(--text-muted);">Checks Passed</div></div>
+        </div>
+        <div class="checklist">
+          <div class="check-item"><div class="check-icon ci-pass">✓</div><div><div class="check-name">RERA Registration</div><div class="check-desc">Project registered and valid until Dec 2026</div></div><span class="check-action ca-pass">Passed</span></div>
+          <div class="check-item"><div class="check-icon ci-pass">✓</div><div><div class="check-name">Title Clarity</div><div class="check-desc">No encumbrances or disputes found on record</div></div><span class="check-action ca-pass">Clear</span></div>
+          <div class="check-item"><div class="check-icon ci-pass">✓</div><div><div class="check-name">Building Plan Approval</div><div class="check-desc">Approved by DDJK Authority. Plan matches structure.</div></div><span class="check-action ca-pass">Verified</span></div>
+          <div class="check-item"><div class="check-icon ci-pass">✓</div><div><div class="check-name">Environmental Clearance</div><div class="check-desc">MoEF clearance obtained. No violation notices.</div></div><span class="check-action ca-pass">Passed</span></div>
+          <div class="check-item"><div class="check-icon ci-pass">✓</div><div><div class="check-name">Completion Certificate</div><div class="check-desc">OC received from competent authority</div></div><span class="check-action ca-pass">Obtained</span></div>
+          <div class="check-item"><div class="check-icon ci-pass">✓</div><div><div class="check-name">Fire NOC</div><div class="check-desc">Fire safety certificate issued and current</div></div><span class="check-action ca-pass">Valid</span></div>
+          <div class="check-item"><div class="check-icon ci-pass">✓</div><div><div class="check-name">Water & Electricity Approval</div><div class="check-desc">Permanent connections sanctioned by authority</div></div><span class="check-action ca-pass">Verified</span></div>
+          <div class="check-item"><div class="check-icon ci-pass">✓</div><div><div class="check-name">Society Registration</div><div class="check-desc">RWA formed and legally registered</div></div><span class="check-action ca-pass">Done</span></div>
+          <div class="check-item" style="border-color:rgba(245,200,66,0.3);"><div class="check-icon ci-warn">⚠</div><div><div class="check-name">Property Tax Clearance</div><div class="check-desc">Last 2 years tax receipts not yet verified — request from seller</div></div><span class="check-action ca-warn">Pending</span></div>
+          <div class="check-item" style="border-color:rgba(245,200,66,0.3);"><div class="check-icon ci-warn">⚠</div><div><div class="check-name">Maintenance Dues</div><div class="check-desc">Verify no outstanding dues with society before purchase</div></div><span class="check-action ca-warn">Check</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SIDEBAR -->
+    <div>
+      <!-- RISK SCORE -->
+      <div class="risk-score-card reveal">
+        <div class="eyebrow">Risk Assessment</div>
+        <div class="h3">Legal Risk Score</div>
+        <div class="risk-meter"><div class="risk-needle" style="left:20%;"></div></div>
+        <div class="risk-labels"><span style="color:var(--green);">Low Risk</span><span>Medium</span><span style="color:var(--coral);">High</span></div>
+        <div style="text-align:center;margin-top:16px;">
+          <div style="font-family:'Playfair Display',serif;font-size:42px;font-weight:700;color:var(--green);">Low</div>
+          <div style="font-size:13px;color:var(--text-muted);">This property has low legal risk.<br>Safe to proceed with due diligence.</div>
+        </div>
+        <div class="risk-summary">
+          <div class="rs-item"><div class="rs-num" style="color:var(--green);">8</div><div class="rs-label">Checks Passed</div></div>
+          <div class="rs-item"><div class="rs-num" style="color:var(--gold);">2</div><div class="rs-label">Pending</div></div>
+          <div class="rs-item"><div class="rs-num" style="color:var(--coral);">0</div><div class="rs-label">Failed</div></div>
+          <div class="rs-item"><div class="rs-num" style="color:var(--white);">10</div><div class="rs-label">Total Checks</div></div>
+        </div>
+        <button class="btn-primary" style="width:100%;margin-top:16px;padding:12px;border-radius:12px;">📥 Download Report</button>
+      </div>
+
+      <!-- STAMP DUTY CALC -->
+      <div style="background:var(--dark-2);border:1px solid var(--border);border-radius:18px;padding:22px;margin-bottom:16px;" class="reveal">
+        <div style="font-size:15px;font-weight:700;color:var(--white);margin-bottom:14px;">🏷️ Stamp Duty Calculator</div>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <div><label class="label">State</label><select class="select"><option>Haryana</option><option>UP</option><option>Maharashtra</option><option>Karnataka</option></select></div>
+          <div><label class="label">Property Value</label><input class="input" type="text" value="₹2,85,00,000" placeholder="Property value"></div>
+          <div><label class="label">Buyer Gender</label><select class="select"><option>Male</option><option>Female (5% discount)</option><option>Joint</option></select></div>
+        </div>
+        <div style="background:var(--teal-dim);border:1px solid rgba(0,212,170,0.2);border-radius:12px;padding:16px;margin-top:14px;">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+            <div><div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;">Stamp Duty (5%)</div><div style="font-family:'Playfair Display',serif;font-size:20px;color:var(--teal);font-weight:700;">₹14.25L</div></div>
+            <div><div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;">Registration (1%)</div><div style="font-family:'Playfair Display',serif;font-size:20px;color:var(--teal);font-weight:700;">₹2.85L</div></div>
+          </div>
+          <div style="padding-top:12px;margin-top:12px;border-top:1px solid rgba(0,212,170,0.15);display:flex;justify-content:space-between;align-items:center;">
+            <span style="font-size:13px;color:var(--text-muted);">Total Registration Cost</span>
+            <span style="font-family:'Playfair Display',serif;font-size:22px;font-weight:700;color:var(--white);">₹17.1L</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- GLOSSARY -->
+      <div class="glossary-card reveal">
+        <h3>📚 Legal Glossary</h3>
+        <div class="gloss-item"><div class="gloss-term">RERA</div><div class="gloss-def">Real Estate (Regulation and Development) Act, 2016. Mandatory registration for all projects above 500 sqm or 8 units.</div></div>
+        <div class="gloss-item"><div class="gloss-term">Encumbrance Certificate</div><div class="gloss-def">Proof that the property has no mortgage, loan, or legal dues attached. Critical before purchase.</div></div>
+        <div class="gloss-item"><div class="gloss-term">Khata</div><div class="gloss-def">Municipal record of property ownership used for tax purposes. Required for utility connections.</div></div>
+        <div class="gloss-item"><div class="gloss-term">OC (Occupancy Certificate)</div><div class="gloss-def">Certificate from civic authority confirming the building is safe for occupation as per approved plans.</div></div>
+        <div class="gloss-item"><div class="gloss-term">Title Deed</div><div class="gloss-def">Primary document proving ownership of the property. Must be verified for a clear chain of title going back 30+ years.</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="shared.js"></script>
+<script>
+injectNav('Buy');
+injectFooter();
+revealOnScroll();
+</script>
+</body>
+</html>

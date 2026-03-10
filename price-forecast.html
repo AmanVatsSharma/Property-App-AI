@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Price Forecast — UrbanNest.ai</title>
+<link rel="stylesheet" href="shared.css">
+<style>
+.forecast-wrap { padding: 40px 52px; display: grid; grid-template-columns: 380px 1fr; gap: 32px; }
+
+.input-panel { display: flex; flex-direction: column; gap: 16px; }
+.ip-card { background: var(--dark-2); border: 1px solid var(--border); border-radius: 18px; padding: 24px; }
+.ip-card h3 { font-size: 16px; font-weight: 700; color: var(--white); margin-bottom: 18px; }
+
+.forecast-horizon { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; }
+.fh-btn { padding: 10px; text-align: center; border: 1px solid var(--border); border-radius: 10px; background: var(--glass); cursor: pointer; transition: all 0.2s; font-family:'Outfit',sans-serif; }
+.fh-btn .fh-yr { font-size: 18px; font-weight: 700; color: var(--text-muted); }
+.fh-btn .fh-label { font-size: 10px; color: var(--text-dim); }
+.fh-btn.active { border-color: var(--teal); background: var(--teal-dim); }
+.fh-btn.active .fh-yr { color: var(--teal); }
+
+/* CHART AREA */
+.chart-card { background: var(--dark-2); border: 1px solid var(--border); border-radius: 20px; padding: 28px; }
+.price-chart { position: relative; height: 280px; margin-top: 24px; }
+.chart-line-svg { width: 100%; height: 100%; }
+.forecast-badges { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin-top: 24px; }
+.fb { background: var(--dark-3); border: 1px solid var(--border); border-radius: 12px; padding: 16px; text-align: center; }
+.fb-year { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; }
+.fb-price { font-family:'Playfair Display',serif; font-size: 22px; font-weight: 700; color: var(--white); letter-spacing: -0.5px; margin-top: 4px; }
+.fb-gain { font-size: 12px; font-weight: 700; margin-top: 4px; }
+.fb.highlight { border-color: rgba(0,212,170,0.3); background: var(--teal-dim); }
+.fb.highlight .fb-price { color: var(--teal); }
+
+/* DRIVERS */
+.drivers-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 24px; }
+.driver-card { background: var(--dark-2); border: 1px solid var(--border); border-radius: 14px; padding: 16px; transition: all 0.2s; }
+.driver-card:hover { border-color: rgba(0,212,170,0.2); }
+.driver-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.driver-name { font-size: 13px; font-weight: 600; color: var(--white); }
+.driver-impact { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 100px; }
+.impact-high { background: rgba(74,222,128,0.15); color: var(--green); }
+.impact-med { background: var(--gold-dim); color: var(--gold); }
+.impact-low { background: var(--coral-dim); color: var(--coral); }
+.driver-desc { font-size: 12px; color: var(--text-muted); line-height: 1.5; }
+.driver-date { font-size: 11px; color: var(--text-dim); margin-top: 6px; }
+
+/* COMPARABLE SALES */
+.comp-sales-table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+.comp-sales-table th { padding: 10px 12px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-dim); text-align: left; border-bottom: 1px solid var(--border); }
+.comp-sales-table td { padding: 12px; font-size: 13px; color: var(--text-muted); border-bottom: 1px solid var(--border); }
+.comp-sales-table td:first-child { color: var(--white); font-weight: 500; }
+.comp-sales-table tr:hover td { background: var(--glass); }
+
+/* AI VERDICT */
+.verdict-card { background: linear-gradient(135deg,rgba(0,212,170,0.08),rgba(0,212,170,0.03)); border: 1px solid rgba(0,212,170,0.2); border-radius: 18px; padding: 24px; margin-bottom: 24px; }
+.verdict-header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+.verdict-icon { width: 44px; height: 44px; border-radius: 12px; background: var(--teal); display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+.verdict-title { font-family: 'Playfair Display',serif; font-size: 22px; font-weight: 700; color: var(--white); }
+.verdict-sub { font-size: 13px; color: var(--text-muted); }
+.verdict-metrics { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; }
+.vm { text-align: center; padding: 14px; background: rgba(0,0,0,0.2); border-radius: 10px; }
+.vm-val { font-family:'Playfair Display',serif; font-size: 24px; font-weight: 700; color: var(--teal); }
+.vm-label { font-size: 11px; color: var(--text-muted); margin-top: 3px; }
+</style>
+</head>
+<body>
+<div class="page-wrap">
+  <div class="page-hero">
+    <div class="eyebrow">AI Tools</div>
+    <h1 class="h1">Price <em class="teal">Forecast Tool</em></h1>
+    <p class="sub">Get AI-powered 12–36 month price predictions based on infrastructure plans, transaction data, demand signals and macro trends.</p>
+  </div>
+
+  <div class="forecast-wrap">
+    <!-- INPUT PANEL -->
+    <div class="input-panel">
+      <div class="ip-card reveal">
+        <h3>🏠 Property Details</h3>
+        <div style="display:flex;flex-direction:column;gap:12px;">
+          <div><label class="label">City</label><select class="select"><option>Gurgaon</option><option>Noida</option><option>Mumbai</option><option>Bangalore</option><option>Hyderabad</option><option>Pune</option></select></div>
+          <div><label class="label">Locality / Sector</label><select class="select"><option>Sector 65, Gurgaon</option><option>DLF Phase 5</option><option>Sohna Road</option><option>Sector 49</option></select></div>
+          <div><label class="label">Property Type</label><select class="select"><option>Apartment (2BHK)</option><option>Apartment (3BHK)</option><option>Apartment (4BHK)</option><option>Villa</option><option>Plot</option></select></div>
+          <div><label class="label">Current Price (per sqft)</label><input class="input" type="number" value="10000" placeholder="₹ per sqft"></div>
+        </div>
+      </div>
+
+      <div class="ip-card reveal">
+        <h3>📅 Forecast Horizon</h3>
+        <div class="forecast-horizon">
+          <div class="fh-btn"><div class="fh-yr">1Y</div><div class="fh-label">Short Term</div></div>
+          <div class="fh-btn active"><div class="fh-yr">3Y</div><div class="fh-label">Mid Term</div></div>
+          <div class="fh-btn"><div class="fh-yr">5Y</div><div class="fh-label">Long Term</div></div>
+        </div>
+        <button class="btn-primary" style="width:100%;margin-top:16px;padding:14px;border-radius:12px;">✦ Generate AI Forecast</button>
+      </div>
+
+      <div class="ip-card reveal">
+        <h3>📊 Model Confidence</h3>
+        <div style="display:flex;flex-direction:column;gap:14px;">
+          <div><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px;"><span style="color:var(--text-muted);">Historical Data</span><span style="color:var(--teal);font-weight:700;">10 years</span></div><div style="height:6px;border-radius:3px;background:var(--dark-3);"><div style="width:95%;height:100%;border-radius:3px;background:var(--teal);"></div></div></div>
+          <div><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px;"><span style="color:var(--text-muted);">Transactions Used</span><span style="color:var(--teal);font-weight:700;">24,810</span></div><div style="height:6px;border-radius:3px;background:var(--dark-3);"><div style="width:88%;height:100%;border-radius:3px;background:var(--teal);"></div></div></div>
+          <div><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px;"><span style="color:var(--text-muted);">Model Accuracy</span><span style="color:var(--teal);font-weight:700;">89%</span></div><div style="height:6px;border-radius:3px;background:var(--dark-3);"><div style="width:89%;height:100%;border-radius:3px;background:var(--teal);"></div></div></div>
+          <div><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px;"><span style="color:var(--text-muted);">Infra Signals</span><span style="color:var(--teal);font-weight:700;">14 active</span></div><div style="height:6px;border-radius:3px;background:var(--dark-3);"><div style="width:78%;height:100%;border-radius:3px;background:var(--gold);"></div></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RESULTS PANEL -->
+    <div>
+      <!-- VERDICT -->
+      <div class="verdict-card reveal">
+        <div class="verdict-header">
+          <div class="verdict-icon">✦</div>
+          <div><div class="verdict-title">Strong Buy Signal</div><div class="verdict-sub">Sector 65, Gurgaon — 3-Year Forecast</div></div>
+          <span class="badge badge-teal" style="margin-left:auto;">89% Confidence</span>
+        </div>
+        <div class="verdict-metrics">
+          <div class="vm"><div class="vm-val">+24%</div><div class="vm-label">Expected Appreciation</div></div>
+          <div class="vm"><div class="vm-val">₹12,400</div><div class="vm-label">Forecasted Price/sqft</div></div>
+          <div class="vm"><div class="vm-val">3.1x</div><div class="vm-label">vs Inflation Rate</div></div>
+        </div>
+      </div>
+
+      <!-- PRICE CHART -->
+      <div class="chart-card reveal">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div><div class="eyebrow">Price Trajectory</div><div class="h3">₹10,000 → ₹12,400 /sqft</div></div>
+          <div style="display:flex;gap:12px;font-size:12px;align-items:center;">
+            <span style="display:flex;align-items:center;gap:5px;color:var(--text-muted)"><span style="width:20px;height:2px;background:var(--teal);display:inline-block;"></span>AI Forecast</span>
+            <span style="display:flex;align-items:center;gap:5px;color:var(--text-muted)"><span style="width:20px;height:2px;background:var(--border);display:inline-block;border-top:2px dashed rgba(255,255,255,0.2);"></span>Historical</span>
+          </div>
+        </div>
+        <div class="price-chart">
+          <svg class="chart-line-svg" viewBox="0 0 800 280" preserveAspectRatio="none">
+            <!-- Grid lines -->
+            <line x1="0" y1="56" x2="800" y2="56" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+            <line x1="0" y1="112" x2="800" y2="112" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+            <line x1="0" y1="168" x2="800" y2="168" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+            <line x1="0" y1="224" x2="800" y2="224" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+            <!-- Historical area fill -->
+            <defs>
+              <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="rgba(0,212,170,0.25)"/>
+                <stop offset="100%" stop-color="rgba(0,212,170,0)"/>
+              </linearGradient>
+              <linearGradient id="forecastGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="rgba(245,200,66,0.2)"/>
+                <stop offset="100%" stop-color="rgba(245,200,66,0)"/>
+              </linearGradient>
+            </defs>
+            <!-- Historical area -->
+            <path d="M0,260 L0,200 C80,195 160,185 240,165 C320,145 400,135 480,120 L480,260 Z" fill="url(#areaGrad)" opacity="0.6"/>
+            <!-- Historical line -->
+            <path d="M0,200 C80,195 160,185 240,165 C320,145 400,135 480,120" stroke="var(--teal)" stroke-width="2.5" fill="none"/>
+            <!-- Forecast area (dashed) -->
+            <path d="M480,120 L480,260 C560,260 640,260 720,260 L800,260 L800,260 Z" fill="url(#forecastGrad)" opacity="0.4"/>
+            <!-- Forecast line -->
+            <path d="M480,120 C560,108 640,88 720,68 C760,58 780,50 800,42" stroke="var(--gold)" stroke-width="2.5" fill="none" stroke-dasharray="6,4"/>
+            <!-- Confidence band -->
+            <path d="M480,120 C560,100 640,76 720,52 C760,40 780,30 800,20" stroke="rgba(245,200,66,0.3)" stroke-width="1" fill="none" stroke-dasharray="3,3"/>
+            <path d="M480,120 C560,118 640,100 720,84 C760,76 780,70 800,64" stroke="rgba(245,200,66,0.3)" stroke-width="1" fill="none" stroke-dasharray="3,3"/>
+            <!-- Now marker -->
+            <line x1="480" y1="30" x2="480" y2="260" stroke="rgba(255,255,255,0.15)" stroke-width="1" stroke-dasharray="4,3"/>
+            <text x="484" y="50" fill="rgba(255,255,255,0.4)" font-size="10" font-family="Outfit">Today</text>
+            <!-- Data points -->
+            <circle cx="0" cy="200" r="4" fill="var(--teal)"/>
+            <circle cx="160" cy="185" r="4" fill="var(--teal)"/>
+            <circle cx="320" cy="145" r="4" fill="var(--teal)"/>
+            <circle cx="480" cy="120" r="5" fill="var(--teal)" stroke="var(--dark-2)" stroke-width="2"/>
+            <circle cx="640" cy="88" r="5" fill="var(--gold)" stroke="var(--dark-2)" stroke-width="2"/>
+            <circle cx="800" cy="42" r="5" fill="var(--gold)" stroke="var(--dark-2)" stroke-width="2"/>
+          </svg>
+        </div>
+        <div class="forecast-badges">
+          <div class="fb"><div class="fb-year">Now</div><div class="fb-price">₹10,000</div><div class="fb-gain" style="color:var(--text-muted);">Current</div></div>
+          <div class="fb"><div class="fb-year">Year 1</div><div class="fb-price">₹10,800</div><div class="fb-gain" style="color:var(--teal);">+8% ↑</div></div>
+          <div class="fb"><div class="fb-year">Year 2</div><div class="fb-price">₹11,600</div><div class="fb-gain" style="color:var(--teal);">+16% ↑</div></div>
+          <div class="fb highlight"><div class="fb-year">Year 3</div><div class="fb-price">₹12,400</div><div class="fb-gain" style="color:var(--teal);">+24% ↑</div></div>
+        </div>
+      </div>
+
+      <!-- GROWTH DRIVERS -->
+      <div style="margin-top:24px;" class="reveal">
+        <div class="eyebrow">What's Driving Growth</div>
+        <div class="h3" style="margin-bottom:0;">Key Infrastructure & Demand Drivers</div>
+        <div class="drivers-grid">
+          <div class="driver-card"><div class="driver-header"><div class="driver-name">🚇 Dwarka Expressway Completion</div><span class="driver-impact impact-high">+High Impact</span></div><div class="driver-desc">Complete 8-lane access improving connectivity to Delhi by 40%. Already priced in partially — more upside expected.</div><div class="driver-date">✓ Completed Q1 2024</div></div>
+          <div class="driver-card"><div class="driver-header"><div class="driver-name">🏗️ New Metro Line Extension</div><span class="driver-impact impact-high">+High Impact</span></div><div class="driver-desc">Sector 65 station proposed under RRTS Phase 2. Expected to add 12-15% premium on completion.</div><div class="driver-date">📅 Expected 2026</div></div>
+          <div class="driver-card"><div class="driver-header"><div class="driver-name">🏢 Google/TCS Office Expansion</div><span class="driver-impact impact-med">Med Impact</span></div><div class="driver-desc">Major tech campus expansion within 4km adding 15,000+ professionals to the area's demand base.</div><div class="driver-date">📅 Opening Dec 2025</div></div>
+          <div class="driver-card"><div class="driver-header"><div class="driver-name">🌳 Eco-Tourism Zone</div><span class="driver-impact impact-low">Low Impact</span></div><div class="driver-desc">Aravalli green zone nearby preserving natural boundary and preventing over-development — supply-side positive.</div><div class="driver-date">📅 Notified 2023</div></div>
+          <div class="driver-card"><div class="driver-header"><div class="driver-name">📊 NRI Investment Surge</div><span class="driver-impact impact-med">Med Impact</span></div><div class="driver-desc">42% YoY rise in NRI property enquiries for Gurgaon driven by INR depreciation and favorable property laws.</div><div class="driver-date">📅 Ongoing 2024-25</div></div>
+          <div class="driver-card"><div class="driver-header"><div class="driver-name">🏥 AIIMS Satellite Campus</div><span class="driver-impact impact-high">+High Impact</span></div><div class="driver-desc">New AIIMS campus 8km away will significantly boost healthcare score and employee housing demand.</div><div class="driver-date">📅 Expected 2027</div></div>
+        </div>
+      </div>
+
+      <!-- COMPARABLE SALES -->
+      <div style="background:var(--dark-2);border:1px solid var(--border);border-radius:20px;padding:24px;margin-top:24px;" class="reveal">
+        <div class="eyebrow">Recent Transactions</div>
+        <div class="h3" style="margin-bottom:0;">Comparable Sales in Sector 65</div>
+        <table class="comp-sales-table">
+          <thead><tr><th>Property</th><th>Sale Date</th><th>Size</th><th>Price</th><th>₹/sqft</th></tr></thead>
+          <tbody>
+            <tr><td>3 BHK, Tower C, Sobha Vista</td><td>Jan 2025</td><td>1,890 sqft</td><td>₹1.89 Cr</td><td style="color:var(--teal);font-weight:700;">₹10,000</td></tr>
+            <tr><td>3 BHK, DLF Ultima</td><td>Dec 2024</td><td>2,100 sqft</td><td>₹2.04 Cr</td><td style="color:var(--teal);font-weight:700;">₹9,714</td></tr>
+            <tr><td>4 BHK, Emaar Palm Drive</td><td>Nov 2024</td><td>2,800 sqft</td><td>₹2.97 Cr</td><td style="color:var(--teal);font-weight:700;">₹10,607</td></tr>
+            <tr><td>2 BHK, M3M Merlin</td><td>Oct 2024</td><td>1,150 sqft</td><td>₹1.09 Cr</td><td style="color:var(--teal);font-weight:700;">₹9,478</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="shared.js"></script>
+<script>
+injectNav('Buy');
+injectFooter();
+revealOnScroll();
+document.querySelectorAll('.fh-btn').forEach(b => b.addEventListener('click',()=>{ document.querySelectorAll('.fh-btn').forEach(x=>x.classList.remove('active')); b.classList.add('active'); }));
+</script>
+</body>
+</html>

@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Search Properties — UrbanNest.ai</title>
+<link rel="stylesheet" href="shared.css">
+<style>
+.search-layout { display: grid; grid-template-columns: 320px 1fr; gap: 0; min-height: calc(100vh - 97px); }
+
+/* SIDEBAR */
+.sidebar { background: var(--dark); border-right: 1px solid var(--border); padding: 24px; position: sticky; top: 97px; height: calc(100vh - 97px); overflow-y: auto; scrollbar-width: thin; }
+.sidebar::-webkit-scrollbar { width: 3px; } .sidebar::-webkit-scrollbar-thumb { background: var(--teal); }
+.filter-block { margin-bottom: 28px; padding-bottom: 24px; border-bottom: 1px solid var(--border); }
+.filter-block:last-child { border-bottom: none; }
+.filter-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); margin-bottom: 14px; display: flex; justify-content: space-between; }
+.filter-clear { font-size: 11px; color: var(--teal); cursor: pointer; font-weight: 600; text-transform: none; letter-spacing: 0; }
+.bhk-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 6px; }
+.bhk-btn { padding: 8px 4px; text-align: center; border: 1px solid var(--border); border-radius: 8px; font-size: 13px; font-weight: 600; color: var(--text-muted); cursor: pointer; transition: all 0.2s; background: var(--glass); }
+.bhk-btn.active, .bhk-btn:hover { border-color: var(--teal); color: var(--teal); background: var(--teal-dim); }
+.range-wrap { padding: 4px 0; }
+.range-labels { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-muted); margin-top: 8px; }
+.range-val { font-size: 13px; font-weight: 700; color: var(--teal); }
+.checkbox-list { display: flex; flex-direction: column; gap: 10px; }
+.checkbox-item { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--text-muted); cursor: pointer; }
+.checkbox-item input { accent-color: var(--teal); width: 15px; height: 15px; cursor: pointer; }
+.checkbox-item:hover { color: var(--text); }
+.ai-match-btn { width: 100%; padding: 12px; background: linear-gradient(135deg, var(--teal), #00c49a); border: none; border-radius: 12px; font-family: 'Outfit',sans-serif; font-size: 14px; font-weight: 700; color: var(--night); cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 20px var(--teal-glow); }
+.ai-match-btn:hover { transform: translateY(-2px); }
+
+/* MAIN CONTENT */
+.search-main { background: var(--night); }
+.search-top-bar { padding: 20px 28px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; background: var(--dark); position: sticky; top: 97px; z-index: 10; }
+.search-query-box { display: flex; align-items: center; gap: 12px; background: var(--dark-2); border: 1px solid var(--border); border-radius: 12px; padding: 10px 16px; flex: 1; max-width: 560px; }
+.search-q-input { flex: 1; border: none; outline: none; background: transparent; font-family: 'Outfit',sans-serif; font-size: 14px; color: var(--text); }
+.search-q-input::placeholder { color: var(--text-dim); }
+.results-meta { font-size: 13px; color: var(--text-muted); white-space: nowrap; margin-left: 16px; }
+.results-meta strong { color: var(--teal); }
+.view-toggle { display: flex; gap: 4px; }
+.vt-btn { width: 36px; height: 36px; border-radius: 8px; border: 1px solid var(--border); background: var(--glass); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px; transition: all 0.2s; }
+.vt-btn.active, .vt-btn:hover { border-color: var(--teal); background: var(--teal-dim); }
+.sort-select { background: var(--dark-2); border: 1px solid var(--border); border-radius: 8px; color: var(--text-muted); font-family: 'Outfit',sans-serif; font-size: 13px; padding: 8px 12px; cursor: pointer; outline: none; }
+
+/* PROPERTY CARDS GRID */
+.listings-wrap { padding: 24px 28px; }
+.prop-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+
+.prop-card { background: var(--dark-2); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; cursor: pointer; transition: all 0.3s; }
+.prop-card:hover { border-color: rgba(0,212,170,0.2); transform: translateY(-4px); box-shadow: 0 20px 50px rgba(0,0,0,0.45); }
+
+.prop-img { position: relative; aspect-ratio: 4/3; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+.prop-img-bg { position: absolute; inset: 0; transition: transform 0.5s; }
+.prop-card:hover .prop-img-bg { transform: scale(1.06); }
+.prop-emoji { font-size: 44px; position: relative; z-index: 1; }
+.prop-img-grad { position: absolute; bottom: 0; left: 0; right: 0; height: 55%; background: linear-gradient(transparent, rgba(15,22,35,0.85)); z-index: 1; }
+.prop-badges { position: absolute; top: 10px; left: 10px; display: flex; gap: 5px; z-index: 2; }
+.prop-heart { position: absolute; top: 10px; right: 10px; z-index: 2; width: 32px; height: 32px; border-radius: 50%; background: rgba(8,12,20,0.7); backdrop-filter: blur(8px); border: 1px solid var(--glass-border); display: flex; align-items: center; justify-content: center; font-size: 14px; cursor: pointer; transition: all 0.2s; }
+.prop-heart:hover { background: rgba(255,107,74,0.2); border-color: var(--coral); }
+.prop-ai-score { position: absolute; bottom: 10px; right: 10px; z-index: 2; background: rgba(8,12,20,0.85); border: 1px solid rgba(0,212,170,0.35); border-radius: 8px; padding: 5px 9px; text-align: center; }
+.score-n { font-size: 15px; font-weight: 700; color: var(--teal); line-height: 1; }
+.score-l { font-size: 9px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; }
+
+.prop-body { padding: 16px; }
+.prop-price { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 700; color: var(--white); letter-spacing: -0.5px; }
+.prop-price span { font-size: 12px; color: var(--text-muted); font-family: 'Outfit',sans-serif; font-weight: 400; }
+.prop-name { font-size: 13px; font-weight: 600; color: var(--text); margin-top: 4px; line-height: 1.4; }
+.prop-loc { font-size: 12px; color: var(--text-muted); margin-top: 6px; display: flex; align-items: center; gap: 4px; }
+.prop-specs { display: flex; gap: 12px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); }
+.prop-spec { font-size: 11px; color: var(--text-muted); font-weight: 500; display: flex; align-items: center; gap: 3px; }
+.prop-ai-tip { margin-top: 10px; padding: 9px 12px; background: var(--teal-dim); border: 1px solid rgba(0,212,170,0.12); border-radius: 8px; font-size: 11px; color: rgba(0,212,170,0.8); line-height: 1.5; }
+.prop-ai-tip strong { color: var(--teal); }
+
+/* MAP TOGGLE AREA */
+.map-placeholder { background: var(--dark-2); border-top: 1px solid var(--border); margin-top: 28px; border-radius: 16px; height: 300px; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 12px; color: var(--text-muted); }
+
+/* PAGINATION */
+.pagination { display: flex; gap: 6px; justify-content: center; margin-top: 36px; padding-bottom: 40px; }
+.page-btn { width: 38px; height: 38px; border-radius: 9px; border: 1px solid var(--border); background: var(--glass); color: var(--text-muted); font-family: 'Outfit',sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
+.page-btn.active { background: var(--teal); color: var(--night); border-color: var(--teal); }
+.page-btn:hover:not(.active) { border-color: var(--teal); color: var(--teal); }
+
+/* ACTIVE FILTERS */
+.active-filters { display: flex; gap: 8px; flex-wrap: wrap; padding: 12px 28px; border-bottom: 1px solid var(--border); background: var(--dark); }
+.af-tag { display: flex; align-items: center; gap: 6px; padding: 5px 12px; background: var(--teal-dim); border: 1px solid rgba(0,212,170,0.2); border-radius: 100px; font-size: 12px; color: var(--teal); font-weight: 500; }
+.af-remove { cursor: pointer; font-size: 14px; opacity: 0.7; }
+.af-remove:hover { opacity: 1; }
+</style>
+</head>
+<body>
+<div class="page-wrap">
+
+<!-- TOP SEARCH BAR + FILTERS -->
+<div class="search-top-bar">
+  <div class="search-query-box">
+    <span style="color:var(--teal);font-size:16px;">✦</span>
+    <input class="search-q-input" placeholder="AI Search: 3BHK near metro under ₹1Cr in Gurgaon..." />
+    <button style="background:var(--teal);border:none;color:var(--night);padding:6px 14px;border-radius:8px;font-family:'Outfit',sans-serif;font-size:12px;font-weight:700;cursor:pointer;">Search</button>
+  </div>
+  <span class="results-meta" style="margin-left:20px;">Showing <strong>2,847</strong> properties</span>
+  <div style="display:flex;align-items:center;gap:10px;margin-left:auto;">
+    <select class="sort-select"><option>Sort: Relevance</option><option>Price: Low to High</option><option>Price: High to Low</option><option>Newest First</option><option>AI Score</option></select>
+    <div class="view-toggle">
+      <div class="vt-btn active" title="Grid view">⊞</div>
+      <div class="vt-btn" title="List view">☰</div>
+      <div class="vt-btn" title="Map view">🗺️</div>
+    </div>
+  </div>
+</div>
+
+<!-- ACTIVE FILTERS -->
+<div class="active-filters">
+  <span style="font-size:12px;color:var(--text-muted);margin-right:4px;">Filters:</span>
+  <span class="af-tag">Gurgaon <span class="af-remove">×</span></span>
+  <span class="af-tag">3 BHK <span class="af-remove">×</span></span>
+  <span class="af-tag">Under ₹2Cr <span class="af-remove">×</span></span>
+  <span class="af-tag">Ready to Move <span class="af-remove">×</span></span>
+  <span class="af-tag">Verified <span class="af-remove">×</span></span>
+  <a href="#" style="font-size:12px;color:var(--coral);margin-left:8px;text-decoration:none;font-weight:600;">Clear all</a>
+</div>
+
+<div class="search-layout">
+  <!-- SIDEBAR FILTERS -->
+  <aside class="sidebar">
+    <div style="margin-bottom:20px;">
+      <button class="ai-match-btn">✦ AI Smart Match</button>
+      <p style="font-size:11px;color:var(--text-muted);margin-top:8px;text-align:center;">Let AI find your perfect home automatically</p>
+    </div>
+
+    <div class="filter-block">
+      <div class="filter-title">Property Type</div>
+      <div class="bhk-grid" style="grid-template-columns:repeat(2,1fr);">
+        <div class="bhk-btn active">Apartment</div>
+        <div class="bhk-btn">Villa</div>
+        <div class="bhk-btn">Plot</div>
+        <div class="bhk-btn">Builder Floor</div>
+        <div class="bhk-btn">Office</div>
+        <div class="bhk-btn">PG/Co-living</div>
+      </div>
+    </div>
+
+    <div class="filter-block">
+      <div class="filter-title">Bedrooms (BHK)</div>
+      <div class="bhk-grid">
+        <div class="bhk-btn">1</div>
+        <div class="bhk-btn">2</div>
+        <div class="bhk-btn active">3</div>
+        <div class="bhk-btn">4+</div>
+      </div>
+    </div>
+
+    <div class="filter-block">
+      <div class="filter-title">Budget <span style="font-weight:400;color:var(--teal);font-size:13px;text-transform:none;letter-spacing:0;">₹50L – ₹2Cr</span></div>
+      <div class="range-wrap">
+        <input type="range" class="range" min="20" max="1000" value="200" oninput="this.nextElementSibling.textContent='₹'+this.value+'L'">
+        <div class="range-labels"><span>₹20L</span><span class="range-val">₹200L</span><span>₹10Cr</span></div>
+      </div>
+    </div>
+
+    <div class="filter-block">
+      <div class="filter-title">Area (sq.ft)</div>
+      <div class="range-wrap">
+        <input type="range" class="range" min="500" max="5000" value="1500">
+        <div class="range-labels"><span>500</span><span class="range-val">1,500 sqft</span><span>5,000+</span></div>
+      </div>
+    </div>
+
+    <div class="filter-block">
+      <div class="filter-title">Status</div>
+      <div class="checkbox-list">
+        <label class="checkbox-item"><input type="checkbox" checked> Ready to Move</label>
+        <label class="checkbox-item"><input type="checkbox"> Under Construction</label>
+        <label class="checkbox-item"><input type="checkbox"> New Launch</label>
+      </div>
+    </div>
+
+    <div class="filter-block">
+      <div class="filter-title">Amenities</div>
+      <div class="checkbox-list">
+        <label class="checkbox-item"><input type="checkbox" checked> 🏊 Swimming Pool</label>
+        <label class="checkbox-item"><input type="checkbox" checked> 🏋️ Gym</label>
+        <label class="checkbox-item"><input type="checkbox"> 🚗 Parking</label>
+        <label class="checkbox-item"><input type="checkbox"> 🔒 24/7 Security</label>
+        <label class="checkbox-item"><input type="checkbox"> 🌳 Garden / Park</label>
+        <label class="checkbox-item"><input type="checkbox"> 🏪 Clubhouse</label>
+      </div>
+    </div>
+
+    <div class="filter-block">
+      <div class="filter-title">Posted By</div>
+      <div class="checkbox-list">
+        <label class="checkbox-item"><input type="checkbox" checked> Owner</label>
+        <label class="checkbox-item"><input type="checkbox" checked> Builder</label>
+        <label class="checkbox-item"><input type="checkbox"> Agent</label>
+      </div>
+    </div>
+
+    <div class="filter-block">
+      <div class="filter-title">AI Score <span style="font-weight:400;font-size:11px;color:var(--teal);text-transform:none;letter-spacing:0;">Min: 75</span></div>
+      <div class="range-wrap">
+        <input type="range" class="range" min="0" max="100" value="75">
+        <div class="range-labels"><span>0</span><span class="range-val">75</span><span>100</span></div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- LISTINGS MAIN -->
+  <div class="search-main">
+    <div class="listings-wrap">
+      <div class="prop-grid">
+        <!-- Cards -->
+        <a href="property-detail.html" style="text-decoration:none;" class="prop-card reveal">
+          <div class="prop-img">
+            <div class="prop-img-bg" style="background:linear-gradient(135deg,#132238,#1e3a5f);"></div>
+            <div class="prop-emoji">🏡</div>
+            <div class="prop-img-grad"></div>
+            <div class="prop-badges"><span class="badge badge-gold">⭐ Premium</span><span class="badge badge-teal">✦ AI Pick</span></div>
+            <div class="prop-heart">♡</div>
+            <div class="prop-ai-score"><div class="score-n">94</div><div class="score-l">AI Score</div></div>
+          </div>
+          <div class="prop-body">
+            <div class="prop-price">₹2.85 Cr <span>onwards</span></div>
+            <div class="prop-name">Sobha City Vista — 4 BHK Ultra Luxury</div>
+            <div class="prop-loc">📍 Sector 108, Gurgaon · 2,850 sqft</div>
+            <div class="prop-specs"><span class="prop-spec">🛏 4 BHK</span><span class="prop-spec">🚿 4 Bath</span><span class="prop-spec">🚗 2 Park</span><span class="prop-spec">✅ RERA</span></div>
+            <div class="prop-ai-tip"><strong>✦ AI:</strong> 18% appreciation expected. Metro 1.2km. Priced 8% below market.</div>
+          </div>
+        </a>
+
+        <a href="property-detail.html" style="text-decoration:none;" class="prop-card reveal">
+          <div class="prop-img">
+            <div class="prop-img-bg" style="background:linear-gradient(135deg,#1a2e1a,#2a4a2a);"></div>
+            <div class="prop-emoji">🏢</div>
+            <div class="prop-img-grad"></div>
+            <div class="prop-badges"><span class="badge badge-green">✓ Verified</span><span class="badge badge-coral">🔥 Hot</span></div>
+            <div class="prop-heart">♡</div>
+            <div class="prop-ai-score"><div class="score-n">88</div><div class="score-l">AI Score</div></div>
+          </div>
+          <div class="prop-body">
+            <div class="prop-price">₹78 L <span>onwards</span></div>
+            <div class="prop-name">DLF MyPad — 2 BHK Studio, Noida</div>
+            <div class="prop-loc">📍 Sector 59, Noida · 1,100 sqft</div>
+            <div class="prop-specs"><span class="prop-spec">🛏 2 BHK</span><span class="prop-spec">🚿 2 Bath</span><span class="prop-spec">📐 1,100</span></div>
+            <div class="prop-ai-tip"><strong>✦ AI:</strong> Best value in locality. 92% of seekers shortlisted this.</div>
+          </div>
+        </a>
+
+        <a href="property-detail.html" style="text-decoration:none;" class="prop-card reveal">
+          <div class="prop-img">
+            <div class="prop-img-bg" style="background:linear-gradient(135deg,#1a1a30,#2a2a50);"></div>
+            <div class="prop-emoji">🏠</div>
+            <div class="prop-img-grad"></div>
+            <div class="prop-badges"><span class="badge badge-white">NEW</span><span class="badge badge-teal">✦ AI Pick</span></div>
+            <div class="prop-heart">♡</div>
+            <div class="prop-ai-score"><div class="score-n">91</div><div class="score-l">AI Score</div></div>
+          </div>
+          <div class="prop-body">
+            <div class="prop-price">₹1.45 Cr <span>onwards</span></div>
+            <div class="prop-name">M3M Golf Hills — 3 BHK Premium</div>
+            <div class="prop-loc">📍 Sector 79, Gurgaon · 1,890 sqft</div>
+            <div class="prop-specs"><span class="prop-spec">🛏 3 BHK</span><span class="prop-spec">🚿 3 Bath</span><span class="prop-spec">🚗 1 Park</span></div>
+            <div class="prop-ai-tip"><strong>✦ AI:</strong> 37 views today. Price rising after DDJK highway opens Q2.</div>
+          </div>
+        </a>
+
+        <a href="property-detail.html" style="text-decoration:none;" class="prop-card reveal">
+          <div class="prop-img">
+            <div class="prop-img-bg" style="background:linear-gradient(135deg,#2a1a1a,#4a2a2a);"></div>
+            <div class="prop-emoji">🏘️</div>
+            <div class="prop-img-grad"></div>
+            <div class="prop-badges"><span class="badge badge-gold">⭐ Featured</span></div>
+            <div class="prop-heart">♡</div>
+            <div class="prop-ai-score"><div class="score-n">86</div><div class="score-l">AI Score</div></div>
+          </div>
+          <div class="prop-body">
+            <div class="prop-price">₹62 L <span>onwards</span></div>
+            <div class="prop-name">Prestige Sunrise Park — 2 BHK</div>
+            <div class="prop-loc">📍 Whitefield, Bangalore · 1,250 sqft</div>
+            <div class="prop-specs"><span class="prop-spec">🛏 2 BHK</span><span class="prop-spec">🚿 2 Bath</span><span class="prop-spec">✅ RERA</span></div>
+            <div class="prop-ai-tip"><strong>✦ AI:</strong> IT corridor adjacency. 28% YoY appreciation recorded.</div>
+          </div>
+        </a>
+
+        <a href="property-detail.html" style="text-decoration:none;" class="prop-card reveal">
+          <div class="prop-img">
+            <div class="prop-img-bg" style="background:linear-gradient(135deg,#1a2a1a,#253a25);"></div>
+            <div class="prop-emoji">🏗️</div>
+            <div class="prop-img-grad"></div>
+            <div class="prop-badges"><span class="badge badge-coral">Under Construction</span></div>
+            <div class="prop-heart">♡</div>
+            <div class="prop-ai-score"><div class="score-n">79</div><div class="score-l">AI Score</div></div>
+          </div>
+          <div class="prop-body">
+            <div class="prop-price">₹95 L <span>onwards</span></div>
+            <div class="prop-name">Brigade Cornerstone Utopia — 3 BHK</div>
+            <div class="prop-loc">📍 Yelahanka, Bangalore · 1,580 sqft</div>
+            <div class="prop-specs"><span class="prop-spec">🛏 3 BHK</span><span class="prop-spec">🚿 3 Bath</span><span class="prop-spec">📅 Dec 2026</span></div>
+            <div class="prop-ai-tip"><strong>✦ AI:</strong> Launch price — 22% gains likely at possession.</div>
+          </div>
+        </a>
+
+        <a href="property-detail.html" style="text-decoration:none;" class="prop-card reveal">
+          <div class="prop-img">
+            <div class="prop-img-bg" style="background:linear-gradient(135deg,#0d1a2a,#162a3a);"></div>
+            <div class="prop-emoji">🏡</div>
+            <div class="prop-img-grad"></div>
+            <div class="prop-badges"><span class="badge badge-green">✓ Verified</span></div>
+            <div class="prop-heart">♡</div>
+            <div class="prop-ai-score"><div class="score-n">83</div><div class="score-l">AI Score</div></div>
+          </div>
+          <div class="prop-body">
+            <div class="prop-price">₹1.8 Cr <span>onwards</span></div>
+            <div class="prop-name">Godrej Meridian — 4 BHK, Gurgaon</div>
+            <div class="prop-loc">📍 Sector 106, Gurgaon · 2,200 sqft</div>
+            <div class="prop-specs"><span class="prop-spec">🛏 4 BHK</span><span class="prop-spec">🚿 4 Bath</span><span class="prop-spec">🚗 2 Park</span></div>
+            <div class="prop-ai-tip"><strong>✦ AI:</strong> Golf course views. Excellent school access score of 88.</div>
+          </div>
+        </a>
+      </div>
+
+      <!-- PAGINATION -->
+      <div class="pagination">
+        <button class="page-btn">‹</button>
+        <button class="page-btn active">1</button>
+        <button class="page-btn">2</button>
+        <button class="page-btn">3</button>
+        <span style="color:var(--text-dim);padding:0 4px;display:flex;align-items:center;">…</span>
+        <button class="page-btn">24</button>
+        <button class="page-btn">›</button>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<script src="shared.js"></script>
+<script>
+injectNav('Buy');
+injectFooter();
+revealOnScroll();
+document.querySelectorAll('.prop-heart').forEach(h => h.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); h.textContent = h.textContent.trim()==='♡'?'❤️':'♡'; }));
+document.querySelectorAll('.bhk-btn').forEach(b => b.addEventListener('click', () => { b.closest('.bhk-grid').querySelectorAll('.bhk-btn').forEach(x => x.classList.remove('active')); b.classList.add('active'); }));
+document.querySelectorAll('.vt-btn').forEach(b => b.addEventListener('click', () => { document.querySelectorAll('.vt-btn').forEach(x => x.classList.remove('active')); b.classList.add('active'); }));
+</script>
+</body>
+</html>
