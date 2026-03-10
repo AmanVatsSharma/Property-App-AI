@@ -27,6 +27,15 @@ import { TimeoutInterceptor } from '../common/interceptors/timeout.interceptor';
 @Module({
   imports: [
     AppConfigModule,
+    ThrottlerModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => [
+        {
+          ttl: config.get<number>('THROTTLE_TTL') * 1000,
+          limit: config.get<number>('THROTTLE_LIMIT'),
+        },
+      ],
+    }),
     GraphQLModule.forRootAsync<ApolloDriverConfig>({
       driver: ApolloDriver,
       inject: [ConfigService],
@@ -59,6 +68,7 @@ import { TimeoutInterceptor } from '../common/interceptors/timeout.interceptor';
     { provide: APP_FILTER, useClass: HttpExceptionFilter },
     { provide: APP_INTERCEPTOR, useClass: LoggingInterceptor },
     { provide: APP_INTERCEPTOR, useClass: TimeoutInterceptor },
+    { provide: APP_GUARD, useClass: ThrottlerGuard },
   ],
 })
 export class AppModule implements NestModule {

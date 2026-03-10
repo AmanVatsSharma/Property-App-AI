@@ -1,7 +1,7 @@
 /**
  * @file main.ts
  * @module api
- * @description NestJS bootstrap; config-driven port, CORS, validation.
+ * @description NestJS bootstrap; config-driven port, CORS, Helmet, validation.
  * @author BharatERP
  * @created 2025-03-10
  */
@@ -9,11 +9,13 @@
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
+import helmet from 'helmet';
 import { AppModule } from './app/app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const config = app.get(ConfigService);
+  app.use(helmet());
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
