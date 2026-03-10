@@ -143,6 +143,10 @@ em.teal { font-style: italic; color: var(--teal); }
 .tab.active { background: var(--teal); color: var(--night); font-weight: 700; }
 .tab:hover:not(.active) { color: var(--text); background: rgba(255,255,255,0.06); }
 
+/* ── LOADING SPINNER ── */
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-spinner { width: 48px; height: 48px; border-radius: 50%; border: 3px solid var(--border); border-top-color: var(--teal); animation: spin 0.8s linear infinite; }
+
 /* ── REVEAL ANIMATION ── */
 .reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.55s ease, transform 0.55s ease; }
 .reveal.visible { opacity: 1; transform: none; }

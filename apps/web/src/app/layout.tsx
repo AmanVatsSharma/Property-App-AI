@@ -14,6 +14,7 @@ import Nav from "@/components/layout/Nav";
 import Footer from "@/components/layout/Footer";
 import AIFab from "@/components/layout/AIFab";
 import RevealObserver from "@/components/ui/RevealObserver";
+import { SkipToContent, MAIN_CONTENT_ID } from "@/components/ui/SkipToContent";
 
 const playfair = Playfair_Display({
   variable: "--font-playfair",
@@ -42,9 +43,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${outfit.variable} ${playfair.variable} ${outfit.className} antialiased`}>
+        <SkipToContent />
         <AnnouncementBar />
         <Nav />
-        <main>{children}</main>
+        <main id={MAIN_CONTENT_ID} tabIndex={-1}>{children}</main>
         <Footer />
         <AIFab />
         <RevealObserver />
