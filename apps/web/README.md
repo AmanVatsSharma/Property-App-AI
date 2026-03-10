@@ -15,6 +15,10 @@ Or from this directory: `nx run web:dev`.
 
 Open [http://localhost:3000](http://localhost:3000).
 
+## Theme
+
+Light/dark theme switching is powered by **next-themes** (class-based on `html`). Use the sun/moon toggle in the nav to switch; preference is persisted in `localStorage` under `urbannest-theme`.
+
 ## Build
 
 From repo root: `npm run build` then `npm run start`. Or: `nx run web:build`, `nx run web:start`.
@@ -37,6 +41,7 @@ From repo root: `npm run build` then `npm run start`. Or: `nx run web:build`, `n
 
 - `src/app/` — App Router pages and layout
 - `src/app/globals.css` — Design tokens and shared + page-specific styles
+- `src/components/providers/` — ThemeProvider (next-themes wrapper)
 - `src/components/layout/` — AnnouncementBar, Nav, Footer, AIFab
 - `src/components/ui/` — RevealObserver (scroll-triggered reveal)
 - `src/components/landing/` — LandingPage
