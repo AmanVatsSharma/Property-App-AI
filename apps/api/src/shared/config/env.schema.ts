@@ -20,6 +20,11 @@ export const envSchema = Joi.object({
   THROTTLE_TTL: Joi.number().min(1).default(60),
   THROTTLE_LIMIT: Joi.number().min(1).default(100),
   CORS_ORIGIN: Joi.string().default('*'),
+  OPENAI_API_KEY: Joi.string().optional().allow(''),
+  AGENT_MODEL: Joi.string().default('gpt-4o'),
+  AGENT_MAX_STEPS: Joi.number().min(1).max(20).default(10),
+  AGENT_QUEUE_ENABLED: Joi.boolean().default(false),
+  REDIS_URL: Joi.string().uri().optional().allow(''),
 }).unknown(true);
 
 export type EnvSchema = {
@@ -34,4 +39,9 @@ export type EnvSchema = {
   THROTTLE_TTL: number;
   THROTTLE_LIMIT: number;
   CORS_ORIGIN: string;
+  OPENAI_API_KEY?: string;
+  AGENT_MODEL: string;
+  AGENT_MAX_STEPS: number;
+  AGENT_QUEUE_ENABLED: boolean;
+  REDIS_URL?: string;
 };
