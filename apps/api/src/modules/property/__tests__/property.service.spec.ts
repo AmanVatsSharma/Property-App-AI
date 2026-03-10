@@ -10,6 +10,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { PropertyNotFoundError } from '../../../common/errors';
 import { PropertyService } from '../services/property.service';
 import { PropertyRepository } from '../repository/property.repository';
+import { LoggerService } from '../../../shared/logger';
 import { Property } from '../entities/property.entity';
 
 describe('PropertyService', () => {
@@ -42,10 +43,12 @@ describe('PropertyService', () => {
       update: jest.fn(),
       delete: jest.fn(),
     };
+    const mockLogger = { debug: jest.fn(), log: jest.fn(), error: jest.fn(), warn: jest.fn() };
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         PropertyService,
         { provide: PropertyRepository, useValue: mockRepo },
+        { provide: LoggerService, useValue: mockLogger },
       ],
     }).compile();
     service = module.get<PropertyService>(PropertyService);
