@@ -8,6 +8,7 @@
 
 import type { Metadata } from "next";
 import Link from "next/link";
+import PostPropertyForm from "@/components/post-property/PostPropertyForm";
 
 export const metadata: Metadata = {
   title: "Post Property Free — UrbanNest.ai",
@@ -102,14 +103,7 @@ export default function PostPropertyPage() {
       <section className="section" id="post-form">
         <div style={{ textAlign: "center", marginBottom: 48 }}><div className="eyebrow" style={{ justifyContent: "center" }}>Post Now</div><h2 className="h2">Create Your Listing</h2></div>
         <div className="form-wrap">
-          <div className="form-section reveal">
-            <h3>🏠 Step 1 — Basic Details</h3>
-            <div className="form-grid-2" style={{ marginBottom: 16 }}>
-              <div className="form-field"><label className="label">Listing For</label><select className="select"><option>Sell</option><option>Rent / Lease</option></select></div>
-              <div className="form-field"><label className="label">Property Type</label><select className="select"><option>Apartment</option><option>Villa</option></select></div>
-            </div>
-            <div className="form-field"><label className="label">Address</label><input type="text" className="input" placeholder="City, locality, project name" /></div>
-          </div>
+          <PostPropertyForm />
         </div>
       </section>
     </div>
