@@ -21,8 +21,11 @@ describe('AgentOrchestratorService', () => {
     const mockConfig = {
       get: jest.fn((key: string) => {
         if (key === 'OPENAI_API_KEY') return '';
+        if (key === 'AGENT_PROVIDER') return 'openai';
+        if (key === 'ANTHROPIC_API_KEY') return '';
         if (key === 'AGENT_MODEL') return 'gpt-4o';
         if (key === 'AGENT_MAX_STEPS') return 10;
+        if (key === 'AGENT_PLAN_FIRST') return false;
         return undefined;
       }),
     };
@@ -70,6 +73,17 @@ describe('AgentOrchestratorService', () => {
       expect(result).toHaveProperty('suggestedActions');
       expect(Array.isArray(result.sources)).toBe(true);
       expect(Array.isArray(result.suggestedActions)).toBe(true);
+    });
+
+    it('should return stub when AGENT_PROVIDER is anthropic and ANTHROPIC_API_KEY is missing', async () => {
+      (config.get as jest.Mock).mockImplementation((key: string) => {
+        if (key === 'AGENT_PROVIDER') return 'anthropic';
+        if (key === 'ANTHROPIC_API_KEY') return '';
+        return undefined;
+      });
+      const result = await service.ask({ prompt: 'Hello' });
+      expect(result.answer).toContain('ANTHROPIC_API_KEY');
+      expect(result.sources).toEqual([]);
     });
   });
 });

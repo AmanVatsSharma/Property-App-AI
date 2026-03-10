@@ -269,6 +269,22 @@ export class AgentToolsService {
     }
   }
 
+  private async comparePropertiesImpl(propertyIds: string[]): Promise<string> {
+    const lines: string[] = [];
+    for (let i = 0; i < propertyIds.length; i++) {
+      try {
+        const p = await this.propertyService.findOne(propertyIds[i]);
+        const priceSqft = p.areaSqft ? `₹${(Number(p.price) / Number(p.areaSqft)).toFixed(0)}/sqft` : '';
+        lines.push(
+          `[${i + 1}] ${p.title} | ${p.location} | ₹${Number(p.price).toLocaleString('en-IN')} | ${p.bedrooms} BHK | ${p.areaSqft ?? '—'} sqft ${priceSqft}${p.aiScore != null ? ` | AI ${p.aiScore}` : ''}`,
+        );
+      } catch {
+        lines.push(`[${i + 1}] Property ${propertyIds[i]} not found.`);
+      }
+    }
+    return 'Comparison:\n' + lines.join('\n');
+  }
+
   /**
    * Generate AI score and tip for a property and persist to DB. Used by scoreProperty mutation.
    */

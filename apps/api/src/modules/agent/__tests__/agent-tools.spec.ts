@@ -66,11 +66,12 @@ describe('AgentToolsService', () => {
       expect(tools.length).toBeGreaterThanOrEqual(1);
     });
 
-    it('should include search_properties and get_property tools', () => {
+    it('should include search_properties, get_property, and compare_properties tools', () => {
       const tools = service.getTools();
       const names = tools.map((t) => t.name);
       expect(names).toContain('search_properties');
       expect(names).toContain('get_property');
+      expect(names).toContain('compare_properties');
     });
   });
 
