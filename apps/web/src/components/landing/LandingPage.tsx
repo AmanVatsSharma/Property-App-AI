@@ -466,16 +466,18 @@ export default function LandingPage() {
         </div>
         <div className="testi-grid">
           {[
-            { quote: "\"The AI search is genuinely magical. I typed a paragraph describing my dream home and it showed me exactly what I wanted. Bought in 3 weeks.\"", savings: "💰 Saved ₹14 lakhs via AI Price Check", name: "Priya Sharma", detail: "Bought 3BHK in Sector 62, Noida · ₹1.1 Cr", avatar: "👩" },
-            { quote: "\"The Price Intelligence feature saved me ₹8 lakhs. It told me the asking price was 12% above market — I negotiated down and got the deal.\"", savings: "💰 Saved ₹8 lakhs via Negotiation Coach", name: "Arjun Mehta", detail: "Bought 2BHK in Baner, Pune · ₹76 L", avatar: "👨" },
-            { quote: "\"As a first-time buyer moving from Delhi to Bangalore, UrbanNest's neighbourhood AI scores helped me pick the perfect locality risk-free.\"", savings: "🏠 Found ideal home in 11 days", name: "Ananya Singh", detail: "Rented in Koramangala, Bangalore · ₹38K/mo", avatar: "👩" },
+            { quote: "\"The AI search is genuinely magical. I typed a paragraph describing my dream home and it showed me exactly what I wanted. Bought in 3 weeks.\"", savings: "💰 Saved ₹14 lakhs via AI Price Check", name: "Priya Sharma", detail: "Bought 3BHK in Sector 62, Noida · ₹1.1 Cr", avatarIndex: 0 },
+            { quote: "\"The Price Intelligence feature saved me ₹8 lakhs. It told me the asking price was 12% above market — I negotiated down and got the deal.\"", savings: "💰 Saved ₹8 lakhs via Negotiation Coach", name: "Arjun Mehta", detail: "Bought 2BHK in Baner, Pune · ₹76 L", avatarIndex: 1 },
+            { quote: "\"As a first-time buyer moving from Delhi to Bangalore, UrbanNest's neighbourhood AI scores helped me pick the perfect locality risk-free.\"", savings: "🏠 Found ideal home in 11 days", name: "Ananya Singh", detail: "Rented in Koramangala, Bangalore · ₹38K/mo", avatarIndex: 2 },
           ].map((t) => (
             <div key={t.name} className="testi-card reveal">
               <div className="testi-stars">{[1,2,3,4,5].map((i) => <span key={i} className="star">★</span>)}</div>
               <p className="testi-quote">{t.quote}</p>
               <div className="testi-savings">{t.savings}</div>
               <div className="testi-author">
-                <div className="testi-avatar">{t.avatar}</div>
+                <div className="testi-avatar">
+                  <Image src={DEMO_IMAGES.testimonials[t.avatarIndex]} alt="" width={42} height={42} className="testi-avatar-img" />
+                </div>
                 <div>
                   <div className="testi-name">{t.name}</div>
                   <div className="testi-detail">{t.detail}</div>
@@ -494,8 +496,18 @@ export default function LandingPage() {
               <div className="phone-bar teal" />
               <div className="phone-bar short" />
               <div style={{ height: 8 }} />
-              <div className="phone-card-mini"><div className="phone-card-img">🏡</div><div className="phone-mini-bars"><div className="phone-mini-bar w80" /><div className="phone-mini-bar w60" /></div></div>
-              <div className="phone-card-mini"><div className="phone-card-img">🏢</div><div className="phone-mini-bars"><div className="phone-mini-bar w80" /><div className="phone-mini-bar w60" /></div></div>
+              <div className="phone-card-mini">
+                <div className="phone-card-img">
+                  <Image src={DEMO_IMAGES.properties["sobha-city-vista"].cover} alt="" width={32} height={32} className="phone-card-thumb" />
+                </div>
+                <div className="phone-mini-bars"><div className="phone-mini-bar w80" /><div className="phone-mini-bar w60" /></div>
+              </div>
+              <div className="phone-card-mini">
+                <div className="phone-card-img">
+                  <Image src={DEMO_IMAGES.properties["dlf-mypad"].cover} alt="" width={32} height={32} className="phone-card-thumb" />
+                </div>
+                <div className="phone-mini-bars"><div className="phone-mini-bar w80" /><div className="phone-mini-bar w60" /></div>
+              </div>
               <div className="phone-bar med" />
               <div className="phone-bar short" />
             </div>

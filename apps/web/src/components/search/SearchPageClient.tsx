@@ -11,6 +11,8 @@
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
+import { DEMO_IMAGES } from "@/lib/demo-images";
+import { PropertyImage } from "@/components/ui/PropertyImage";
 
 const PROPERTIES: Array<{
   id: string;
@@ -23,13 +25,14 @@ const PROPERTIES: Array<{
   badgeLabels: string[];
   score: number;
   bg: string;
+  imageUrl: string;
 }> = [
-  { id: "sobha-city-vista", price: "₹2.85 Cr", name: "Sobha City Vista — 4 BHK Ultra Luxury", loc: "Sector 108, Gurgaon · 2,850 sqft", specs: ["4 BHK", "4 Bath", "2 Park", "RERA"], tip: "18% appreciation expected. Metro 1.2km. Priced 8% below market.", badges: ["badge-gold", "badge-teal"], badgeLabels: ["⭐ Premium", "✦ AI Pick"], score: 94, bg: "linear-gradient(135deg,#132238,#1e3a5f)" },
-  { id: "dlf-mypad", price: "₹78 L", name: "DLF MyPad — 2 BHK Studio, Noida", loc: "Sector 59, Noida · 1,100 sqft", specs: ["2 BHK", "2 Bath", "1,100"], tip: "Best value in locality. 92% of seekers shortlisted this.", badges: ["badge-green", "badge-coral"], badgeLabels: ["✓ Verified", "🔥 Hot"], score: 88, bg: "linear-gradient(135deg,#1a2e1a,#2a4a2a)" },
-  { id: "m3m-golf-hills", price: "₹1.45 Cr", name: "M3M Golf Hills — 3 BHK Premium", loc: "Sector 79, Gurgaon · 1,890 sqft", specs: ["3 BHK", "3 Bath", "1 Park"], tip: "37 views today. Price rising after DDJK highway opens Q2.", badges: ["badge-white", "badge-teal"], badgeLabels: ["NEW", "✦ AI Pick"], score: 91, bg: "linear-gradient(135deg,#1a1a30,#2a2a50)" },
-  { id: "prestige-sunrise-park", price: "₹62 L", name: "Prestige Sunrise Park — 2 BHK", loc: "Whitefield, Bangalore · 1,250 sqft", specs: ["2 BHK", "2 Bath", "RERA"], tip: "IT corridor adjacency. 28% YoY appreciation recorded.", badges: ["badge-gold"], badgeLabels: ["⭐ Featured"], score: 86, bg: "linear-gradient(135deg,#2a1a1a,#4a2a2a)" },
-  { id: "brigade-cornerstone-utopia", price: "₹95 L", name: "Brigade Cornerstone Utopia — 3 BHK", loc: "Yelahanka, Bangalore · 1,580 sqft", specs: ["3 BHK", "3 Bath", "Dec 2026"], tip: "Launch price — 22% gains likely at possession.", badges: ["badge-coral"], badgeLabels: ["Under Construction"], score: 79, bg: "linear-gradient(135deg,#1a2a1a,#253a25)" },
-  { id: "godrej-meridian", price: "₹1.8 Cr", name: "Godrej Meridian — 4 BHK, Gurgaon", loc: "Sector 106, Gurgaon · 2,200 sqft", specs: ["4 BHK", "4 Bath", "2 Park"], tip: "Golf course views. Excellent school access score of 88.", badges: ["badge-green"], badgeLabels: ["✓ Verified"], score: 83, bg: "linear-gradient(135deg,#0d1a2a,#162a3a)" },
+  { id: "sobha-city-vista", price: "₹2.85 Cr", name: "Sobha City Vista — 4 BHK Ultra Luxury", loc: "Sector 108, Gurgaon · 2,850 sqft", specs: ["4 BHK", "4 Bath", "2 Park", "RERA"], tip: "18% appreciation expected. Metro 1.2km. Priced 8% below market.", badges: ["badge-gold", "badge-teal"], badgeLabels: ["⭐ Premium", "✦ AI Pick"], score: 94, bg: "linear-gradient(135deg,#132238,#1e3a5f)", imageUrl: DEMO_IMAGES.properties["sobha-city-vista"].cover },
+  { id: "dlf-mypad", price: "₹78 L", name: "DLF MyPad — 2 BHK Studio, Noida", loc: "Sector 59, Noida · 1,100 sqft", specs: ["2 BHK", "2 Bath", "1,100"], tip: "Best value in locality. 92% of seekers shortlisted this.", badges: ["badge-green", "badge-coral"], badgeLabels: ["✓ Verified", "🔥 Hot"], score: 88, bg: "linear-gradient(135deg,#1a2e1a,#2a4a2a)", imageUrl: DEMO_IMAGES.properties["dlf-mypad"].cover },
+  { id: "m3m-golf-hills", price: "₹1.45 Cr", name: "M3M Golf Hills — 3 BHK Premium", loc: "Sector 79, Gurgaon · 1,890 sqft", specs: ["3 BHK", "3 Bath", "1 Park"], tip: "37 views today. Price rising after DDJK highway opens Q2.", badges: ["badge-white", "badge-teal"], badgeLabels: ["NEW", "✦ AI Pick"], score: 91, bg: "linear-gradient(135deg,#1a1a30,#2a2a50)", imageUrl: DEMO_IMAGES.properties["m3m-golf-hills"].cover },
+  { id: "prestige-sunrise-park", price: "₹62 L", name: "Prestige Sunrise Park — 2 BHK", loc: "Whitefield, Bangalore · 1,250 sqft", specs: ["2 BHK", "2 Bath", "RERA"], tip: "IT corridor adjacency. 28% YoY appreciation recorded.", badges: ["badge-gold"], badgeLabels: ["⭐ Featured"], score: 86, bg: "linear-gradient(135deg,#2a1a1a,#4a2a2a)", imageUrl: DEMO_IMAGES.properties["prestige-sunrise-park"].cover },
+  { id: "brigade-cornerstone-utopia", price: "₹95 L", name: "Brigade Cornerstone Utopia — 3 BHK", loc: "Yelahanka, Bangalore · 1,580 sqft", specs: ["3 BHK", "3 Bath", "Dec 2026"], tip: "Launch price — 22% gains likely at possession.", badges: ["badge-coral"], badgeLabels: ["Under Construction"], score: 79, bg: "linear-gradient(135deg,#1a2a1a,#253a25)", imageUrl: DEMO_IMAGES.properties["brigade-cornerstone-utopia"].cover },
+  { id: "godrej-meridian", price: "₹1.8 Cr", name: "Godrej Meridian — 4 BHK, Gurgaon", loc: "Sector 106, Gurgaon · 2,200 sqft", specs: ["4 BHK", "4 Bath", "2 Park"], tip: "Golf course views. Excellent school access score of 88.", badges: ["badge-green"], badgeLabels: ["✓ Verified"], score: 83, bg: "linear-gradient(135deg,#0d1a2a,#162a3a)", imageUrl: DEMO_IMAGES.properties["godrej-meridian"].cover },
 ];
 
 const BHK_OPTIONS = ["1", "2", "3", "4+"];
@@ -244,8 +247,13 @@ export default function SearchPageClient() {
               {PROPERTIES.map((p) => (
                 <Link key={p.id} href={`/property/${p.id}`} className="prop-card reveal">
                   <div className="prop-img">
-                    <div className="prop-img-bg" style={{ background: p.bg }} />
-                    <div className="prop-emoji">🏡</div>
+                    <PropertyImage
+                      src={p.imageUrl}
+                      alt={p.name}
+                      className="prop-img-bg"
+                      sizes="(max-width: 768px) 100vw, 33vw"
+                      placeholderGradient={p.bg}
+                    />
                     <div className="prop-img-grad" />
                     <div className="prop-badges">
                       {p.badgeLabels.map((l, j) => (
