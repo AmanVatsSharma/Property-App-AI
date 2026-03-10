@@ -1,0 +1,84 @@
+/**
+ * @file http-exception.filter.ts
+ * @module common/filters
+ * @description Maps AppError and Nest exceptions to HTTP response; logs requestId and stack.
+ * @author BharatERP
+ * @created 2025-03-10
+ */
+
+import {
+  ExceptionFilter,
+  Catch,
+  ArgumentsHost,
+  HttpException,
+  HttpStatus,
+  Logger,
+} from '@nestjs/common';
+import { GqlArgumentsHost } from '@nestjs/graphql';
+import { Request } from 'express';
+import { AppError } from '../errors/app.error';
+
+@Catch()
+export class HttpExceptionFilter implements ExceptionFilter {
+  private readonly logger = new Logger(HttpExceptionFilter.name);
+
+  catch(exception: unknown, host: ArgumentsHost): void {
+    const gqlHost = GqlArgumentsHost.create(host);
+    const ctx = gqlHost.getContext();
+    const requestId = (ctx?.req && (ctx.req as Request).requestId) ?? ctx?.requestId ?? 'unknown';
+
+    if (exception instanceof AppError) {
+      this.logger.error(
+        `${exception.code}: ${exception.message}`,
+        exception.stack,
+        { requestId },
+      );
+      this.respond(host, exception.statusCode, {
+        statusCode: exception.statusCode,
+        code: exception.code,
+        message: exception.message,
+      });
+      return;
+    }
+
+    if (exception instanceof HttpException) {
+      const status = exception.getStatus();
+      const res = exception.getResponse();
+      const message = typeof res === 'object' && res !== null && 'message' in res
+        ? (res as { message: string | string[] }).message
+        : exception.message;
+      this.logger.warn(`${status}: ${JSON.stringify(message)}`, { requestId });
+      this.respond(host, status, {
+        statusCode: status,
+        message: Array.isArray(message) ? message[0] : message,
+      });
+      return;
+    }
+
+    const err = exception as Error;
+    this.logger.error(err?.message ?? 'Unknown error', err?.stack, { requestId });
+    this.respond(host, HttpStatus.INTERNAL_SERVER_ERROR, {
+      statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+      message: 'Internal server error',
+    });
+  }
+
+  private respond(
+    host: ArgumentsHost,
+    statusCode: number,
+    body: Record<string, unknown>,
+  ): void {
+    const type = host.getType();
+    if (type === 'http') {
+      const ctx = host.switchToHttp();
+      const req = ctx.getRequest<Request & { path?: string }>();
+      if (req?.path?.includes('graphql')) {
+        return;
+      }
+      const response = ctx.getResponse<Response>();
+      const res = response as unknown as { status: (s: number) => unknown; json: (b: unknown) => unknown };
+      res.status(statusCode);
+      res.json(body);
+    }
+  }
+}
