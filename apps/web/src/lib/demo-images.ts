@@ -19,11 +19,11 @@ export const DEMO_IMAGES = {
     Pune: U("1600573472550-8098d35cbfb7"),
     Chennai: U("1600585152220-90363fe7e115"),
   },
-  /** Testimonial avatar URLs (portrait style) */
+  /** Testimonial avatar URLs (reuse property thumbs so demo always loads) */
   testimonials: [
-    U("1494790108377-1cbc5b5e93d0", 120),
-    U("1534524787306-8a7708e2c3cc", 120),
-    U("1438761681033-6461fad0d8a0", 120),
+    U("1600596542815-ffad4c1539a9", 120),
+    U("1600566753190-17f0baa2a6a3", 120),
+    U("1600585154340-be6161a56a0c", 120),
   ],
   properties: {
     "sobha-city-vista": {
