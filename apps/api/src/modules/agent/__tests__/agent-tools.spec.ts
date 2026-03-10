@@ -93,6 +93,16 @@ describe('AgentToolsService', () => {
       const result = await service.invokeTool('get_property', { property_id: 'missing' });
       expect(result.content).toContain('not found');
     });
+
+    it('should invoke compare_properties and return comparison when properties exist', async () => {
+      propertyService.findOne.mockResolvedValue(mockProperty);
+      const result = await service.invokeTool('compare_properties', {
+        property_ids: ['uuid-1', 'uuid-2'],
+      });
+      expect(result.content).toContain('Comparison');
+      expect(result.content).toContain('Test Property');
+      expect(result.content).toContain('Bangalore');
+    });
   });
 
   describe('scoreAndPersistProperty', () => {
