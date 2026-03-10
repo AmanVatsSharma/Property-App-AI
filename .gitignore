@@ -1,2 +1,58 @@
-# Cursor IDE
+# Dependencies
+node_modules/
+.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# Nx
+.nx/cache
+.nx/workspace-data
+.nx/daemon
+
+# Next.js
+.next/
+out/
+build/
+.vercel
+
+# Build and output
+dist/
+tmp/
+temp/
+*.tsbuildinfo
+next-env.d.ts
+
+# Testing
+coverage/
+.nyc_output/
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+*.pem
+
+# Logs and debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
 .cursor/
+.idea/
+*.swp
+*.swo
+*~
+
+# Optional (uncomment if used)
+# .nx-cloud/

@@ -12,7 +12,12 @@
     "apps/*"
   ],
   "devDependencies": {
-    "nx": "^21.0.0",
-    "@nx/next": "^21.0.0"
+    "@nx/next": "^21.6.10",
+    "nx": "^21.0.0"
+  },
+  "dependencies": {
+    "next": "~15.2.4",
+    "react": "19.0.0",
+    "react-dom": "19.0.0"
   }
 }

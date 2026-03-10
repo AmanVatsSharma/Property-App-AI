@@ -4,20 +4,20 @@ This is the Next.js conversion of the UrbanNest.ai static site. The original HTM
 
 ## Run locally
 
+From **repo root** (Nx monorepo):
+
 ```bash
-cd web
 npm install   # if needed
 npm run dev
 ```
+
+Or from this directory: `nx run web:dev`.
 
 Open [http://localhost:3000](http://localhost:3000).
 
 ## Build
 
-```bash
-npm run build
-npm start
-```
+From repo root: `npm run build` then `npm run start`. Or: `nx run web:build`, `nx run web:start`.
 
 ## Routes
 

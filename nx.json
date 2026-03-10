@@ -4,16 +4,28 @@
   "targetDefaults": {
     "build": {
       "cache": true,
-      "outputs": ["{projectRoot}/.next"],
-      "inputs": ["production", "^production"]
+      "outputs": [
+        "{projectRoot}/.next"
+      ],
+      "inputs": [
+        "production",
+        "^production"
+      ]
     },
     "lint": {
       "cache": true,
-      "inputs": ["default", "{workspaceRoot}/.eslintrc.json", "{workspaceRoot}/eslint.config.mjs"]
+      "inputs": [
+        "default",
+        "{workspaceRoot}/.eslintrc.json",
+        "{workspaceRoot}/eslint.config.mjs"
+      ]
     }
   },
   "namedInputs": {
-    "default": ["{projectRoot}/**/*", "sharedGlobals"],
+    "default": [
+      "{projectRoot}/**/*",
+      "sharedGlobals"
+    ],
     "production": [
       "default",
       "!{projectRoot}/**/*.spec.ts",
@@ -22,5 +34,18 @@
       "!{projectRoot}/.eslintrc.json"
     ],
     "sharedGlobals": []
-  }
+  },
+  "plugins": [
+    {
+      "plugin": "@nx/next/plugin",
+      "options": {
+        "startTargetName": "next:start",
+        "buildTargetName": "next:build",
+        "devTargetName": "next:dev",
+        "serveStaticTargetName": "serve-static",
+        "buildDepsTargetName": "build-deps",
+        "watchDepsTargetName": "watch-deps"
+      }
+    }
+  ]
 }
