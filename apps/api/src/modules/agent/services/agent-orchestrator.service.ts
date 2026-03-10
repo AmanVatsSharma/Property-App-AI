@@ -1,0 +1,144 @@
+/**
+ * @file agent-orchestrator.service.ts
+ * @module agent
+ * @description LangGraph/LangChain agent loop; think -> tool -> observe -> respond.
+ * @author BharatERP
+ * @created 2025-03-11
+ */
+
+import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { ChatOpenAI } from '@langchain/openai';
+import { HumanMessage, AIMessage, SystemMessage, ToolMessage } from '@langchain/core/messages';
+import type { BaseMessage } from '@langchain/core/messages';
+import { LoggerService } from '../../../shared/logger';
+import { AgentToolsService } from './agent-tools.service';
+import type { AskAgentResult } from '../dtos/ask-agent-result.dto';
+import type { AskAgentInput } from '../dtos/ask-agent-input.dto';
+import { AGENT_CONFIG_KEYS } from '../config/agent-config';
+
+const SYSTEM_PROMPT = `You are UrbanNest AI, a helpful assistant for property search and real estate in India.
+You have access to tools to search properties, get property details, score properties, get neighbourhood scores, price forecasts, RERA checks, document analysis, and negotiation advice.
+Use the tools when the user's question requires data. Answer concisely and in a friendly way. If a tool returns "Placeholder" or "not found", say so and suggest next steps.`;
+
+@Injectable()
+export class AgentOrchestratorService {
+  constructor(
+    private readonly tools: AgentToolsService,
+    private readonly logger: LoggerService,
+    private readonly config: ConfigService,
+  ) {}
+
+  async ask(input: AskAgentInput, requestId?: string): Promise<AskAgentResult> {
+    this.logger.debug('ask entry', { method: 'ask', requestId, promptLength: input.prompt?.length });
+
+    const openaiKey = this.config.get<string>(AGENT_CONFIG_KEYS.OPENAI_API_KEY);
+    if (!openaiKey || openaiKey.trim() === '') {
+      this.logger.debug('ask exit (no API key)', { method: 'ask', requestId });
+      return {
+        answer:
+          'AI agent is not configured (missing OPENAI_API_KEY). Please set it in the environment to use the assistant.',
+        sources: [],
+        suggestedActions: [],
+      };
+    }
+
+    const modelName = this.config.get<string>(AGENT_CONFIG_KEYS.AGENT_MODEL) ?? 'gpt-4o';
+    const maxSteps = this.config.get<number>(AGENT_CONFIG_KEYS.AGENT_MAX_STEPS) ?? 10;
+
+    try {
+      const llm = new ChatOpenAI({
+        modelName,
+        temperature: 0.2,
+        openAIApiKey: openaiKey,
+      });
+      const toolList = this.tools.getTools();
+      const modelWithTools = llm.bindTools(toolList);
+
+      const sources: AskAgentResult['sources'] = [];
+      const suggestedActions: AskAgentResult['suggestedActions'] = [];
+
+      const contextHint =
+        input.context?.propertyId || input.context?.locality || input.context?.city
+          ? ` Context: ${[input.context.propertyId && `property ${input.context.propertyId}`, input.context.locality, input.context.city].filter(Boolean).join(', ')}.`
+          : '';
+      const userContent = input.prompt + contextHint;
+
+      const messages: BaseMessage[] = [
+        new SystemMessage(SYSTEM_PROMPT),
+        new HumanMessage(userContent),
+      ];
+
+      let lastResponse: AIMessage | null = null;
+      let steps = 0;
+
+      while (steps < maxSteps) {
+        steps += 1;
+        const response = (await modelWithTools.invoke(messages)) as AIMessage;
+        lastResponse = response;
+
+        const toolCalls = response.tool_calls ?? [];
+        if (toolCalls.length === 0) {
+          const text = typeof response.content === 'string' ? response.content : (response.content as unknown[])?.[0]?.text ?? '';
+          this.logger.debug('ask exit (final answer)', { method: 'ask', requestId, steps });
+          return {
+            answer: text || 'I could not generate a response.',
+            sources,
+            suggestedActions,
+          };
+        }
+
+        messages.push(response);
+
+        for (const tc of toolCalls) {
+          const name = tc.name;
+          const args = (typeof tc.args === 'object' && tc.args != null ? tc.args : {}) as Record<string, unknown>;
+          const toolCallId = tc.id ?? `call_${steps}_${name}`;
+          try {
+            const toolResult = await this.tools.invokeTool(name, args, requestId);
+            messages.push(
+              new ToolMessage({
+                content: toolResult.content,
+                tool_call_id: toolCallId,
+              }),
+            );
+            if (toolResult.sources?.length) {
+              sources.push(...toolResult.sources);
+            }
+            if (toolResult.suggestedActions?.length) {
+              suggestedActions.push(...toolResult.suggestedActions);
+            }
+          } catch (err) {
+            const message = err instanceof Error ? err.message : String(err);
+            messages.push(
+              new ToolMessage({
+                content: `Error: ${message}`,
+                tool_call_id: toolCallId,
+                status: 'error',
+              }),
+            );
+          }
+        }
+      }
+
+      const finalText =
+        lastResponse && typeof lastResponse.content === 'string'
+          ? lastResponse.content
+          : 'I reached the step limit. Please try a shorter or more specific question.';
+      this.logger.debug('ask exit (max steps)', { method: 'ask', requestId, steps });
+      return {
+        answer: finalText,
+        sources,
+        suggestedActions,
+      };
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      this.logger.warn({ method: 'ask', requestId, error: message }, 'Agent ask failed');
+      return {
+        answer: `Sorry, something went wrong: ${message}. Please try again.`,
+        sources: [],
+        suggestedActions: [],
+      };
+    }
+  }
+}
