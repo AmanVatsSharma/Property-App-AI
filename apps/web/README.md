@@ -49,3 +49,7 @@ From repo root: `npm run build` then `npm run start`. Or: `nx run web:build`, `n
 - `src/components/emi/` — EMICalculatorClient
 
 All internal links use Next.js `Link`. Nav uses `usePathname()` for active state; scroll-based nav class and reveal-on-scroll are handled in layout and RevealObserver.
+
+## Demo images
+
+For a presentable demo, the app uses high-quality placeholder images from **Unsplash** (no API key required for static URLs). These are defined in `src/lib/demo-images.ts`: city skylines for the “Explore by City” section and property covers/galleries for listing cards, search results, and the property detail gallery. When the API or mock does not provide image URLs, the UI falls back to gradients and emoji placeholders. To use local assets instead, add images under `public/demo/` and point the demo-image constants to paths like `/demo/cities/mumbai.jpg`.
