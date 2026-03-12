@@ -8,7 +8,9 @@
 
 import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { JwtModule } from '@nestjs/jwt';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { BullModule } from '@nestjs/bullmq';
 import { APP_GUARD } from '@nestjs/core';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { GraphQLModule } from '@nestjs/graphql';
@@ -25,11 +27,25 @@ import { RequestIdMiddleware } from '../common/middleware/request-id.middleware'
 import { HttpExceptionFilter } from '../common/filters/http-exception.filter';
 import { LoggingInterceptor } from '../common/interceptors/logging.interceptor';
 import { TimeoutInterceptor } from '../common/interceptors/timeout.interceptor';
+import { AuthGuard } from '../common/guards/auth.guard';
 
 @Module({
   imports: [
     AppConfigModule,
     LoggerModule,
+    JwtModule.registerAsync({
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
+        secret: config.get<string>('JWT_SECRET') ?? 'default-secret-min-16-chars',
+        signOptions: { expiresIn: config.get<string>('JWT_EXPIRES_IN') ?? '7d' },
+      }),
+    }),
+    BullModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
+        connection: config.get<string>('REDIS_URL') ? { url: config.get<string>('REDIS_URL') } : { host: 'localhost', port: 6379 },
+      }),
+    }),
     ThrottlerModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
@@ -81,6 +97,7 @@ import { TimeoutInterceptor } from '../common/interceptors/timeout.interceptor';
     { provide: APP_FILTER, useClass: HttpExceptionFilter },
     { provide: APP_INTERCEPTOR, useClass: LoggingInterceptor },
     { provide: APP_INTERCEPTOR, useClass: TimeoutInterceptor },
+    { provide: APP_GUARD, useClass: AuthGuard },
     { provide: APP_GUARD, useClass: ThrottlerGuard },
   ],
 })
