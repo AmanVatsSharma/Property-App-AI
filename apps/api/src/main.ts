@@ -9,12 +9,18 @@
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
+import { VersioningType } from '@nestjs/common';
 import helmet from 'helmet';
 import { AppModule } from './app/app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const config = app.get(ConfigService);
+  app.enableVersioning({
+    type: VersioningType.HEADER,
+    header: 'X-API-Version',
+    defaultVersion: '1',
+  });
   app.use(helmet());
   app.useGlobalPipes(
     new ValidationPipe({
