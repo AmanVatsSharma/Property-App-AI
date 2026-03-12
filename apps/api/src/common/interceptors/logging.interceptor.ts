@@ -25,14 +25,18 @@ export class LoggingInterceptor implements NestInterceptor {
     let requestId = 'unknown';
     let meta: string;
 
+    let userId: string | undefined;
     if (type === 'http') {
-      const req = context.switchToHttp().getRequest<{ method?: string; path?: string; requestId?: string }>();
+      const req = context.switchToHttp().getRequest<{ method?: string; path?: string; requestId?: string; user?: { sub?: string; id?: string } }>();
       requestId = req?.requestId ?? requestId;
+      userId = req?.user?.sub ?? req?.user?.id;
       meta = `${req?.method ?? 'HTTP'} ${req?.path ?? ''}`;
     } else {
       const gql = GqlExecutionContext.create(context);
       const ctx = gql.getContext();
-      requestId = (ctx?.req && (ctx.req as { requestId?: string }).requestId) ?? ctx?.requestId ?? requestId;
+      const req = ctx?.req as { requestId?: string; user?: { sub?: string; id?: string } } | undefined;
+      requestId = req?.requestId ?? (ctx as { requestId?: string })?.requestId ?? requestId;
+      userId = req?.user?.sub ?? req?.user?.id;
       const info = gql.getInfo();
       meta = `GraphQL ${info?.operation?.name?.value ?? info?.fieldName ?? 'op'}`;
     }
@@ -41,7 +45,7 @@ export class LoggingInterceptor implements NestInterceptor {
       tap(() => {
         const duration = Date.now() - start;
         logger.info(
-          { requestId, durationMs: duration, context: 'LoggingInterceptor' },
+          { requestId, userId, durationMs: duration, context: 'LoggingInterceptor' },
           `${meta} completed in ${duration}ms`,
         );
       }),
