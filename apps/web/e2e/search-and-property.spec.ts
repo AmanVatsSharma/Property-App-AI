@@ -28,3 +28,21 @@ test.describe("Search and property detail", () => {
     await expect(sortSelect).toHaveValue("price-asc");
   });
 });
+
+test.describe("AI Fab", () => {
+  test("opens AI panel and shows prompt input", async ({ page }) => {
+    await page.goto("/");
+    await page.getByRole("button", { name: /open AI assistant|Ask UrbanNest AI/i }).click();
+    await expect(page.getByRole("dialog", { name: /UrbanNest AI/i })).toBeVisible({ timeout: 5000 });
+    await expect(page.getByPlaceholder(/3 BHK|Describe your home/i)).toBeVisible();
+  });
+
+  test("submit prompt shows result or error", async ({ page }) => {
+    await page.goto("/");
+    await page.getByRole("button", { name: /open AI assistant|Ask UrbanNest AI/i }).click();
+    await expect(page.getByRole("dialog", { name: /UrbanNest AI/i })).toBeVisible({ timeout: 5000 });
+    await page.getByPlaceholder(/3 BHK|Describe your home/i).fill("2 BHK in Bangalore under 80 lakh");
+    await page.getByRole("button", { name: /^Ask$/ }).click();
+    await expect(page.getByText(/Sources:|Sorry|error|Failed|GraphQL|not configured|Try again/i)).toBeVisible({ timeout: 20000 });
+  });
+});
