@@ -7,6 +7,7 @@
  */
 
 import { ObjectType, Field } from '@nestjs/graphql';
+import { UserRole } from '../../user/entities/user.entity';
 
 @ObjectType()
 export class AuthUserResult {
@@ -18,6 +19,9 @@ export class AuthUserResult {
 
   @Field({ nullable: true })
   displayName: string | null;
+
+  @Field(() => UserRole)
+  role: UserRole;
 }
 
 @ObjectType()

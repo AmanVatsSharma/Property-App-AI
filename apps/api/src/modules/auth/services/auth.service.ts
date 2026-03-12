@@ -1,7 +1,7 @@
 /**
  * @file auth.service.ts
  * @module auth
- * @description Send OTP, verify OTP, issue JWT; get-or-create User by phone.
+ * @description Send OTP, verify OTP, issue JWT; get-or-create User by phone; set admin/broker from ADMIN_PHONES/BROKER_PHONES.
  * @author BharatERP
  * @created 2025-03-12
  */
@@ -12,6 +12,7 @@ import { ConfigService } from '@nestjs/config';
 import { OtpService } from './otp.service';
 import { UserService } from '../../user/services/user.service';
 import { LoggerService } from '../../../shared/logger';
+import { UserRole } from '../../user/entities/user.entity';
 
 @Injectable()
 export class AuthService {
@@ -35,22 +36,31 @@ export class AuthService {
     return { success: true, message: 'OTP sent' };
   }
 
-  async verifyOtp(phone: string, code: string): Promise<{ token: string; user: { id: string; phone: string; displayName: string | null } }> {
+  async verifyOtp(phone: string, code: string): Promise<{ token: string; user: { id: string; phone: string; displayName: string | null; role: UserRole } }> {
     const normalized = phone.replace(/\D/g, '').slice(-10);
     if (!this.otp.verify(normalized, code)) {
       throw new BadRequestException('Invalid or expired OTP');
     }
-    const user = await this.userService.getOrCreateByPhone(normalized);
+    let user = await this.userService.getOrCreateByPhone(normalized);
+    const adminPhonesRaw = this.config.get<string>('ADMIN_PHONES') ?? '';
+    const adminPhones = adminPhonesRaw.split(',').map((p) => p.replace(/\D/g, '').trim()).filter(Boolean);
+    const brokerPhonesRaw = this.config.get<string>('BROKER_PHONES') ?? '';
+    const brokerPhones = brokerPhonesRaw.split(',').map((p) => p.replace(/\D/g, '').trim()).filter(Boolean);
+    if (adminPhones.includes(normalized)) {
+      user = await this.userService.setRole(user.id, UserRole.ADMIN);
+    } else if (brokerPhones.includes(normalized)) {
+      user = await this.userService.setRole(user.id, UserRole.BROKER);
+    }
     const secret = this.config.get<string>('JWT_SECRET') ?? 'default-secret-min-16-chars';
     const expiresIn = this.config.get<string>('JWT_EXPIRES_IN') ?? '7d';
     const token = await this.jwt.signAsync(
-      { sub: user.id, phone: user.phone },
+      { sub: user.id, phone: user.phone, role: user.role },
       { secret, expiresIn },
     );
-    this.logger.debug('verifyOtp', { userId: user.id, phone: normalized });
+    this.logger.debug('verifyOtp', { userId: user.id, phone: normalized, role: user.role });
     return {
       token,
-      user: { id: user.id, phone: user.phone, displayName: user.displayName },
+      user: { id: user.id, phone: user.phone, displayName: user.displayName, role: user.role },
     };
   }
 }
