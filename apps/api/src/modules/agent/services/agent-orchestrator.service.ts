@@ -28,7 +28,21 @@ export class AgentOrchestratorService {
     private readonly config: ConfigService,
   ) {}
 
-  async ask(input: AskAgentInput, requestId?: string): Promise<AskAgentResult> {
+  async ask(
+    input: AskAgentInput,
+    requestId?: string,
+    userId?: string | null,
+  ): Promise<AskAgentResult> {
+    const startMs = Date.now();
+    this.tools.setAgentContext({ userId: userId ?? null });
+    try {
+      return await this.askInternal(input, requestId);
+    } finally {
+      this.tools.clearAgentContext();
+    }
+  }
+
+  private async askInternal(input: AskAgentInput, requestId?: string): Promise<AskAgentResult> {
     const startMs = Date.now();
     const provider = this.config.get<'openai' | 'anthropic'>(AGENT_CONFIG_KEYS.AGENT_PROVIDER) ?? 'openai';
     const model = provider === 'anthropic'
@@ -88,10 +102,19 @@ export class AgentOrchestratorService {
           : '';
       const userContent = input.prompt + contextHint;
 
-      const messages: BaseMessage[] = [
-        new SystemMessage(systemContent),
-        new HumanMessage(userContent),
-      ];
+      const messages: BaseMessage[] = [new SystemMessage(systemContent)];
+
+      if (input.conversationHistory?.length) {
+        for (const msg of input.conversationHistory) {
+          if (msg.role === 'user') {
+            messages.push(new HumanMessage(msg.content));
+          } else if (msg.role === 'assistant') {
+            messages.push(new AIMessage(msg.content));
+          }
+        }
+      }
+
+      messages.push(new HumanMessage(userContent));
 
       let lastResponse: AIMessage | null = null;
       let steps = 0;

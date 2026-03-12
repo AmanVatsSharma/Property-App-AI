@@ -30,6 +30,7 @@ export const AgentAskResponseUnion = createUnionType({
 });
 
 interface GraphQLContext {
+  req?: { user?: { sub: string } };
   requestId?: string;
 }
 
@@ -50,14 +51,15 @@ export class AgentResolver {
     @Context() ctx?: GraphQLContext,
   ): Promise<AskAgentResult | AskAgentAsyncResult> {
     const requestId = ctx?.requestId;
-    this.logger.debug('askAgent mutation entry', { method: 'askAgent', requestId });
+    const userId = ctx?.req?.user?.sub ?? null;
+    this.logger.debug('askAgent mutation entry', { method: 'askAgent', requestId, userId: userId ?? 'anonymous' });
     const queueEnabled = this.config.get<boolean>('AGENT_QUEUE_ENABLED') === true && this.config.get<string>('REDIS_URL');
     if (queueEnabled) {
-      const jobId = await this.queue.addJob({ input, requestId });
+      const jobId = await this.queue.addJob({ input, requestId, userId });
       this.logger.debug('askAgent queued', { method: 'askAgent', requestId, jobId });
       return { jobId };
     }
-    const result = await this.orchestrator.ask(input, requestId);
+    const result = await this.orchestrator.ask(input, requestId, userId);
     this.logger.debug('askAgent mutation exit', { method: 'askAgent', requestId });
     return result;
   }

@@ -17,6 +17,7 @@ export const AGENT_QUEUE_NAME = 'agent';
 export interface AgentJobData {
   input: AskAgentInput;
   requestId?: string;
+  userId?: string | null;
 }
 
 export type AgentJobResult = AskAgentResult;
