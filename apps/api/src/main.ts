@@ -12,10 +12,12 @@ import { ConfigService } from '@nestjs/config';
 import { VersioningType } from '@nestjs/common';
 import helmet from 'helmet';
 import { AppModule } from './app/app.module';
+import { logger } from './shared/logger';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const config = app.get(ConfigService);
+  app.enableShutdownHooks();
   app.enableVersioning({
     type: VersioningType.HEADER,
     header: 'X-API-Version',
@@ -38,7 +40,10 @@ async function bootstrap() {
   if (config.get<string>('NODE_ENV') === 'production') {
     const jwtSecret = config.get<string>('JWT_SECRET');
     if (!jwtSecret || jwtSecret.trim() === '') {
-      console.warn('[Production] JWT_SECRET is not set; protected routes will not require authentication.');
+      logger.warn(
+        { context: 'bootstrap' },
+        '[Production] JWT_SECRET is not set; protected routes will not require authentication.',
+      );
     }
   }
   await app.listen(port);

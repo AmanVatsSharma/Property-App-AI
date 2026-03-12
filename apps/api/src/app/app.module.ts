@@ -28,6 +28,7 @@ import { AgentModule } from '../modules/agent/agent.module';
 import { AreaModule } from '../modules/area/area.module';
 import { StorageModule } from '../modules/storage/storage.module';
 import { AdminModule } from '../modules/admin/admin.module';
+import { AppError } from '../common/errors';
 import { RequestIdMiddleware } from '../common/middleware/request-id.middleware';
 import { HttpExceptionFilter } from '../common/filters/http-exception.filter';
 import { LoggingInterceptor } from '../common/interceptors/logging.interceptor';
@@ -70,8 +71,16 @@ import { AuthGuard } from '../common/guards/auth.guard';
         sortSchema: true,
         playground: config.get<string>('NODE_ENV') !== 'production',
         context: ({ req }: { req: { requestId?: string } }) => ({ req, requestId: req?.requestId }),
-        formatError: (formatted: { message: string; extensions?: Record<string, unknown> }, error: unknown) => {
-          const orig = error as { extensions?: { code?: string; statusCode?: number }; message?: string };
+        formatError: (formatted: { message: string; extensions?: Record<string, unknown>; originalError?: unknown }, error?: unknown) => {
+          const raw = (formatted?.originalError ?? error) as unknown;
+          if (raw instanceof AppError) {
+            return {
+              ...formatted,
+              message: raw.message,
+              extensions: { ...formatted.extensions, code: raw.code, statusCode: raw.statusCode },
+            };
+          }
+          const orig = (formatted ?? error) as { extensions?: { code?: string; statusCode?: number } };
           if (orig?.extensions?.code != null) {
             return { ...formatted, extensions: { ...formatted.extensions, code: orig.extensions.code, statusCode: orig.extensions.statusCode } };
           }
