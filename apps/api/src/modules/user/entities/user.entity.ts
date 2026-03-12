@@ -1,7 +1,7 @@
 /**
  * @file user.entity.ts
  * @module user
- * @description User entity: unique phone, optional displayName, role (admin/user); created on first OTP login.
+ * @description User entity: unique phone, optional displayName, role (user/broker/admin); created on first OTP login.
  * @author BharatERP
  * @created 2025-03-12
  */
@@ -11,6 +11,7 @@ import { ObjectType, Field, registerEnumType } from '@nestjs/graphql';
 
 export enum UserRole {
   USER = 'user',
+  BROKER = 'broker',
   ADMIN = 'admin',
 }
 
