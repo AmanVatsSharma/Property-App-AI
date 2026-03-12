@@ -261,7 +261,7 @@ export class AgentToolsService {
       );
       return {
         content: `Listing created: "${property.title}" in ${property.location} at ₹${Number(property.price).toLocaleString('en-IN')}.`,
-        suggestedActions: [{ label: 'View listing', target: `/search?highlight=${property.id}` }],
+        suggestedActions: [{ label: 'View listing', target: `/property/${property.id}` }],
         sources: [{ type: 'property', label: property.title, id: property.id }],
       };
     } catch (err) {
