@@ -6,13 +6,17 @@
  * @created 2025-03-10
  */
 
-import { Resolver, Query, Mutation, Args } from '@nestjs/graphql';
+import { Resolver, Query, Mutation, Args, Context } from '@nestjs/graphql';
 import { Property } from '../entities/property.entity';
 import { PropertyService } from '../services/property.service';
 import { CreatePropertyDto } from '../dtos/create-property.dto';
 import { UpdatePropertyDto } from '../dtos/update-property.dto';
 import { PropertyFilterDto } from '../dtos/property-filter.dto';
 import { LoggerService } from '../../../shared/logger';
+
+interface GqlContext {
+  req?: { user?: { sub: string } };
+}
 
 @Resolver(() => Property)
 export class PropertyResolver {
@@ -38,9 +42,13 @@ export class PropertyResolver {
   }
 
   @Mutation(() => Property)
-  async createProperty(@Args('input') input: CreatePropertyDto): Promise<Property> {
-    this.logger.debug('createProperty mutation entry', { method: 'createProperty' });
-    const result = await this.propertyService.create(input);
+  async createProperty(
+    @Args('input') input: CreatePropertyDto,
+    @Context() ctx: GqlContext,
+  ): Promise<Property> {
+    const userId = ctx.req?.user?.sub ?? null;
+    this.logger.debug('createProperty mutation entry', { method: 'createProperty', userId });
+    const result = await this.propertyService.create(input, userId);
     this.logger.debug('createProperty mutation exit', { method: 'createProperty' });
     return result;
   }

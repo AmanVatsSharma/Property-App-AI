@@ -22,6 +22,7 @@ import { AppConfigModule } from '../shared/config';
 import { LoggerModule } from '../shared/logger';
 import { HealthModule } from '../modules/health/health.module';
 import { AuthModule } from '../modules/auth/auth.module';
+import { UserModule } from '../modules/user/user.module';
 import { PropertyModule } from '../modules/property/property.module';
 import { AgentModule } from '../modules/agent/agent.module';
 import { StorageModule } from '../modules/storage/storage.module';
@@ -91,6 +92,7 @@ import { AuthGuard } from '../common/guards/auth.guard';
     }),
     HealthModule,
     AuthModule,
+    UserModule,
     PropertyModule,
     AgentModule,
     StorageModule,
