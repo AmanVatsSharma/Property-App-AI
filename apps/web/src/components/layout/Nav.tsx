@@ -12,15 +12,10 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useTheme } from "next-themes";
-
-const NAV_LINKS = [
-  { href: "/search", label: "Buy" },
-  { href: "/search?mode=rent", label: "Rent" },
-  { href: "/search?type=new", label: "New Projects" },
-  { href: "/search?type=commercial", label: "Commercial" },
-  { href: "/search", label: "AI Copilot ✦" },
-  { href: "/price-forecast", label: "Market Pulse" },
-];
+import { NAV_LINKS } from "@property-app-ai/shared";
+import { useAuth } from "@/components/providers/AuthProvider";
+import LoginModal from "@/components/auth/LoginModal";
+import { gqlMe } from "@/lib/graphql-client";
 
 function getActiveLabel(pathname: string): string | null {
   if (pathname === "/search") return "Buy";
@@ -37,8 +32,23 @@ export default function Nav() {
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
   const { theme, setTheme } = useTheme();
+  const { isAuthenticated, token, signOut, openLoginModal, setOpenLoginModal } = useAuth();
+  const [profileUser, setProfileUser] = useState<{ displayName: string | null; phone: string } | null>(null);
   const activeLabel = getActiveLabel(pathname ?? "");
+
+  useEffect(() => {
+    if (!isAuthenticated || !token) {
+      setProfileUser(null);
+      return;
+    }
+    let cancelled = false;
+    gqlMe({ Authorization: `Bearer ${token}` })
+      .then((user) => { if (!cancelled && user) setProfileUser({ displayName: user.displayName, phone: user.phone }); })
+      .catch(() => { if (!cancelled) setProfileUser(null); });
+    return () => { cancelled = true; };
+  }, [isAuthenticated, token]);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 30);
@@ -102,9 +112,44 @@ export default function Nav() {
           <Link href="/about" className="nbtn-ghost">
             About
           </Link>
-          <button type="button" className="nbtn-ghost">
-            Sign In
-          </button>
+          {isAuthenticated ? (
+            <div className="relative">
+              <button
+                type="button"
+                className="nbtn-ghost"
+                onClick={() => setProfileOpen((o) => !o)}
+                aria-expanded={profileOpen}
+                aria-haspopup="true"
+              >
+                Profile
+              </button>
+              {profileOpen && (
+                <>
+                  <div className="fixed inset-0 z-[90]" aria-hidden onClick={() => setProfileOpen(false)} />
+                  <div className="absolute right-0 top-full mt-1 py-2 min-w-[160px] rounded-lg bg-[var(--dark)] border border-[var(--border)] shadow-lg z-[91]">
+                    <p className="px-3 py-1 text-sm text-[var(--text-muted)]">
+                      {profileUser?.displayName
+                        ? `Signed in as ${profileUser.displayName}`
+                        : profileUser?.phone
+                          ? `Signed in as ******${profileUser.phone.slice(-4)}`
+                          : "Signed in"}
+                    </p>
+                    <button
+                      type="button"
+                      className="w-full text-left px-3 py-2 text-sm hover:bg-[var(--hover-bg)]"
+                      onClick={() => { setProfileOpen(false); signOut(); }}
+                    >
+                      Sign out
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          ) : (
+            <button type="button" className="nbtn-ghost" onClick={() => setOpenLoginModal(true)}>
+              Sign In
+            </button>
+          )}
           <Link href="/post-property" className="nbtn-primary">
             Post Free ✦
           </Link>
@@ -139,9 +184,15 @@ export default function Nav() {
           <Link href="/about" className="npill" onClick={closeMenu}>
             About
           </Link>
-          <button type="button" className="npill" onClick={closeMenu}>
-            Sign In
-          </button>
+          {isAuthenticated ? (
+            <button type="button" className="npill" onClick={() => { signOut(); closeMenu(); }}>
+              Sign out
+            </button>
+          ) : (
+            <button type="button" className="npill" onClick={() => { setOpenLoginModal(true); closeMenu(); }}>
+              Sign In
+            </button>
+          )}
           <Link href="/post-property" className="nbtn-primary nav-drawer-cta" onClick={closeMenu}>
             Post Free ✦
           </Link>
@@ -157,6 +208,7 @@ export default function Nav() {
           </button>
         </div>
       </div>
+      <LoginModal open={openLoginModal} onClose={() => setOpenLoginModal(false)} />
     </>
   );
 }
