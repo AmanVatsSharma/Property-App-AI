@@ -29,9 +29,18 @@ export class AgentOrchestratorService {
   ) {}
 
   async ask(input: AskAgentInput, requestId?: string): Promise<AskAgentResult> {
-    this.logger.debug('ask entry', { method: 'ask', requestId, promptLength: input.prompt?.length });
-
+    const startMs = Date.now();
     const provider = this.config.get<'openai' | 'anthropic'>(AGENT_CONFIG_KEYS.AGENT_PROVIDER) ?? 'openai';
+    const model = provider === 'anthropic'
+      ? this.config.get<string>(AGENT_CONFIG_KEYS.AGENT_ANTHROPIC_MODEL) ?? 'claude-sonnet'
+      : this.config.get<string>(AGENT_CONFIG_KEYS.AGENT_MODEL) ?? 'gpt-4o';
+    this.logger.debug('ask entry', {
+      method: 'ask',
+      requestId,
+      promptLength: input.prompt?.length ?? 0,
+      provider,
+      model,
+    });
 
     if (provider === 'anthropic') {
       const anthropicKey = this.config.get<string>(AGENT_CONFIG_KEYS.ANTHROPIC_API_KEY);
@@ -95,7 +104,16 @@ export class AgentOrchestratorService {
         const toolCalls = response.tool_calls ?? [];
         if (toolCalls.length === 0) {
           const text = typeof response.content === 'string' ? response.content : (response.content as unknown[])?.[0]?.text ?? '';
-          this.logger.debug('ask exit (final answer)', { method: 'ask', requestId, steps });
+          const durationMs = Date.now() - startMs;
+          this.logger.info('ask completed', {
+            method: 'ask',
+            requestId,
+            steps,
+            durationMs,
+            provider,
+            model,
+            inputSize: input.prompt?.length ?? 0,
+          });
           return {
             answer: text || 'I could not generate a response.',
             sources,
@@ -140,7 +158,16 @@ export class AgentOrchestratorService {
         lastResponse && typeof lastResponse.content === 'string'
           ? lastResponse.content
           : 'I reached the step limit. Please try a shorter or more specific question.';
-      this.logger.debug('ask exit (max steps)', { method: 'ask', requestId, steps });
+      const durationMs = Date.now() - startMs;
+      this.logger.info('ask completed (max steps)', {
+        method: 'ask',
+        requestId,
+        steps,
+        durationMs,
+        provider,
+        model,
+        inputSize: input.prompt?.length ?? 0,
+      });
       return {
         answer: finalText,
         sources,
@@ -148,7 +175,11 @@ export class AgentOrchestratorService {
       };
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
-      this.logger.warn({ method: 'ask', requestId, error: message }, 'Agent ask failed');
+      const durationMs = Date.now() - startMs;
+      this.logger.warn(
+        { method: 'ask', requestId, error: message, durationMs, provider, model: model ?? 'n/a' },
+        'Agent ask failed',
+      );
       return {
         answer: `Sorry, something went wrong: ${message}. Please try again.`,
         sources: [],
