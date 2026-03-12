@@ -1,16 +1,17 @@
 /**
  * @file admin.resolver.ts
  * @module admin
- * @description GraphQL resolver for admin-only queries: users list and dashboard stats.
+ * @description GraphQL resolver for admin-only queries and mutations: users list, stats, setUserRole.
  * @author BharatERP
  * @created 2025-03-13
  */
 
-import { Resolver, Query, Args, Int } from '@nestjs/graphql';
-import { UseGuards } from '@nestjs/common';
+import { Resolver, Query, Mutation, Args, Int } from '@nestjs/graphql';
+import { UseGuards, NotFoundException } from '@nestjs/common';
 import { AdminGuard } from '../../../common/guards/admin.guard';
 import { UserService } from '../../user/services/user.service';
 import { PropertyService } from '../../property/services/property.service';
+import { User, UserRole } from '../../user/entities/user.entity';
 import { AdminStats } from '../dtos/admin-stats.dto';
 import { UsersListResult } from '../dtos/users-list.dto';
 
@@ -40,5 +41,18 @@ export class AdminResolver {
       this.userService.getCount(),
     ]);
     return { propertyCount, userCount };
+  }
+
+  @UseGuards(AdminGuard)
+  @Mutation(() => User, { name: 'setUserRole' })
+  async setUserRole(
+    @Args('userId') userId: string,
+    @Args('role', { type: () => UserRole }) role: UserRole,
+  ): Promise<User> {
+    const user = await this.userService.findById(userId);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    return this.userService.setRole(userId, role);
   }
 }
