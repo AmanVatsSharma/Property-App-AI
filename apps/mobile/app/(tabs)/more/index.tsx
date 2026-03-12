@@ -22,6 +22,17 @@ export default function MoreIndexScreen() {
 
   return (
     <ScrollView className="flex-1 bg-night" contentContainerStyle={{ padding: 16, paddingBottom: 32 }}>
+      <Pressable
+        onPress={() => router.push('/login')}
+        className="bg-teal-dim rounded-xl p-4 border border-teal/30 mb-4 flex-row items-center gap-4"
+      >
+        <Text className="text-2xl">🔐</Text>
+        <View className="flex-1">
+          <Text className="text-white font-semibold">Sign in</Text>
+          <Text className="text-text-muted text-sm">Sign in with mobile OTP</Text>
+        </View>
+        <Text className="text-teal">→</Text>
+      </Pressable>
       {TOOLS.map((item) => (
         <Pressable
           key={item.route}
