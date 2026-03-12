@@ -10,4 +10,5 @@ Shared design tokens, types, and navigation config used by web (Next.js) and mob
 
 ## Changelog
 
+- 2025-03-12: Added graphql/client (runGraphQL) for web and mobile GraphQL API calls. Web and mobile now use shared NAV_LINKS, FOOTER_LINKS, SEARCH_TABS where applicable.
 - 2025-03-10: Initial module; theme tokens, nav config, property types.
