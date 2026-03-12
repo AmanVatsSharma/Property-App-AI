@@ -12,6 +12,8 @@
     "mobile:ios": "nx run mobile:run-ios",
     "mobile:android": "nx run mobile:run-android",
     "mobile:apk": "nx run mobile:build-apk",
+    "dev:admin": "nx run admin:dev",
+    "build:admin": "nx run admin:build",
     "lint": "nx run-many -t lint"
   },
   "workspaces": [
