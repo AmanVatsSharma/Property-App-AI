@@ -20,12 +20,26 @@ export interface ToolResult {
   suggestedActions?: Array<{ label: string; target?: string }>;
 }
 
+export interface AgentContext {
+  userId?: string | null;
+}
+
 @Injectable()
 export class AgentToolsService {
+  private agentContext: AgentContext = {};
+
   constructor(
     private readonly propertyService: PropertyService,
     private readonly logger: LoggerService,
   ) {}
+
+  setAgentContext(ctx: AgentContext): void {
+    this.agentContext = ctx ?? {};
+  }
+
+  clearAgentContext(): void {
+    this.agentContext = {};
+  }
 
   /**
    * Returns LangChain tool definitions for the orchestrator to bind to the LLM.
@@ -159,6 +173,33 @@ export class AgentToolsService {
           }),
         },
       ),
+      tool(
+        async (input: {
+          title: string;
+          location: string;
+          price: number;
+          type?: string;
+          listing_for?: string;
+          bedrooms?: number;
+          bathrooms?: number;
+        }) => {
+          return self.createListingImpl(input);
+        },
+        {
+          name: 'create_listing',
+          description:
+            'Create a new property listing for the signed-in user (rent or sell). Use when the user wants to "post", "list", "rent out", or "sell" a property. Requires: title, location, price. Optional: type (apartment, villa, etc.), listing_for (sell or rent), bedrooms, bathrooms. User must be signed in.',
+          schema: z.object({
+            title: z.string().describe('Short listing title e.g. 2BHK Apartment in Koramangala'),
+            location: z.string().describe('Address, locality, or city'),
+            price: z.number().describe('Price in INR'),
+            type: z.string().optional().default('apartment').describe('apartment, villa, plot, builder-floor, office'),
+            listing_for: z.string().optional().default('sell').describe('sell or rent'),
+            bedrooms: z.number().optional().default(0),
+            bathrooms: z.number().optional().default(0),
+          }),
+        },
+      ),
     ];
     this.logger.debug('getTools exit', { method: 'getTools', count: tools.length });
     return tools;
@@ -178,12 +219,55 @@ export class AgentToolsService {
     }
     try {
       const output = await tool.invoke(args);
+      if (typeof output === 'object' && output != null && 'content' in output) {
+        return output as ToolResult;
+      }
       const content = typeof output === 'string' ? output : JSON.stringify(output);
       return { content };
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       this.logger.warn({ method: 'invokeTool', name, error: message }, 'Tool invocation failed');
       return { content: `Error: ${message}` };
+    }
+  }
+
+  private async createListingImpl(input: {
+    title: string;
+    location: string;
+    price: number;
+    type?: string;
+    listing_for?: string;
+    bedrooms?: number;
+    bathrooms?: number;
+  }): Promise<ToolResult> {
+    const userId = this.agentContext.userId;
+    if (!userId) {
+      return {
+        content: 'You need to sign in to post a listing. Please sign in and try again.',
+      };
+    }
+    try {
+      const property = await this.propertyService.create(
+        {
+          title: input.title,
+          location: input.location,
+          price: input.price,
+          type: input.type ?? 'apartment',
+          listingFor: input.listing_for ?? 'sell',
+          bedrooms: input.bedrooms ?? 0,
+          bathrooms: input.bathrooms ?? 0,
+        },
+        userId,
+      );
+      return {
+        content: `Listing created: "${property.title}" in ${property.location} at ₹${Number(property.price).toLocaleString('en-IN')}.`,
+        suggestedActions: [{ label: 'View listing', target: `/search?highlight=${property.id}` }],
+        sources: [{ type: 'property', label: property.title, id: property.id }],
+      };
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      this.logger.warn({ method: 'createListingImpl', error: message }, 'Create listing failed');
+      return { content: `Could not create listing: ${message}` };
     }
   }
 
