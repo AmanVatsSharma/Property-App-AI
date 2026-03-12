@@ -33,10 +33,14 @@
 - AGENT_THINKING_BUDGET_TOKENS — optional; when set and provider is anthropic, enables Claude extended thinking (budget in tokens)
 - AGENT_PLAN_FIRST — optional; when true, system prompt asks model to state plan in one line before calling tools
 - AGENT_MAX_STEPS — max tool-call steps (default 10)
-- AGENT_QUEUE_ENABLED — use queue for long runs
-- REDIS_URL — optional, for queue/cache
+- AGENT_QUEUE_ENABLED — when true and REDIS_URL set, askAgent returns jobId; poll agentJobStatus(jobId) for result
+- REDIS_URL — optional, for BullMQ queue
+- AGENT_RATE_LIMIT_PER_MIN — per-IP limit for agent mutations (default 10)
+
+**APIs (GraphQL) — async:** When queue enabled, `askAgent` returns `AskAgentAsyncResult { jobId }`. Use `agentJobStatus(jobId)` to poll until status is `completed` and get `result`.
 
 **Change-log:**
 - 2025-03-11: Added agent module scaffold (resolver, orchestrator, tools service, DTOs, config).
 - 2025-03-11: Implemented LangChain/LangGraph orchestrator with ChatOpenAI and ReAct-style tool loop; eight tools (search, get property, score, neighbourhood, price forecast, RERA, document analysis, negotiation); askAgent and scoreProperty GraphQL mutations; env schema and AgentError; unit tests for orchestrator and tools.
+- 2025-03-12: Async agent: BullMQ queue (AgentQueueService, AgentProcessor); askAgent returns union AgentAskResponse (AskAgentResult | AskAgentAsyncResult); agentJobStatus(jobId) for polling. AgentRateLimitGuard (AGENT_RATE_LIMIT_PER_MIN). Env AGENT_RATE_LIMIT_PER_MIN.
 - 2025-03-11: Claude support: AGENT_PROVIDER (openai | anthropic), ANTHROPIC_API_KEY, AGENT_ANTHROPIC_MODEL, model factory in orchestrator. Claude extended thinking via AGENT_THINKING_BUDGET_TOKENS. Domain expert system prompt (Indian real estate terminology, reasoning guidelines). Optional plan-first instruction (AGENT_PLAN_FIRST). Richer tool descriptions (BHK, ₹/lakh/Cr, RERA, etc.). New compare_properties tool (2–5 IDs). Tests and MODULE_DOC updated.
