@@ -22,6 +22,38 @@ export class PropertyFilterDto {
   @IsString()
   location?: string;
 
+  @Field(() => Float, { nullable: true, description: 'Map viewport south bound' })
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(-90)
+  @Max(90)
+  minLat?: number;
+
+  @Field(() => Float, { nullable: true, description: 'Map viewport north bound' })
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(-90)
+  @Max(90)
+  maxLat?: number;
+
+  @Field(() => Float, { nullable: true, description: 'Map viewport west bound' })
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(-180)
+  @Max(180)
+  minLng?: number;
+
+  @Field(() => Float, { nullable: true, description: 'Map viewport east bound' })
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(-180)
+  @Max(180)
+  maxLng?: number;
+
   @Field(() => Float, { nullable: true })
   @IsOptional()
   @Type(() => Number)

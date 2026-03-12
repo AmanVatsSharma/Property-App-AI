@@ -24,6 +24,16 @@ export class UpdatePropertyDto {
   @Field(() => Float, { nullable: true })
   @IsNumber()
   @IsOptional()
+  latitude?: number;
+
+  @Field(() => Float, { nullable: true })
+  @IsNumber()
+  @IsOptional()
+  longitude?: number;
+
+  @Field(() => Float, { nullable: true })
+  @IsNumber()
+  @IsOptional()
   @Min(0)
   price?: number;
 
@@ -76,4 +86,15 @@ export class UpdatePropertyDto {
   @IsOptional()
   @Min(0)
   aiScore?: number;
+
+  @Field({ nullable: true })
+  @IsString()
+  @IsOptional()
+  coverImageUrl?: string;
+
+  @Field(() => [String], { nullable: true })
+  @IsArray()
+  @IsString({ each: true })
+  @IsOptional()
+  imageUrls?: string[];
 }

@@ -19,6 +19,16 @@ export class CreatePropertyDto {
   @IsString()
   location: string;
 
+  @Field(() => Float, { nullable: true })
+  @IsNumber()
+  @IsOptional()
+  latitude?: number;
+
+  @Field(() => Float, { nullable: true })
+  @IsNumber()
+  @IsOptional()
+  longitude?: number;
+
   @Field(() => Float)
   @IsNumber()
   @Min(0)
@@ -73,4 +83,15 @@ export class CreatePropertyDto {
   @IsOptional()
   @Min(0)
   aiScore?: number;
+
+  @Field({ nullable: true })
+  @IsString()
+  @IsOptional()
+  coverImageUrl?: string;
+
+  @Field(() => [String], { nullable: true })
+  @IsArray()
+  @IsString({ each: true })
+  @IsOptional()
+  imageUrls?: string[];
 }
