@@ -7,6 +7,7 @@
  */
 
 import Link from "next/link";
+import { FOOTER_LINKS } from "@property-app-ai/shared";
 
 export default function Footer() {
   return (
@@ -34,30 +35,25 @@ export default function Footer() {
         <div className="footer-col">
           <h5>Discover</h5>
           <ul>
-            <li><Link href="/search">Buy Property</Link></li>
-            <li><Link href="/search?mode=rent">Rent Property</Link></li>
-            <li><Link href="/search?type=new">New Projects</Link></li>
-            <li><Link href="/search?type=commercial">Commercial</Link></li>
+            {FOOTER_LINKS.discover.map(({ href, label }) => (
+              <li key={label}><Link href={href}>{label}</Link></li>
+            ))}
           </ul>
         </div>
         <div className="footer-col">
           <h5>AI Tools</h5>
           <ul>
-            <li><Link href="/search">AI Copilot</Link></li>
-            <li><Link href="/emi-calculator">EMI Calculator</Link></li>
-            <li><Link href="/neighbourhood">Neighbourhood Score</Link></li>
-            <li><Link href="/price-forecast">Price Forecast</Link></li>
-            <li><Link href="/legal-checker">Legal Checker</Link></li>
+            {FOOTER_LINKS.tools.map(({ href, label }) => (
+              <li key={label}><Link href={href}>{label}</Link></li>
+            ))}
           </ul>
         </div>
         <div className="footer-col">
           <h5>Company</h5>
           <ul>
-            <li><Link href="/about">About Us</Link></li>
-            <li><Link href="/about#investors">Investors</Link></li>
-            <li><Link href="/post-property">For Builders</Link></li>
-            <li><a href="#">Careers</a></li>
-            <li><a href="#">Press</a></li>
+            {FOOTER_LINKS.company.map(({ href, label }) => (
+              <li key={label}><Link href={href}>{label}</Link></li>
+            ))}
           </ul>
         </div>
         <div className="footer-col">

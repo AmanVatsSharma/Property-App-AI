@@ -13,14 +13,8 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import { DEMO_IMAGES } from "@/lib/demo-images";
 import { PropertyImage } from "@/components/ui/PropertyImage";
-
-const SEARCH_TABS = [
-  { id: "buy", label: "🏠 Buy" },
-  { id: "rent", label: "🔑 Rent" },
-  { id: "new", label: "🏗️ New Projects" },
-  { id: "commercial", label: "🏢 Commercial" },
-  { id: "plot", label: "🌳 Plot / Land" },
-];
+import { SEARCH_TABS } from "@property-app-ai/shared";
+import { useAIFab } from "@/components/providers/AIFabProvider";
 
 const PLACEHOLDERS = [
   "Describe your home... e.g. 3BHK near good school, walkable to metro, budget ₹1.2Cr in Pune",
@@ -39,6 +33,7 @@ const CITIES = [
 ];
 
 export default function LandingPage() {
+  const { setOpen: openAIPanel } = useAIFab();
   const [activeTab, setActiveTab] = useState("buy");
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
   const [hearts, setHearts] = useState<Record<number, boolean>>({ 0: false, 1: false, 2: false });
@@ -99,6 +94,17 @@ export default function LandingPage() {
           <p className="hero-sub">
             UrbanNest.ai is powered by advanced AI that understands what you actually want — not just keywords. Get verified listings, real price intelligence, and neighbourhood insights across 340+ Indian cities.
           </p>
+          <p className="hero-sub" style={{ marginTop: 8, marginBottom: 16 }}>
+            Describe what you want in plain language — search properties or post your own listing. Our AI handles the rest.
+          </p>
+          <button
+            type="button"
+            onClick={() => openAIPanel(true)}
+            className="btn-outline"
+            style={{ marginBottom: 24, padding: "12px 24px" }}
+          >
+            Try AI
+          </button>
           <div className="search-mega">
             <div className="search-card">
               <div className="search-tabs-row">
