@@ -22,9 +22,9 @@ export class AgentProcessor extends WorkerHost {
   }
 
   async process(job: Job<AgentJobData, AgentJobResult>): Promise<AgentJobResult> {
-    const { input, requestId } = job.data;
-    this.logger.debug('Agent job started', { jobId: job.id, requestId });
-    const result = await this.orchestrator.ask(input, requestId);
+    const { input, requestId, userId } = job.data;
+    this.logger.debug('Agent job started', { jobId: job.id, requestId, userId });
+    const result = await this.orchestrator.ask(input, requestId, userId);
     this.logger.debug('Agent job completed', { jobId: job.id, requestId });
     return result;
   }

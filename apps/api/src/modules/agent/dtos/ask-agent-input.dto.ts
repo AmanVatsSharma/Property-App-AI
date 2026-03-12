@@ -29,6 +29,17 @@ export class AgentContextInput {
 }
 
 @InputType()
+export class ConversationMessageInput {
+  @Field()
+  @IsString()
+  role: 'user' | 'assistant';
+
+  @Field()
+  @IsString()
+  content: string;
+}
+
+@InputType()
 export class AskAgentInput {
   @Field({ description: 'User prompt in natural language' })
   @IsString()
@@ -40,4 +51,13 @@ export class AskAgentInput {
   @ValidateNested()
   @Type(() => AgentContextInput)
   context?: AgentContextInput;
+
+  @Field(() => [ConversationMessageInput], {
+    nullable: true,
+    description: 'Previous messages in this conversation for multi-turn context',
+  })
+  @IsOptional()
+  @ValidateNested({ each: true })
+  @Type(() => ConversationMessageInput)
+  conversationHistory?: ConversationMessageInput[];
 }
