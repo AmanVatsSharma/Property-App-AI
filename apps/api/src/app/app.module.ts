@@ -21,6 +21,7 @@ import { AppService } from './app.service';
 import { AppConfigModule } from '../shared/config';
 import { LoggerModule } from '../shared/logger';
 import { HealthModule } from '../modules/health/health.module';
+import { AuthModule } from '../modules/auth/auth.module';
 import { PropertyModule } from '../modules/property/property.module';
 import { AgentModule } from '../modules/agent/agent.module';
 import { RequestIdMiddleware } from '../common/middleware/request-id.middleware';
@@ -88,6 +89,7 @@ import { AuthGuard } from '../common/guards/auth.guard';
       }),
     }),
     HealthModule,
+    AuthModule,
     PropertyModule,
     AgentModule,
   ],

@@ -1,0 +1,33 @@
+# CI: install, lint, build, unit tests. API e2e and web e2e optional (require services).
+name: CI
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install
+        run: npm ci
+
+      - name: Lint
+        run: npx nx run-many -t lint --all
+
+      - name: Build API
+        run: npx nx run api:build
+
+      - name: Build web
+        run: npx nx run web:build
+
+      - name: Web unit tests
+        run: cd apps/web && npm run test -- --run

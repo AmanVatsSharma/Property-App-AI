@@ -35,6 +35,12 @@ async function bootstrap() {
     credentials: true,
   });
   const port = config.get<number>('PORT') ?? 3333;
+  if (config.get<string>('NODE_ENV') === 'production') {
+    const jwtSecret = config.get<string>('JWT_SECRET');
+    if (!jwtSecret || jwtSecret.trim() === '') {
+      console.warn('[Production] JWT_SECRET is not set; protected routes will not require authentication.');
+    }
+  }
   await app.listen(port);
 }
 
