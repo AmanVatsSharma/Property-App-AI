@@ -35,7 +35,7 @@ export default async function PropertyDetailPage({ params }: PageProps) {
 
   return (
     <div className="page-wrap">
-      <div style={{ padding: "20px 52px 0", background: "var(--dark)", borderBottom: "1px solid var(--border)" }}>
+      <div className="detail-top-wrap" style={{ padding: "20px 52px 0", background: "var(--dark)", borderBottom: "1px solid var(--border)" }}>
         <div className="breadcrumb">
           <Link href="/">Home</Link><span>/</span>
           <Link href="/search">Buy in Gurgaon</Link><span>/</span>

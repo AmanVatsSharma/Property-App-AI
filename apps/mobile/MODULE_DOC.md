@@ -36,6 +36,12 @@ Native iOS/Android application for UrbanNest.ai (Property-App-AI), built with Ex
 - `metro.config.js` — NativeWind Metro integration.
 - `babel.config.js` — NativeWind Babel preset.
 
+## Build (APK)
+
+- **Local debug APK:** From repo root: `npm run mobile:apk` (runs prebuild + `assembleDebug`). Output: `android/app/build/outputs/apk/debug/app-debug.apk`.
+- **EAS Build (APK):** From `apps/mobile`: `eas build -p android --profile preview` (uses `eas.json` preview profile). Requires Expo account and `eas-cli`.
+
 ## Changelog
 
+- 2025-03-12: APK build: android.package in app.json; prebuild/build:apk:debug/release scripts; Nx build-apk target and root mobile:apk script; eas.json preview profile; README and MODULE_DOC updated.
 - 2025-03-10: Initial module. Expo app with NativeWind; tabs and stack navigation; Landing, Search, Post, More (with tools), Property detail; design tokens aligned with web.

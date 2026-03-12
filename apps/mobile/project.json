@@ -28,6 +28,14 @@
         "cwd": "apps/mobile"
       },
       "configurations": {}
+    },
+    "build-apk": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "expo prebuild --platform android && node scripts/patch-gradle-version.js && cd android && ./gradlew assembleDebug",
+        "cwd": "apps/mobile"
+      },
+      "configurations": {}
     }
   }
 }

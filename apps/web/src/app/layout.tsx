@@ -6,7 +6,7 @@
  * @created 2025-03-10
  */
 
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Playfair_Display, Outfit } from "next/font/google";
 import "./globals.css";
 import AnnouncementBar from "@/components/layout/AnnouncementBar";
@@ -34,6 +34,12 @@ export const metadata: Metadata = {
   title: "UrbanNest.ai — India's Smartest Real Estate Platform",
   description:
     "AI-powered property search, price intelligence and neighbourhood scoring across 340+ Indian cities.",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
 };
 
 export default function RootLayout({

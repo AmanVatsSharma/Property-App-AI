@@ -63,6 +63,53 @@ npx expo run:ios    # or run:android
 # For EAS Build: eas build --platform all
 ```
 
+## Build APK
+
+**Prerequisites:** Node.js 18+, Android SDK, JDK 17 (for local build). For release APK you also need a keystore and signing config.
+
+### Local debug APK (no signing)
+
+From repo root:
+
+```bash
+npm run mobile:apk
+# or: nx run mobile:build-apk
+```
+
+From this directory (prebuild generates Gradle 9; we patch to 8.10.2 to avoid `JvmVendorSpec.IBM_SEMERU` removal):
+
+```bash
+npm run prebuild
+node scripts/patch-gradle-version.js
+npm run build:apk:debug
+```
+
+Or use the root command above—it runs prebuild, patch, and build in one step.
+
+Output: `apps/mobile/android/app/build/outputs/apk/debug/app-debug.apk`
+
+### Local release APK
+
+Configure signing in `android/gradle.properties` and `android/app/build.gradle` (keystore path, credentials), then:
+
+```bash
+npm run prebuild
+npm run build:apk:release
+```
+
+Output: `apps/mobile/android/app/build/outputs/apk/release/app-release.apk`
+
+### EAS Build (APK)
+
+Requires [Expo account](https://expo.dev) and `eas-cli` (`npm i -g eas-cli`). From `apps/mobile`:
+
+```bash
+eas build -p android --profile preview
+```
+
+The `preview` profile in `eas.json` is set to produce an APK. Download the APK from the build page or the link printed when the build completes. See [Expo: Build APKs](https://docs.expo.dev/build-reference/apk/).
+
 ## Changelog
 
+- 2025-03-12: APK build support: `android.package` in app.json; scripts `prebuild`, `build:apk:debug`, `build:apk:release`; Nx target `build-apk` and root script `mobile:apk`; eas.json with preview profile for APK; docs for local and EAS APK build. Added `scripts/patch-gradle-version.js` to pin Gradle to 8.10.2 (avoids Gradle 9 `IBM_SEMERU` removal).
 - 2025-03-10: Initial mobile app; Expo + NativeWind; tabs (Home, Search, Post, More); stack screens (property detail, tools); design aligned with web.

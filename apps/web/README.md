@@ -19,6 +19,10 @@ Open [http://localhost:3000](http://localhost:3000).
 
 Light/dark theme switching is powered by **next-themes** (class-based on `html`). Use the sun/moon toggle in the nav to switch; preference is persisted in `localStorage` under `urbannest-theme`.
 
+## Responsive
+
+The app is mobile-responsive. Breakpoints: **639px** (small mobile), **1024px** (tablet/desktop). Below 1024px the main nav becomes a hamburger that opens a slide-in drawer with all links, theme toggle, Sign In, and Post Free. Layouts (sections, footer, search, property detail, EMI, post-property, about) use single- or two-column grids on small screens; padding is reduced (16px) on mobile. Touch targets are at least 44px; the AI FAB respects safe-area insets. Test at 320px–1024px in DevTools device toolbar.
+
 ## Build
 
 From repo root: `npm run build` then `npm run start`. Or: `nx run web:build`, `nx run web:start`.
