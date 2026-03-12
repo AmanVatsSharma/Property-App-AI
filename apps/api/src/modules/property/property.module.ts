@@ -10,12 +10,13 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Property } from './entities/property.entity';
 import { PropertyService } from './services/property.service';
+import { GeocodingService } from './services/geocoding.service';
 import { PropertyResolver } from './resolvers/property.resolver';
 import { PropertyRepository } from './repository/property.repository';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Property])],
-  providers: [PropertyRepository, PropertyService, PropertyResolver],
+  providers: [PropertyRepository, GeocodingService, PropertyService, PropertyResolver],
   exports: [PropertyService],
 })
 export class PropertyModule {}

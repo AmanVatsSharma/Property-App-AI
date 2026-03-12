@@ -10,6 +10,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { PropertyNotFoundError } from '../../../common/errors';
 import { PropertyService } from '../services/property.service';
 import { PropertyRepository } from '../repository/property.repository';
+import { GeocodingService } from '../services/geocoding.service';
 import { LoggerService } from '../../../shared/logger';
 import { Property } from '../entities/property.entity';
 
@@ -21,6 +22,8 @@ describe('PropertyService', () => {
     id: 'uuid-1',
     title: 'Test Property',
     location: 'Test City',
+    latitude: null,
+    longitude: null,
     price: 1000000,
     type: 'apartment',
     bedrooms: 2,
@@ -31,6 +34,9 @@ describe('PropertyService', () => {
     specs: null,
     aiTip: null,
     aiScore: null,
+    coverImageUrl: null,
+    imageUrls: null,
+    createdByUserId: null,
     createdAt: new Date(),
     updatedAt: new Date(),
   };
@@ -44,10 +50,12 @@ describe('PropertyService', () => {
       delete: jest.fn(),
     };
     const mockLogger = { debug: jest.fn(), log: jest.fn(), error: jest.fn(), warn: jest.fn() };
+    const mockGeocoding = { geocode: jest.fn().mockResolvedValue(null) };
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         PropertyService,
         { provide: PropertyRepository, useValue: mockRepo },
+        { provide: GeocodingService, useValue: mockGeocoding },
         { provide: LoggerService, useValue: mockLogger },
       ],
     }).compile();
@@ -88,7 +96,9 @@ describe('PropertyService', () => {
       const dto = { title: 'New', location: 'City', price: 500000 };
       const result = await service.create(dto as any);
       expect(result).toEqual(mockProperty);
-      expect(repo.create).toHaveBeenCalledWith(dto);
+      expect(repo.create).toHaveBeenCalledWith(
+        expect.objectContaining({ title: 'New', location: 'City', price: 500000 }),
+      );
     });
   });
 
