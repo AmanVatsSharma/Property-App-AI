@@ -9,6 +9,15 @@ Native iOS/Android app for Property-App-AI, built with **Expo**, **React Native*
 - iOS: Xcode (macOS only)
 - Android: Android Studio / SDK
 
+## Environment (API URL)
+
+The app calls the NestJS API for properties and property detail. Set one of:
+
+- **EXPO_PUBLIC_API_URL** — base URL (e.g. `http://localhost:3333`). The client will append `/graphql` for GraphQL.
+- **EXPO_PUBLIC_GRAPHQL_HTTP** — full GraphQL endpoint (e.g. `http://localhost:3333/graphql`).
+
+Without these, the app shows fallback demo data. For local dev, create a `.env` in `apps/mobile` (or set in shell) with `EXPO_PUBLIC_API_URL=http://localhost:3333` (use your machine’s IP if testing on a device). For production, point to your deployed API URL.
+
 ## Run from repo root
 
 ```bash
