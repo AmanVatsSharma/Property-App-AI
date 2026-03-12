@@ -25,7 +25,9 @@ import { AuthModule } from '../modules/auth/auth.module';
 import { UserModule } from '../modules/user/user.module';
 import { PropertyModule } from '../modules/property/property.module';
 import { AgentModule } from '../modules/agent/agent.module';
+import { AreaModule } from '../modules/area/area.module';
 import { StorageModule } from '../modules/storage/storage.module';
+import { AdminModule } from '../modules/admin/admin.module';
 import { RequestIdMiddleware } from '../common/middleware/request-id.middleware';
 import { HttpExceptionFilter } from '../common/filters/http-exception.filter';
 import { LoggingInterceptor } from '../common/interceptors/logging.interceptor';
@@ -95,7 +97,9 @@ import { AuthGuard } from '../common/guards/auth.guard';
     UserModule,
     PropertyModule,
     AgentModule,
+    AreaModule,
     StorageModule,
+    AdminModule,
   ],
   controllers: [AppController],
   providers: [
