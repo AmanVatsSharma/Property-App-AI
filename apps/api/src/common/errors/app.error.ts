@@ -38,3 +38,17 @@ export class AgentError extends AppError {
     this.name = 'AgentError';
   }
 }
+
+export class UserNotFoundError extends AppError {
+  constructor(id: string) {
+    super(`User with id "${id}" not found`, 'USER_NOT_FOUND', 404);
+    this.name = 'UserNotFoundError';
+  }
+}
+
+export class AreaNotFoundError extends AppError {
+  constructor(id: string) {
+    super(`Area with id "${id}" not found`, 'AREA_NOT_FOUND', 404);
+    this.name = 'AreaNotFoundError';
+  }
+}

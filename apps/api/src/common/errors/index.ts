@@ -6,5 +6,12 @@
  * @created 2025-03-10
  */
 
-export { AppError, PropertyNotFoundError, ValidationError, AgentError } from './app.error';
+export {
+  AppError,
+  PropertyNotFoundError,
+  ValidationError,
+  AgentError,
+  UserNotFoundError,
+  AreaNotFoundError,
+} from './app.error';
 export { ERROR_CODES, ERROR_STATUS } from './errors.constants';
