@@ -16,6 +16,8 @@ import AIFab from "@/components/layout/AIFab";
 import RevealObserver from "@/components/ui/RevealObserver";
 import { SkipToContent, MAIN_CONTENT_ID } from "@/components/ui/SkipToContent";
 import ThemeProvider from "@/components/providers/ThemeProvider";
+import { AuthProvider } from "@/components/providers/AuthProvider";
+import { AIFabProvider } from "@/components/providers/AIFabProvider";
 
 const playfair = Playfair_Display({
   variable: "--font-playfair",
@@ -51,6 +53,8 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={`${outfit.variable} ${playfair.variable} ${outfit.className} antialiased`}>
         <ThemeProvider>
+          <AuthProvider>
+          <AIFabProvider>
           <SkipToContent />
           <AnnouncementBar />
           <Nav />
@@ -58,6 +62,8 @@ export default function RootLayout({
           <Footer />
           <AIFab />
           <RevealObserver />
+          </AIFabProvider>
+          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>

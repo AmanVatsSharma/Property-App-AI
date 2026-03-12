@@ -10,6 +10,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import PostPropertyForm from "@/components/post-property/PostPropertyForm";
+import PostPropertyAICta from "@/components/post-property/PostPropertyAICta";
 import { DEMO_IMAGES } from "@/lib/demo-images";
 
 export const metadata: Metadata = {
@@ -106,6 +107,9 @@ export default function PostPropertyPage() {
 
       <section className="section" id="post-form">
         <div style={{ textAlign: "center", marginBottom: 48 }}><div className="eyebrow" style={{ justifyContent: "center" }}>Post Now</div><h2 className="h2">Create Your Listing</h2></div>
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 16, marginBottom: 32, padding: "20px 24px", background: "var(--dark-2)", borderRadius: 12, border: "1px solid var(--border)" }}>
+          <PostPropertyAICta />
+        </div>
         <div className="form-wrap">
           <PostPropertyForm />
         </div>
