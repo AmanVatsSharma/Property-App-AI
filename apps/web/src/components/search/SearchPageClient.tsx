@@ -1,7 +1,7 @@
 /**
  * @file SearchPageClient.tsx
  * @module search
- * @description Search page client — filters, grid, pagination; URL state for shareable links
+ * @description Search page client — filters, grid, map view, pagination; URL state for shareable links
  * @author BharatERP
  * @created 2025-03-10
  */
@@ -9,10 +9,22 @@
 "use client";
 
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { useCallback, useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { DEMO_IMAGES } from "@/lib/demo-images";
 import { PropertyImage } from "@/components/ui/PropertyImage";
+import { gqlProperties, type ApiProperty } from "@/lib/graphql-client";
+import type { PropertyMapItem } from "./PropertyMap";
+
+const PropertyMap = dynamic(() => import("./PropertyMap").then((m) => m.PropertyMap), {
+  ssr: false,
+  loading: () => (
+    <div style={{ minHeight: 450, display: "flex", alignItems: "center", justifyContent: "center", background: "var(--bg-subtle)", borderRadius: 12 }}>
+      Loading map…
+    </div>
+  ),
+});
 
 const PROPERTIES: Array<{
   id: string;
@@ -67,13 +79,62 @@ function buildActiveFilters(params: ReturnType<typeof parseSearchParams>) {
   return list;
 }
 
+function apiToMapItems(list: ApiProperty[]): PropertyMapItem[] {
+  return list
+    .filter((p): p is ApiProperty & { latitude: number; longitude: number } =>
+      p.latitude != null && p.longitude != null && Number.isFinite(p.latitude) && Number.isFinite(p.longitude)
+    )
+    .map((p) => ({
+      id: p.id,
+      title: p.title,
+      location: p.location,
+      price: p.price,
+      latitude: p.latitude,
+      longitude: p.longitude,
+    }));
+}
+
+function apiToCardItem(p: ApiProperty) {
+  const priceStr = p.price >= 1_00_00_000 ? `₹${(p.price / 1_00_00_000).toFixed(2)} Cr` : `₹${(p.price / 1_00_000).toFixed(0)} L`;
+  const sqft = p.areaSqft ? ` · ${p.areaSqft.toLocaleString()} sqft` : "";
+  return {
+    id: p.id,
+    price: priceStr,
+    name: p.title,
+    loc: `${p.location}${sqft}`,
+    specs: [
+      `${p.bedrooms} BHK`,
+      `${p.bathrooms} Bath`,
+      ...(p.areaSqft ? [p.areaSqft.toLocaleString()] : []),
+      ...(p.specs ?? []),
+    ].slice(0, 4),
+    tip: p.aiTip ?? "—",
+    badges: p.aiScore && p.aiScore >= 90 ? ["badge-teal"] : ["badge-green"],
+    badgeLabels: p.aiScore && p.aiScore >= 90 ? ["✦ AI Pick"] : ["✓ Verified"],
+    score: p.aiScore ?? 0,
+    bg: "linear-gradient(135deg,#132238,#1e3a5f)",
+    imageUrl: p.coverImageUrl ?? "",
+  };
+}
+
 export default function SearchPageClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [viewMode, setViewMode] = useState<"grid" | "list" | "map">("grid");
+  const [apiProperties, setApiProperties] = useState<ApiProperty[] | null>(null);
 
   const params = parseSearchParams(searchParams);
   const activeFilters = buildActiveFilters(params);
+
+  useEffect(() => {
+    const filter = {
+      ...(params.city && { location: params.city }),
+      ...(params.bhk && { bedrooms: params.bhk === "4+" ? 4 : parseInt(params.bhk, 10) }),
+      limit: 50,
+      offset: 0,
+    };
+    gqlProperties(filter).then(setApiProperties).catch(() => setApiProperties([]));
+  }, [params.city, params.bhk]);
 
   const setParams = useCallback(
     (updates: Partial<ReturnType<typeof parseSearchParams>>) => {
@@ -243,8 +304,15 @@ export default function SearchPageClient() {
 
         <div className="search-main">
           <div className="listings-wrap">
+            {viewMode === "map" ? (
+              <PropertyMap
+                properties={apiToMapItems(apiProperties ?? [])}
+                className="search-map-container"
+              />
+            ) : (
+              <>
             <div className="prop-grid">
-              {PROPERTIES.map((p) => (
+              {(apiProperties != null ? apiProperties.map(apiToCardItem) : PROPERTIES).map((p) => (
                 <Link key={p.id} href={`/property/${p.id}`} className="prop-card reveal">
                   <div className="prop-img">
                     <PropertyImage
@@ -273,15 +341,17 @@ export default function SearchPageClient() {
                 </Link>
               ))}
             </div>
-            <div className="pagination">
-              <button type="button" className="page-btn" onClick={() => setParams({ page: params.page - 1 })} disabled={params.page <= 1}>‹</button>
-              {[1, 2, 3].map((n) => (
-                <button key={n} type="button" className={`page-btn ${params.page === n ? "active" : ""}`} onClick={() => setParams({ page: n })}>{n}</button>
-              ))}
-              <span style={{ color: "var(--text-dim)", padding: "0 4px", display: "flex", alignItems: "center" }}>…</span>
-              <button type="button" className="page-btn" onClick={() => setParams({ page: 24 })}>24</button>
-              <button type="button" className="page-btn" onClick={() => setParams({ page: params.page + 1 })}>›</button>
-            </div>
+                <div className="pagination">
+                  <button type="button" className="page-btn" onClick={() => setParams({ page: params.page - 1 })} disabled={params.page <= 1}>‹</button>
+                  {[1, 2, 3].map((n) => (
+                    <button key={n} type="button" className={`page-btn ${params.page === n ? "active" : ""}`} onClick={() => setParams({ page: n })}>{n}</button>
+                  ))}
+                  <span style={{ color: "var(--text-dim)", padding: "0 4px", display: "flex", alignItems: "center" }}>…</span>
+                  <button type="button" className="page-btn" onClick={() => setParams({ page: 24 })}>24</button>
+                  <button type="button" className="page-btn" onClick={() => setParams({ page: params.page + 1 })}>›</button>
+                </div>
+              </>
+            )}
           </div>
         </div>
       </div>

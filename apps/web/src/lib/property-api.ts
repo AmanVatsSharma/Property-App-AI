@@ -1,14 +1,14 @@
 /**
  * @file property-api.ts
  * @module lib
- * @description Property fetch helpers; uses API when available, mock otherwise
+ * @description Property fetch helpers; uses GraphQL API when available, mock otherwise
  * @author BharatERP
  * @created 2025-03-10
  */
 
-import { apiGet } from "./api-client";
 import { DEMO_IMAGES } from "./demo-images";
 import { logger } from "./logger";
+import { gqlProperty, type ApiProperty } from "./graphql-client";
 
 export interface PropertyDetail {
   id: string;
@@ -212,15 +212,46 @@ const MOCK_PROPERTIES: Record<string, PropertyDetail> = {
   },
 };
 
+function apiPropertyToDetail(p: ApiProperty): PropertyDetail {
+  const priceStr = p.price >= 1_00_00_000 ? `₹${(p.price / 1_00_00_000).toFixed(2)} Cr` : `₹${(p.price / 1_00_000).toFixed(0)} L`;
+  const pricePerSqft = p.areaSqft ? `₹${Math.round(p.price / p.areaSqft).toLocaleString()} / sq.ft` : "—";
+  return {
+    id: p.id,
+    title: p.title,
+    address: p.location,
+    price: priceStr,
+    pricePerSqft,
+    badges: [
+      ...(p.aiScore && p.aiScore >= 90 ? [{ label: "✦ AI Pick", variant: "badge-teal" as const }] : []),
+      { label: "✓ RERA Verified", variant: "badge-green" as const },
+    ],
+    quickSpecs: [
+      { icon: "🛏", val: `${p.bedrooms} BHK`, label: "Bedrooms" },
+      { icon: "🚿", val: String(p.bathrooms), label: "Bathrooms" },
+      { icon: "📐", val: p.areaSqft?.toLocaleString() ?? "—", label: "Sq.ft" },
+      { icon: "📅", val: p.status ?? "—", label: "Status" },
+    ],
+    overview: [
+      { label: "Project", val: p.title },
+      { label: "Location", val: p.location },
+      { label: "RERA No.", val: "—", green: false },
+    ],
+    aiScore: p.aiScore ?? 0,
+    aiScoreLabel: p.aiTip ?? "—",
+    coverImage: p.coverImageUrl ?? undefined,
+    galleryImages: p.imageUrls ?? undefined,
+  };
+}
+
 /** Resolve property by id or slug; returns null if not found */
 export async function getPropertyById(idOrSlug: string): Promise<PropertyDetail | null> {
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL;
-  if (baseUrl) {
+  const graphqlUrl = process.env.NEXT_PUBLIC_GRAPHQL_HTTP ?? (process.env.NEXT_PUBLIC_API_URL ? `${process.env.NEXT_PUBLIC_API_URL.replace(/\/$/, "")}/graphql` : "");
+  if (graphqlUrl) {
     try {
-      const data = await apiGet<PropertyDetail>(`/properties/${encodeURIComponent(idOrSlug)}`);
-      return data ?? null;
+      const p = await gqlProperty(idOrSlug);
+      if (p) return apiPropertyToDetail(p);
     } catch (e) {
-      logger.warn("getPropertyById API failed, using mock", e);
+      logger.warn("getPropertyById GraphQL failed, using mock", e);
     }
   }
   const normalized = idOrSlug.toLowerCase().replace(/\s+/g, "-");
