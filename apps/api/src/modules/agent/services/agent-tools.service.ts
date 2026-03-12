@@ -11,6 +11,8 @@ import { tool } from '@langchain/core/tools';
 import { z } from 'zod';
 import { LoggerService } from '../../../shared/logger';
 import { PropertyService } from '../../property/services/property.service';
+import { AreaService } from '../../area/services/area.service';
+import type { Area } from '../../area/entities/area.entity';
 import type { StructuredToolInterface } from '@langchain/core/tools';
 import type { Property } from '../../property/entities/property.entity';
 
@@ -30,6 +32,7 @@ export class AgentToolsService {
 
   constructor(
     private readonly propertyService: PropertyService,
+    private readonly areaService: AreaService,
     private readonly logger: LoggerService,
   ) {}
 
@@ -99,6 +102,20 @@ export class AgentToolsService {
           name: 'get_neighbourhood_score',
           description:
             'Livability score for a locality: connectivity, schools, safety, amenities. Use for "how is Whitefield", "Koramangala vs Indiranagar".',
+          schema: z.object({
+            locality: z.string().describe('Locality or area name'),
+            city: z.string().optional().describe('City name'),
+          }),
+        },
+      ),
+      tool(
+        async (input: { locality: string; city?: string }) => {
+          return self.assessRegionImpl(input.locality, input.city);
+        },
+        {
+          name: 'assess_region',
+          description:
+            'Load or assess a locality/region and return a short summary (livability, connectivity, schools, safety, price trend). Use before scoring a property in that area, or when user asks "how is X area".',
           schema: z.object({
             locality: z.string().describe('Locality or area name'),
             city: z.string().optional().describe('City name'),
@@ -311,9 +328,10 @@ export class AgentToolsService {
   private async scorePropertyImpl(propertyId: string): Promise<string> {
     try {
       const p = await this.propertyService.findOne(propertyId);
-      const score = Math.min(100, 70 + Math.floor(Math.random() * 25));
-      const tip =
-        'Good value for the locality. Compare with recent sales in the area. Consider negotiation margin of 3-5%.';
+      const { locality, city } = this.parseLocationToLocalityCity(p.location);
+      const area = await this.areaService.getOrCreate(locality, city, { assessIfMissing: true });
+      const { score, tip } = this.computePropertyScoreAndTip(p, area);
+      await this.propertyService.update(propertyId, { aiScore: score, aiTip: tip });
       return `Property: ${p.title}. AI Score: ${score}/100. AI Tip: ${tip}`;
     } catch {
       return `Property ${propertyId} not found.`;
@@ -321,9 +339,50 @@ export class AgentToolsService {
   }
 
   private async getNeighbourhoodScoreImpl(locality: string, city?: string): Promise<string> {
-    const place = city ? `${locality}, ${city}` : locality;
-    const score = 80 + Math.floor(Math.random() * 15);
-    return `${place}: Livability score ${score}/100. Good connectivity and amenities. Schools and hospitals within 2-3 km. (Data placeholder; integrate real signals later.)`;
+    const area = await this.areaService.getOrCreate(locality, city ?? '', { assessIfMissing: true });
+    return this.formatAreaSummary(area);
+  }
+
+  private async assessRegionImpl(locality: string, city?: string): Promise<string> {
+    const area = await this.areaService.getOrCreate(locality, city ?? '', { assessIfMissing: true });
+    return this.formatAreaSummary(area);
+  }
+
+  private formatAreaSummary(area: Area): string {
+    const place = area.city ? `${area.locality}, ${area.city}` : area.locality;
+    const liv = area.livabilityScore ?? '—';
+    const conn = area.connectivityScore ?? '—';
+    const schools = area.schoolsScore ?? '—';
+    const safety = area.safetyScore ?? '—';
+    const trend = area.priceTrendPctAnnual != null ? `${area.priceTrendPctAnnual}%` : '—';
+    const summary = area.amenitiesSummary ?? 'Data assessed for this locality.';
+    return `${place}: Livability ${liv}/100, Connectivity ${conn}/100, Schools ${schools}/100, Safety ${safety}/100. Price trend (est. annual): ${trend}. ${summary}`;
+  }
+
+  /** Parse property.location string into locality and city (e.g. "Koramangala, Bangalore" -> locality, city). */
+  private parseLocationToLocalityCity(location: string): { locality: string; city: string } {
+    const parts = (location ?? '').trim().split(',').map((p) => p.trim()).filter(Boolean);
+    if (parts.length >= 2) {
+      return { locality: parts[0] ?? 'Unknown', city: parts.slice(1).join(', ') };
+    }
+    return { locality: parts[0] || 'Unknown', city: '' };
+  }
+
+  private computePropertyScoreAndTip(property: Property, area: Area): { score: number; tip: string } {
+    const liv = area.livabilityScore ?? 75;
+    const trend = area.priceTrendPctAnnual ?? 8;
+    const priceSqft = property.areaSqft
+      ? Number(property.price) / Number(property.areaSqft)
+      : null;
+    let score = Math.min(100, Math.max(0, liv + Math.floor((trend - 5) / 2)));
+    if (priceSqft != null && priceSqft > 0) {
+      if (priceSqft < 10000) score = Math.min(100, score + 5);
+      else if (priceSqft > 25000) score = Math.max(0, score - 5);
+    }
+    const tip =
+      area.amenitiesSummary?.slice(0, 120) ||
+      'Good value for the locality. Compare with recent sales. Consider negotiation margin of 3-5%.';
+    return { score, tip };
   }
 
   private async getPriceForecastImpl(
@@ -375,9 +434,9 @@ export class AgentToolsService {
   async scoreAndPersistProperty(propertyId: string): Promise<Property> {
     this.logger.debug('scoreAndPersistProperty entry', { method: 'scoreAndPersistProperty', propertyId });
     const p = await this.propertyService.findOne(propertyId);
-    const score = Math.min(100, 70 + Math.floor(Math.random() * 25));
-    const tip =
-      'Good value for the locality. Compare with recent sales in the area. Consider negotiation margin of 3-5%.';
+    const { locality, city } = this.parseLocationToLocalityCity(p.location);
+    const area = await this.areaService.getOrCreate(locality, city, { assessIfMissing: true });
+    const { score, tip } = this.computePropertyScoreAndTip(p, area);
     const updated = await this.propertyService.update(propertyId, { aiScore: score, aiTip: tip });
     this.logger.debug('scoreAndPersistProperty exit', { method: 'scoreAndPersistProperty', propertyId });
     return updated;
