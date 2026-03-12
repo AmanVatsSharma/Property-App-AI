@@ -31,6 +31,18 @@ export class PropertyRepository {
         location: `%${filter.location}%`,
       });
     }
+    const hasBounds =
+      filter.minLat != null &&
+      filter.maxLat != null &&
+      filter.minLng != null &&
+      filter.maxLng != null;
+    if (hasBounds) {
+      qb.andWhere('p.latitude IS NOT NULL AND p.longitude IS NOT NULL');
+      qb.andWhere('p.latitude >= :minLat', { minLat: filter.minLat });
+      qb.andWhere('p.latitude <= :maxLat', { maxLat: filter.maxLat });
+      qb.andWhere('p.longitude >= :minLng', { minLng: filter.minLng });
+      qb.andWhere('p.longitude <= :maxLng', { maxLng: filter.maxLng });
+    }
     if (filter.minPrice != null) {
       qb.andWhere('p.price >= :minPrice', { minPrice: filter.minPrice });
     }
@@ -50,10 +62,12 @@ export class PropertyRepository {
     return this.repo.findOne({ where: { id } });
   }
 
-  async create(dto: CreatePropertyDto): Promise<Property> {
+  async create(dto: CreatePropertyDto, createdByUserId?: string | null): Promise<Property> {
     const entity = this.repo.create({
       title: dto.title,
       location: dto.location,
+      latitude: dto.latitude ?? null,
+      longitude: dto.longitude ?? null,
       price: dto.price,
       type: dto.type ?? 'apartment',
       bedrooms: dto.bedrooms ?? 0,
@@ -64,6 +78,9 @@ export class PropertyRepository {
       specs: dto.specs ?? null,
       aiTip: dto.aiTip ?? null,
       aiScore: dto.aiScore ?? null,
+      coverImageUrl: dto.coverImageUrl ?? null,
+      imageUrls: dto.imageUrls ?? null,
+      createdByUserId: createdByUserId ?? null,
     });
     return this.repo.save(entity);
   }
@@ -76,5 +93,9 @@ export class PropertyRepository {
   async delete(id: string): Promise<boolean> {
     const result = await this.repo.delete(id);
     return (result.affected ?? 0) > 0;
+  }
+
+  async count(): Promise<number> {
+    return this.repo.count();
   }
 }

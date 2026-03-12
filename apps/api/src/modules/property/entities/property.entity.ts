@@ -30,6 +30,14 @@ export class Property {
   @Column()
   location: string;
 
+  @Field(() => Float, { nullable: true })
+  @Column({ type: 'decimal', precision: 11, scale: 8, nullable: true })
+  latitude: number | null;
+
+  @Field(() => Float, { nullable: true })
+  @Column({ type: 'decimal', precision: 11, scale: 8, nullable: true })
+  longitude: number | null;
+
   @Field(() => Float)
   @Column({ type: 'decimal', precision: 14, scale: 2 })
   price: number;
@@ -69,6 +77,18 @@ export class Property {
   @Field(() => Int, { nullable: true })
   @Column({ type: 'int', nullable: true })
   aiScore: number | null;
+
+  @Field({ nullable: true })
+  @Column({ type: 'text', nullable: true })
+  coverImageUrl: string | null;
+
+  @Field(() => [String], { nullable: true })
+  @Column({ type: 'jsonb', nullable: true })
+  imageUrls: string[] | null;
+
+  @Field({ nullable: true })
+  @Column({ type: 'uuid', nullable: true })
+  createdByUserId: string | null;
 
   @Field()
   @CreateDateColumn()
