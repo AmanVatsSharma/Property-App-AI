@@ -8,7 +8,7 @@
 - agent.module.ts — Nest module
 - resolvers/agent.resolver.ts — GraphQL mutations
 - services/agent-orchestrator.service.ts — Model factory (OpenAI/Claude), ReAct loop, domain prompt, plan-first
-- services/agent-tools.service.ts — Tool registry and invocation (ten tools including compare_properties, create_listing)
+- services/agent-tools.service.ts — Tool registry and invocation (search, get_property, score_property, get_neighbourhood_score, assess_region, get_price_forecast, check_rera, analyze_document, get_negotiation_advice, compare_properties, create_listing)
 - prompts/domain-system.prompt.ts — Domain expert system prompt and plan-first instruction
 - tools/ — search, getProperty, scoreProperty, neighbourhood, price-forecast, rera, document-analysis, negotiation
 - dtos/ — AskAgentInput, AskAgentResult
@@ -18,7 +18,9 @@
 
 **Flow:** Client calls `askAgent(input)` → Resolver → Orchestrator.ask() → createLlm() (OpenAI or Claude, optional extended thinking) → domain system prompt (+ plan-first instruction if enabled) → ReAct loop (invoke → tool_calls → ToolMessages → repeat) → AskAgentResult.
 
-**Dependencies:** PropertyModule (for search/get/update), ConfigModule (env), LoggerModule. Optional: BullMQ, Redis for async jobs.
+**Dependencies:** PropertyModule (for search/get/update), AreaModule (for get_neighbourhood_score, assess_region, score_property), ConfigModule (env), LoggerModule. Optional: BullMQ, Redis for async jobs.
+
+**Scoring and long-thinking:** For "is this a good deal" or property scoring flows, recommend setting AGENT_THINKING_BUDGET_TOKENS (e.g. 4096) and AGENT_PLAN_FIRST=true so the model can plan multi-step (e.g. assess_region → score_property) and reason over locality and listing details.
 
 **APIs (GraphQL):**
 - `askAgent(input: AskAgentInput!): AskAgentResult!` — main entry; runs agent and returns answer + sources + suggestedActions.
@@ -45,3 +47,4 @@
 - 2025-03-12: Async agent: BullMQ queue (AgentQueueService, AgentProcessor); askAgent returns union AgentAskResponse (AskAgentResult | AskAgentAsyncResult); agentJobStatus(jobId) for polling. AgentRateLimitGuard (AGENT_RATE_LIMIT_PER_MIN). Env AGENT_RATE_LIMIT_PER_MIN.
 - 2025-03-11: Claude support: AGENT_PROVIDER (openai | anthropic), ANTHROPIC_API_KEY, AGENT_ANTHROPIC_MODEL, model factory in orchestrator. Claude extended thinking via AGENT_THINKING_BUDGET_TOKENS. Domain expert system prompt (Indian real estate terminology, reasoning guidelines). Optional plan-first instruction (AGENT_PLAN_FIRST). Richer tool descriptions (BHK, ₹/lakh/Cr, RERA, etc.). New compare_properties tool (2–5 IDs). Tests and MODULE_DOC updated.
 - 2025-03-12: User context and create_listing: Resolver passes req.user.sub as userId to orchestrator and queue job. AskAgentInput supports optional conversationHistory (multi-turn). New create_listing tool (title, location, price, type, listing_for, bedrooms, bathrooms); requires signed-in user; calls PropertyService.create with createdByUserId. Domain prompt updated for posting listings.
+- 2025-03-13: Property rating and region persistence: AreaModule for get-or-create Area by locality/city; AreaAssessorService (LLM-based assessment, TTL). get_neighbourhood_score and score_property use AreaService and persisted area data; new assess_region tool. score_property and scoreAndPersistProperty compute score from area + property and persist aiScore/aiTip. Domain prompt: assess_region then score_property; recommend AGENT_THINKING_BUDGET_TOKENS and AGENT_PLAN_FIRST for scoring flows.

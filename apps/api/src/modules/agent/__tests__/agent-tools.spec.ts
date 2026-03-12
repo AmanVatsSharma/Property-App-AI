@@ -9,9 +9,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AgentToolsService } from '../services/agent-tools.service';
 import { PropertyService } from '../../property/services/property.service';
+import { AreaService } from '../../area/services/area.service';
 import { LoggerService } from '../../../shared/logger';
 import { PropertyNotFoundError } from '../../../common/errors';
 import { Property } from '../../property/entities/property.entity';
+import { Area } from '../../area/entities/area.entity';
 
 const mockProperty: Property = {
   id: 'uuid-1',
@@ -31,9 +33,30 @@ const mockProperty: Property = {
   updatedAt: new Date(),
 };
 
+const mockArea: Area = {
+  id: 'area-1',
+  locality: 'Koramangala',
+  city: 'Bangalore',
+  localityNormalized: 'koramangala',
+  cityNormalized: 'bangalore',
+  livabilityScore: 80,
+  connectivityScore: 85,
+  schoolsScore: 75,
+  safetyScore: 78,
+  priceTrendPctAnnual: 10,
+  amenitiesSummary: 'Good connectivity, schools nearby.',
+  dataSource: 'llm',
+  lastAssessedAt: new Date(),
+  latitude: null,
+  longitude: null,
+  createdAt: new Date(),
+  updatedAt: new Date(),
+};
+
 describe('AgentToolsService', () => {
   let service: AgentToolsService;
   let propertyService: jest.Mocked<PropertyService>;
+  let areaService: jest.Mocked<AreaService>;
 
   beforeEach(async () => {
     const mockPropertyService = {
@@ -41,18 +64,24 @@ describe('AgentToolsService', () => {
       findOne: jest.fn(),
       update: jest.fn(),
     };
+    const mockAreaService = {
+      getOrCreate: jest.fn().mockResolvedValue(mockArea),
+      findById: jest.fn(),
+    };
     const mockLogger = { debug: jest.fn(), log: jest.fn(), error: jest.fn(), warn: jest.fn() };
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AgentToolsService,
         { provide: PropertyService, useValue: mockPropertyService },
+        { provide: AreaService, useValue: mockAreaService },
         { provide: LoggerService, useValue: mockLogger },
       ],
     }).compile();
 
     service = module.get<AgentToolsService>(AgentToolsService);
     propertyService = module.get(PropertyService) as jest.Mocked<PropertyService>;
+    areaService = module.get(AreaService) as jest.Mocked<AreaService>;
   });
 
   it('should be defined', () => {
