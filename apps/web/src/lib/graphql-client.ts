@@ -9,10 +9,17 @@
 import { runGraphQL } from '@property-app-ai/shared';
 
 function getGraphQLUrl(): string {
+  const fromApiUrl = (url: string | undefined) =>
+    url ? url.replace(/\/$/, '') + '/graphql' : '';
   if (typeof window !== 'undefined') {
-    return process.env.NEXT_PUBLIC_GRAPHQL_HTTP ?? process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, '') + '/graphql' ?? '';
+    return process.env.NEXT_PUBLIC_GRAPHQL_HTTP ?? fromApiUrl(process.env.NEXT_PUBLIC_API_URL) ?? '';
   }
-  return process.env.NEXT_PUBLIC_GRAPHQL_HTTP ?? process.env.API_GRAPHQL_HTTP ?? process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, '') + '/graphql' ?? '';
+  return (
+    process.env.NEXT_PUBLIC_GRAPHQL_HTTP ??
+    process.env.API_GRAPHQL_HTTP ??
+    fromApiUrl(process.env.NEXT_PUBLIC_API_URL) ??
+    ''
+  );
 }
 
 const PROPERTY_FIELDS = `

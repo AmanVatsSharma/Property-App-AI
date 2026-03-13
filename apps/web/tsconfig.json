@@ -1,13 +1,16 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
+    "baseUrl": ".",
     "plugins": [
       {
         "name": "next"
       }
     ],
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@property-app-ai/shared": ["../../libs/shared/src/index.ts"],
+      "@property-app-ai/shared/*": ["../../libs/shared/src/*"]
     }
   },
   "include": [
