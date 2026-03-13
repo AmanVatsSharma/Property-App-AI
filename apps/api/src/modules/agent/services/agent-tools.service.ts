@@ -386,27 +386,25 @@ export class AgentToolsService {
   }
 
   private async getPriceForecastImpl(
-    locality: string,
-    city?: string,
-    horizonMonths: number = 24,
+    _locality: string,
+    _city?: string,
+    _horizonMonths: number = 24,
   ): Promise<string> {
-    const place = city ? `${locality}, ${city}` : locality;
-    const pct = 8 + Math.floor(Math.random() * 12);
-    return `${place}: Estimated ${pct}% appreciation over ${horizonMonths} months. Based on demand and infrastructure trends. (Placeholder; integrate ML model later.)`;
+    return 'Price forecast for localities is coming soon. This feature will use demand and infrastructure data in a future update.';
   }
 
-  private async checkReraImpl(projectNameOrNumber: string): Promise<string> {
-    return `RERA check for "${projectNameOrNumber}": Placeholder. Integrate RERA API for real status.`;
+  private async checkReraImpl(_projectNameOrNumber: string): Promise<string> {
+    return 'RERA verification is coming soon. Real-time RERA API integration will be available in a future update.';
   }
 
-  private async analyzeDocumentImpl(documentSummaryOrText: string): Promise<string> {
-    return `Document analysis (${documentSummaryOrText.slice(0, 50)}...): Placeholder. Integrate doc parsing and risk model later.`;
+  private async analyzeDocumentImpl(_documentSummaryOrText: string): Promise<string> {
+    return 'Document and legal risk analysis is coming soon. This feature will be available in a future update.';
   }
 
   private async getNegotiationAdviceImpl(propertyId: string, context?: string): Promise<string> {
     try {
       const p = await this.propertyService.findOne(propertyId);
-      return `Negotiation advice for ${p.title}: Consider offering 3-5% below list. Check comparable sales in ${p.location}. ${context ? `Context: ${context}` : ''} (Placeholder; add comparables data later.)`;
+      return `Negotiation advice for "${p.title}" (${p.location}): Coming soon. Comparables and bid strategy will be available in a future update.${context ? ` You mentioned: ${context}.` : ''}`;
     } catch {
       return `Property ${propertyId} not found.`;
     }
