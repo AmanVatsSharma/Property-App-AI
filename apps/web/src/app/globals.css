@@ -104,6 +104,31 @@ body {
 .ann-link { color: var(--teal); font-weight: 600; text-decoration: none; }
 .ann-link:hover { text-decoration: underline; }
 
+/* ── MOBILE APP PROMPT (shown only on narrow viewports) ── */
+.mobile-app-prompt {
+  background: var(--ann-bar-bg);
+  border-bottom: 1px solid var(--ann-bar-border);
+  padding: 16px 20px 20px;
+}
+.mobile-app-prompt-inner { max-width: 480px; margin: 0 auto; }
+.mobile-app-prompt-headline {
+  font-family: var(--font-playfair), 'Playfair Display', serif;
+  font-size: 18px; font-weight: 600; color: var(--heading); line-height: 1.25; margin: 0 0 6px;
+}
+.mobile-app-prompt-body {
+  font-size: 14px; color: var(--text-muted); line-height: 1.5; margin: 0 0 16px;
+}
+.mobile-app-prompt-actions { display: flex; flex-direction: column; gap: 10px; }
+.mobile-app-prompt-download { display: flex; flex-direction: column; gap: 8px; }
+.mobile-app-prompt-download-label { font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; }
+.mobile-app-prompt-store-links { display: flex; gap: 10px; flex-wrap: wrap; }
+.mobile-app-prompt-btn {
+  min-height: 44px; min-width: 44px;
+  display: inline-flex; align-items: center; justify-content: center;
+  text-decoration: none; text-align: center;
+}
+.mobile-app-prompt-btn:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
+
 /* ── NAV (shared; landing overrides in landing module) ── */
 nav {
   position: fixed; top: 33px; left: 0; right: 0; z-index: 999;

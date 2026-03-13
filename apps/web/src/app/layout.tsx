@@ -13,6 +13,7 @@ import AnnouncementBar from "@/components/layout/AnnouncementBar";
 import Nav from "@/components/layout/Nav";
 import Footer from "@/components/layout/Footer";
 import AIFab from "@/components/layout/AIFab";
+import MobileAppPrompt from "@/components/layout/MobileAppPrompt";
 import RevealObserver from "@/components/ui/RevealObserver";
 import { SkipToContent, MAIN_CONTENT_ID } from "@/components/ui/SkipToContent";
 import ThemeProvider from "@/components/providers/ThemeProvider";
@@ -58,7 +59,10 @@ export default function RootLayout({
           <SkipToContent />
           <AnnouncementBar />
           <Nav />
-          <main id={MAIN_CONTENT_ID} tabIndex={-1}>{children}</main>
+          <main id={MAIN_CONTENT_ID} tabIndex={-1}>
+            <MobileAppPrompt />
+            {children}
+          </main>
           <Footer />
           <AIFab />
           <RevealObserver />
