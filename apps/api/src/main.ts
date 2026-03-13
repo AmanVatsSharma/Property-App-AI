@@ -11,8 +11,8 @@ import { NestFactory } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
 import { VersioningType } from '@nestjs/common';
 import helmet from 'helmet';
-import { AppModule } from './app/app.module';
-import { logger } from './shared/logger';
+import { AppModule } from '@api/app/app.module';
+import { logger } from '@api/shared/logger';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);

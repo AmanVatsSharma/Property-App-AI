@@ -7,11 +7,11 @@
  */
 
 import { Test, TestingModule } from '@nestjs/testing';
-import { PropertyNotFoundError } from '../../../common/errors';
+import { PropertyNotFoundError } from '@api/common/errors';
 import { PropertyService } from '../services/property.service';
 import { PropertyRepository } from '../repository/property.repository';
 import { GeocodingService } from '../services/geocoding.service';
-import { LoggerService } from '../../../shared/logger';
+import { LoggerService } from '@api/shared/logger';
 import { Property } from '../entities/property.entity';
 
 describe('PropertyService', () => {

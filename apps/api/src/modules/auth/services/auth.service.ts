@@ -10,9 +10,9 @@ import { Injectable, BadRequestException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { OtpService } from './otp.service';
-import { UserService } from '../../user/services/user.service';
-import { LoggerService } from '../../../shared/logger';
-import { UserRole } from '../../user/entities/user.entity';
+import { UserService } from '@api/modules/user/services/user.service';
+import { LoggerService } from '@api/shared/logger';
+import { UserRole } from '@api/modules/user/entities/user.entity';
 
 @Injectable()
 export class AuthService {

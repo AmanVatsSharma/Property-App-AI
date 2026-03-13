@@ -8,7 +8,7 @@
 
 import { Resolver, Mutation, Query, Args, Context, UseGuards } from '@nestjs/graphql';
 import { ConfigService } from '@nestjs/config';
-import { AgentRateLimitGuard } from '../../../common/guards/agent-rate-limit.guard';
+import { AgentRateLimitGuard } from '@api/common/guards/agent-rate-limit.guard';
 import { AgentOrchestratorService } from '../services/agent-orchestrator.service';
 import { AgentToolsService } from '../services/agent-tools.service';
 import { AgentQueueService } from '../services/agent-queue.service';
@@ -16,8 +16,8 @@ import { AskAgentInput } from '../dtos/ask-agent-input.dto';
 import { AskAgentResult } from '../dtos/ask-agent-result.dto';
 import { AskAgentAsyncResult } from '../dtos/ask-agent-async-result.dto';
 import { AgentJobStatusResult } from '../dtos/agent-job-status.dto';
-import { LoggerService } from '../../../shared/logger';
-import { Property } from '../../property/entities/property.entity';
+import { LoggerService } from '@api/shared/logger';
+import { Property } from '@api/modules/property/entities/property.entity';
 import { createUnionType } from '@nestjs/graphql';
 
 export const AgentAskResponseUnion = createUnionType({

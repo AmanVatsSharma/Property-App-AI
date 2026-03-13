@@ -18,22 +18,22 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { AppConfigModule } from '../shared/config';
-import { LoggerModule } from '../shared/logger';
-import { HealthModule } from '../modules/health/health.module';
-import { AuthModule } from '../modules/auth/auth.module';
-import { UserModule } from '../modules/user/user.module';
-import { PropertyModule } from '../modules/property/property.module';
-import { AgentModule } from '../modules/agent/agent.module';
-import { AreaModule } from '../modules/area/area.module';
-import { StorageModule } from '../modules/storage/storage.module';
-import { AdminModule } from '../modules/admin/admin.module';
-import { AppError } from '../common/errors';
-import { RequestIdMiddleware } from '../common/middleware/request-id.middleware';
-import { HttpExceptionFilter } from '../common/filters/http-exception.filter';
-import { LoggingInterceptor } from '../common/interceptors/logging.interceptor';
-import { TimeoutInterceptor } from '../common/interceptors/timeout.interceptor';
-import { AuthGuard } from '../common/guards/auth.guard';
+import { AppConfigModule } from '@api/shared/config';
+import { LoggerModule } from '@api/shared/logger';
+import { HealthModule } from '@api/modules/health/health.module';
+import { AuthModule } from '@api/modules/auth/auth.module';
+import { UserModule } from '@api/modules/user/user.module';
+import { PropertyModule } from '@api/modules/property/property.module';
+import { AgentModule } from '@api/modules/agent/agent.module';
+import { AreaModule } from '@api/modules/area/area.module';
+import { StorageModule } from '@api/modules/storage/storage.module';
+import { AdminModule } from '@api/modules/admin/admin.module';
+import { AppError } from '@api/common/errors';
+import { RequestIdMiddleware } from '@api/common/middleware/request-id.middleware';
+import { HttpExceptionFilter } from '@api/common/filters/http-exception.filter';
+import { LoggingInterceptor } from '@api/common/interceptors/logging.interceptor';
+import { TimeoutInterceptor } from '@api/common/interceptors/timeout.interceptor';
+import { AuthGuard } from '@api/common/guards/auth.guard';
 
 @Module({
   imports: [

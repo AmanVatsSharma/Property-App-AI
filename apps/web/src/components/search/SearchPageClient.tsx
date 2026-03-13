@@ -175,7 +175,7 @@ export default function SearchPageClient() {
   const [bhkIndex, setBhkIndex] = useState(2);
   useEffect(() => {
     const i = BHK_OPTIONS.indexOf(params.bhk);
-    if (i >= 0) setBhkIndex(i);
+    if (i >= 0) queueMicrotask(() => setBhkIndex(i));
   }, [params.bhk]);
 
   return (

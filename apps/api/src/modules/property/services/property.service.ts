@@ -11,10 +11,10 @@ import { Property } from '../entities/property.entity';
 import { CreatePropertyDto } from '../dtos/create-property.dto';
 import { UpdatePropertyDto } from '../dtos/update-property.dto';
 import { PropertyFilterDto } from '../dtos/property-filter.dto';
-import { PropertyNotFoundError } from '../../../common/errors';
+import { PropertyNotFoundError } from '@api/common/errors';
 import { PropertyRepository } from '../repository/property.repository';
 import { GeocodingService } from './geocoding.service';
-import { LoggerService } from '../../../shared/logger';
+import { LoggerService } from '@api/shared/logger';
 
 @Injectable()
 export class PropertyService {

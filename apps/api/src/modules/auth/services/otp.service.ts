@@ -7,7 +7,7 @@
  */
 
 import { Injectable } from '@nestjs/common';
-import { LoggerService } from '../../../shared/logger';
+import { LoggerService } from '@api/shared/logger';
 
 const OTP_TTL_MS = 5 * 60 * 1000; // 5 minutes
 const OTP_LENGTH = 6;

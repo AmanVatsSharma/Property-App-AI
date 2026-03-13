@@ -8,7 +8,7 @@
 
 import { Controller, Get } from '@nestjs/common';
 import { AppService } from './app.service';
-import { Public } from '../../common/decorators/public.decorator';
+import { Public } from '@api/common/decorators/public.decorator';
 
 @Controller()
 @Public()

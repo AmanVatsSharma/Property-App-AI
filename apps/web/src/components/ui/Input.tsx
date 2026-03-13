@@ -6,6 +6,7 @@
  * @created 2025-03-10
  */
 
+import { useId } from "react";
 import type { InputHTMLAttributes } from "react";
 
 export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
@@ -21,7 +22,8 @@ export function Input({
   className = "",
   ...rest
 }: InputProps) {
-  const id = idProp ?? rest.name ?? `input-${Math.random().toString(36).slice(2, 9)}`;
+  const generatedId = useId();
+  const id = idProp ?? rest.name ?? `input-${generatedId.replace(/:/g, "")}`;
   return (
     <div className="block">
       {label && (

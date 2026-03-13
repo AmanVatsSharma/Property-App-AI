@@ -9,7 +9,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
-import { LoggerService } from '../../../shared/logger';
+import { LoggerService } from '@api/shared/logger';
 
 const MAPBOX_GEOCODE_URL = 'https://api.mapbox.com/geocoding/v5/mapbox.places';
 

@@ -15,7 +15,7 @@ import {
 import { GqlExecutionContext } from '@nestjs/graphql';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
-import { logger } from '../../shared/logger/logger.service';
+import { logger } from '@api/shared/logger/logger.service';
 
 @Injectable()
 export class LoggingInterceptor implements NestInterceptor {

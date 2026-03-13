@@ -9,7 +9,7 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
-import { LoggerService } from '../../shared/logger';
+import { LoggerService } from '@api/shared/logger';
 import { randomUUID } from 'crypto';
 
 const ALLOWED_MIMES = new Set<string>([

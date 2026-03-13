@@ -10,7 +10,7 @@ import { Injectable } from '@nestjs/common';
 import { Area } from '../entities/area.entity';
 import { AreaRepository, normalizeLocalityCity } from '../repository/area.repository';
 import { AreaAssessorService } from './area-assessor.service';
-import { LoggerService } from '../../../shared/logger';
+import { LoggerService } from '@api/shared/logger';
 
 export interface GetOrCreateOptions {
   assessIfMissing?: boolean;

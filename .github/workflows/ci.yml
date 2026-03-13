@@ -29,5 +29,11 @@ jobs:
       - name: Build web
         run: npx nx run web:build
 
+      - name: Madge cycle check (API)
+        run: npx madge --circular apps/api/src
+
+      - name: API unit tests
+        run: npx nx run api:test
+
       - name: Web unit tests
         run: cd apps/web && npm run test -- --run

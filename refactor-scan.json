@@ -1,0 +1,28 @@
+{
+  "scanDate": "2025-03-13",
+  "packageManager": "npm",
+  "entryPoints": [
+    "apps/api/src/main.ts",
+    "apps/api/src/app/app.module.ts"
+  ],
+  "fileCount": 104,
+  "moduleCount": 8,
+  "modules": [
+    "auth",
+    "user",
+    "property",
+    "agent",
+    "area",
+    "storage",
+    "admin",
+    "health"
+  ],
+  "circularDependencies": [],
+  "buildOk": true,
+  "lintOk": true,
+  "lintNote": "nx run-many -t lint --all passes (web + admin); API uses shared lint",
+  "testOk": true,
+  "testNote": "API test target added in apps/api/project.json; jest.config.js with moduleNameMapper for @api/*",
+  "gitStatusClean": false,
+  "gitStatusNote": "docs/CHANGELOG.md modified"
+}

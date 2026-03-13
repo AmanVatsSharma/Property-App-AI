@@ -8,7 +8,7 @@
 
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { LoggerModule } from '../../shared/logger';
+import { LoggerModule } from '@api/shared/logger';
 import { Area } from './entities/area.entity';
 import { AreaRepository } from './repository/area.repository';
 import { AreaService } from './services/area.service';

@@ -14,8 +14,8 @@ import {
 } from '@nestjs/common';
 import { GqlExecutionContext } from '@nestjs/graphql';
 import { Reflector } from '@nestjs/core';
-import { ROLES_KEY } from '../decorators/roles.decorator';
-import { UserRole } from '../../modules/user/entities/user.entity';
+import { ROLES_KEY } from '@api/common/decorators/roles.decorator';
+import { UserRole } from '@api/modules/user/entities/user.entity';
 
 /** Shared: get request from HTTP or GraphQL context. */
 export function getRequestFromContext(context: ExecutionContext): { user?: { role?: string } } {

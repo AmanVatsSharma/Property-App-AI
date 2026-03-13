@@ -8,7 +8,7 @@
 
 import { HttpStatus } from '@nestjs/common';
 import { ExecutionContext } from '@nestjs/common';
-import { AgentRateLimitGuard } from '../agent-rate-limit.guard';
+import { AgentRateLimitGuard } from '@api/common/guards/agent-rate-limit.guard';
 import { ConfigService } from '@nestjs/config';
 
 function mockContext(ip: string): ExecutionContext {

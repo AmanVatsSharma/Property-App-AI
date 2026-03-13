@@ -7,7 +7,7 @@
  */
 
 import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
-import { UserRole } from '../../modules/user/entities/user.entity';
+import { UserRole } from '@api/modules/user/entities/user.entity';
 import { getRequestFromContext, requireRoles } from './roles.guard';
 
 @Injectable()

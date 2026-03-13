@@ -147,7 +147,7 @@ export default function LoginModal({ open, onClose }: LoginModalProps) {
               className="input w-full mb-3"
               placeholder="000000"
               value={code}
-              onChange={(e) => setCode(e.target.replace(/\D/g, "").slice(0, 6))}
+              onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
               disabled={loading}
               autoComplete="one-time-code"
             />

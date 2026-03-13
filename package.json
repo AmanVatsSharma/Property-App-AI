@@ -14,7 +14,8 @@
     "mobile:apk": "nx run mobile:build-apk",
     "dev:admin": "nx run admin:dev",
     "build:admin": "nx run admin:build",
-    "lint": "nx run-many -t lint"
+    "lint": "nx run-many -t lint",
+    "refactor:verify": "bash scripts/refactor-verify.sh"
   },
   "workspaces": [
     "apps/*"
@@ -33,6 +34,9 @@
     "@swc/core": "~1.5.7",
     "@swc/helpers": "~0.5.11",
     "@types/node": "20.19.9",
+    "jest": "^29.7.0",
+    "madge": "^6.1.0",
+    "ts-jest": "^29.2.5",
     "nx": "^21.0.0",
     "pino-pretty": "^11.3.0",
     "prettier": "^2.6.2",

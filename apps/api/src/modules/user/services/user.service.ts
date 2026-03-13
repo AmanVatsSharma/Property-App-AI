@@ -9,7 +9,7 @@
 import { Injectable } from '@nestjs/common';
 import { User, UserRole } from '../entities/user.entity';
 import { UserRepository } from '../repository/user.repository';
-import { LoggerService } from '../../../shared/logger';
+import { LoggerService } from '@api/shared/logger';
 
 @Injectable()
 export class UserService {

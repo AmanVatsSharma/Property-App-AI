@@ -6,7 +6,7 @@
  * @created 2025-03-13
  */
 
-import { UserRole } from '../../modules/user/entities/user.entity';
+import { UserRole } from '@api/modules/user/entities/user.entity';
 import { Permission, PERMISSIONS } from './permissions';
 
 export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {

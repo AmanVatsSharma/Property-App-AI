@@ -10,7 +10,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
 import { AgentOrchestratorService } from '../services/agent-orchestrator.service';
 import { AgentToolsService } from '../services/agent-tools.service';
-import { LoggerService } from '../../../shared/logger';
+import { LoggerService } from '@api/shared/logger';
 
 describe('AgentOrchestratorService', () => {
   let service: AgentOrchestratorService;

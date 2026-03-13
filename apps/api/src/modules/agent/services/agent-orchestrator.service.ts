@@ -13,7 +13,7 @@ import { ChatAnthropic } from '@langchain/anthropic';
 import { HumanMessage, AIMessage, SystemMessage, ToolMessage } from '@langchain/core/messages';
 import type { BaseMessage } from '@langchain/core/messages';
 import type { BaseChatModel } from '@langchain/core/language_models/chat_models';
-import { LoggerService } from '../../../shared/logger';
+import { LoggerService } from '@api/shared/logger';
 import { AgentToolsService } from './agent-tools.service';
 import type { AskAgentResult } from '../dtos/ask-agent-result.dto';
 import type { AskAgentInput } from '../dtos/ask-agent-input.dto';

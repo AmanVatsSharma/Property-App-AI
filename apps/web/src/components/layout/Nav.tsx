@@ -40,7 +40,7 @@ export default function Nav() {
 
   useEffect(() => {
     if (!isAuthenticated || !token) {
-      setProfileUser(null);
+      queueMicrotask(() => setProfileUser(null));
       return;
     }
     let cancelled = false;

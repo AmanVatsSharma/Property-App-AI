@@ -7,7 +7,7 @@
  */
 
 import { ObjectType, Field } from '@nestjs/graphql';
-import { UserRole } from '../../user/entities/user.entity';
+import { UserRole } from '@api/modules/user/entities/user.entity';
 
 @ObjectType()
 export class AuthUserResult {

@@ -9,7 +9,7 @@
 "use client";
 
 import { useState, useCallback, useEffect } from "react";
-import { gqlAskAgent, type AskAgentResult, type AgentSource, type AgentSuggestedAction } from "@/lib/graphql-client";
+import { gqlAskAgent, type AgentSource, type AgentSuggestedAction } from "@/lib/graphql-client";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useAIFab } from "@/components/providers/AIFabProvider";
 

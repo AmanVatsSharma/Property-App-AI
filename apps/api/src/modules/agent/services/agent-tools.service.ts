@@ -9,12 +9,12 @@
 import { Injectable } from '@nestjs/common';
 import { tool } from '@langchain/core/tools';
 import { z } from 'zod';
-import { LoggerService } from '../../../shared/logger';
-import { PropertyService } from '../../property/services/property.service';
-import { AreaService } from '../../area/services/area.service';
-import type { Area } from '../../area/entities/area.entity';
+import { LoggerService } from '@api/shared/logger';
+import { PropertyService } from '@api/modules/property/services/property.service';
+import { AreaService } from '@api/modules/area/services/area.service';
+import type { Area } from '@api/modules/area/entities/area.entity';
 import type { StructuredToolInterface } from '@langchain/core/tools';
-import type { Property } from '../../property/entities/property.entity';
+import type { Property } from '@api/modules/property/entities/property.entity';
 
 export interface ToolResult {
   content: string;

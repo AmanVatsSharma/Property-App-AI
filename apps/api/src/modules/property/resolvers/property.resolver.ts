@@ -12,7 +12,7 @@ import { PropertyService } from '../services/property.service';
 import { CreatePropertyDto } from '../dtos/create-property.dto';
 import { UpdatePropertyDto } from '../dtos/update-property.dto';
 import { PropertyFilterDto } from '../dtos/property-filter.dto';
-import { LoggerService } from '../../../shared/logger';
+import { LoggerService } from '@api/shared/logger';
 
 interface GqlContext {
   req?: { user?: { sub: string } };

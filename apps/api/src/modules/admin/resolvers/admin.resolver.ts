@@ -8,10 +8,10 @@
 
 import { Resolver, Query, Mutation, Args, Int } from '@nestjs/graphql';
 import { UseGuards, NotFoundException } from '@nestjs/common';
-import { AdminGuard } from '../../../common/guards/admin.guard';
-import { UserService } from '../../user/services/user.service';
-import { PropertyService } from '../../property/services/property.service';
-import { User, UserRole } from '../../user/entities/user.entity';
+import { AdminGuard } from '@api/common/guards/admin.guard';
+import { UserService } from '@api/modules/user/services/user.service';
+import { PropertyService } from '@api/modules/property/services/property.service';
+import { User, UserRole } from '@api/modules/user/entities/user.entity';
 import { AdminStats } from '../dtos/admin-stats.dto';
 import { UsersListResult } from '../dtos/users-list.dto';
 

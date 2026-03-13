@@ -7,6 +7,6 @@
  */
 
 import { SetMetadata } from '@nestjs/common';
-import { IS_PUBLIC_KEY } from '../guards/auth.guard';
+import { IS_PUBLIC_KEY } from '@api/common/guards/auth.guard';
 
 export const Public = () => SetMetadata(IS_PUBLIC_KEY, true);

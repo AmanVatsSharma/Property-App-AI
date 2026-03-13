@@ -7,7 +7,7 @@
  */
 
 import { Resolver, Mutation, Args } from '@nestjs/graphql';
-import { Public } from '../../../common/decorators/public.decorator';
+import { Public } from '@api/common/decorators/public.decorator';
 import { AuthService } from '../services/auth.service';
 import { SendOtpInput } from '../dtos/send-otp.dto';
 import { VerifyOtpInput } from '../dtos/verify-otp.dto';

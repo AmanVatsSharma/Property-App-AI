@@ -10,11 +10,11 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ChatOpenAI } from '@langchain/openai';
 import { ChatAnthropic } from '@langchain/anthropic';
-import { LoggerService } from '../../../shared/logger';
+import { LoggerService } from '@api/shared/logger';
 import { Area } from '../entities/area.entity';
 import { AreaRepository, type UpdateAreaData } from '../repository/area.repository';
 import { getAreaAssessPrompt } from '../prompts/area-assess.prompt';
-import { AGENT_CONFIG_KEYS } from '../../agent/config/agent-config';
+import { AGENT_CONFIG_KEYS } from '@api/modules/agent/config/agent-config';
 
 const AREA_ASSESSMENT_TTL_DAYS_KEY = 'AREA_ASSESSMENT_TTL_DAYS';
 

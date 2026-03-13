@@ -10,7 +10,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { StorageService } from './storage.service';
 import { UploadController } from './controllers/upload.controller';
-import { LoggerModule } from '../../shared/logger';
+import { LoggerModule } from '@api/shared/logger';
 
 @Module({
   imports: [ConfigModule, LoggerModule],

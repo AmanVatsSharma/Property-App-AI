@@ -9,7 +9,14 @@
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "target": "es2021",
-    "strictPropertyInitialization": false
+    "strictPropertyInitialization": false,
+    "paths": {
+      "@api/shared/*": ["src/shared/*"],
+      "@api/common/*": ["src/common/*"],
+      "@api/modules/*": ["src/modules/*"],
+      "@api/app/*": ["src/app/*"],
+      "@api/database/*": ["src/database/*"]
+    }
   },
   "include": ["src/**/*.ts"]
 }

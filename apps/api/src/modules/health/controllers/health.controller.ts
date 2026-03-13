@@ -12,7 +12,7 @@ import {
   HealthCheck,
   TypeOrmHealthIndicator,
 } from '@nestjs/terminus';
-import { Public } from '../../../common/decorators/public.decorator';
+import { Public } from '@api/common/decorators/public.decorator';
 import { RedisHealthIndicator } from '../indicators/redis.health';
 
 @Controller('health')

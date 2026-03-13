@@ -8,9 +8,9 @@
 
 import { NotFoundException } from '@nestjs/common';
 import { AdminResolver } from '../admin.resolver';
-import { UserService } from '../../../user/services/user.service';
-import { PropertyService } from '../../../property/services/property.service';
-import { UserRole } from '../../../user/entities/user.entity';
+import { UserService } from '@api/modules/user/services/user.service';
+import { PropertyService } from '@api/modules/property/services/property.service';
+import { UserRole } from '@api/modules/user/entities/user.entity';
 
 const mockUser = {
   id: 'user-uuid',

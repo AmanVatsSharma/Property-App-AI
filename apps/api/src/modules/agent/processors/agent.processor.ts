@@ -10,7 +10,7 @@ import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { Job } from 'bullmq';
 import { AgentQueueService, type AgentJobData, type AgentJobResult } from '../services/agent-queue.service';
 import { AgentOrchestratorService } from '../services/agent-orchestrator.service';
-import { LoggerService } from '../../../shared/logger';
+import { LoggerService } from '@api/shared/logger';
 
 @Processor(AgentQueueService.AGENT_QUEUE_NAME)
 export class AgentProcessor extends WorkerHost {

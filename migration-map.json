@@ -1,0 +1,5 @@
+{
+  "description": "Path alias migration: relative imports replaced with @api/* in apps/api. No file moves in Phase 1.",
+  "version": "1.0",
+  "mappings": []
+}

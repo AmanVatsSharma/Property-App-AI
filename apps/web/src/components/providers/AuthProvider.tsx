@@ -48,8 +48,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [openLoginModal, setOpenLoginModal] = useState(false);
 
   useEffect(() => {
-    setTokenState(readToken());
-    setMounted(true);
+    queueMicrotask(() => {
+      setTokenState(readToken());
+      setMounted(true);
+    });
   }, []);
 
   const setToken = useCallback((value: string | null) => {

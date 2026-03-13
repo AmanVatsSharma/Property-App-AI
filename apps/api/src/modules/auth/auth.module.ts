@@ -7,8 +7,8 @@
  */
 
 import { Module } from '@nestjs/common';
-import { LoggerModule } from '../../../shared/logger';
-import { UserModule } from '../user/user.module';
+import { LoggerModule } from '@api/shared/logger';
+import { UserModule } from '@api/modules/user/user.module';
 import { AuthResolver } from './resolvers/auth.resolver';
 import { AuthService } from './services/auth.service';
 import { OtpService } from './services/otp.service';

@@ -8,12 +8,12 @@
 
 import { Test, TestingModule } from '@nestjs/testing';
 import { AgentToolsService } from '../services/agent-tools.service';
-import { PropertyService } from '../../property/services/property.service';
-import { AreaService } from '../../area/services/area.service';
-import { LoggerService } from '../../../shared/logger';
-import { PropertyNotFoundError } from '../../../common/errors';
-import { Property } from '../../property/entities/property.entity';
-import { Area } from '../../area/entities/area.entity';
+import { PropertyService } from '@api/modules/property/services/property.service';
+import { AreaService } from '@api/modules/area/services/area.service';
+import { LoggerService } from '@api/shared/logger';
+import { PropertyNotFoundError } from '@api/common/errors';
+import { Property } from '@api/modules/property/entities/property.entity';
+import { Area } from '@api/modules/area/entities/area.entity';
 
 const mockProperty: Property = {
   id: 'uuid-1',

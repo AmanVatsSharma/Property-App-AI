@@ -13,9 +13,9 @@ import { AgentOrchestratorService } from './services/agent-orchestrator.service'
 import { AgentToolsService } from './services/agent-tools.service';
 import { AgentQueueService } from './services/agent-queue.service';
 import { AgentProcessor } from './processors/agent.processor';
-import { AgentRateLimitGuard } from '../../common/guards/agent-rate-limit.guard';
-import { PropertyModule } from '../property/property.module';
-import { AreaModule } from '../area/area.module';
+import { AgentRateLimitGuard } from '@api/common/guards/agent-rate-limit.guard';
+import { PropertyModule } from '@api/modules/property/property.module';
+import { AreaModule } from '@api/modules/area/area.module';
 
 @Module({
   imports: [

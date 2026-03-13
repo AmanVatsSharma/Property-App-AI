@@ -8,9 +8,9 @@
 
 import { ExecutionContext, ForbiddenException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { RolesGuard, getRequestFromContext, requireRoles } from '../roles.guard';
-import { ROLES_KEY } from '../../decorators/roles.decorator';
-import { UserRole } from '../../../modules/user/entities/user.entity';
+import { RolesGuard, getRequestFromContext, requireRoles } from '@api/common/guards/roles.guard';
+import { ROLES_KEY } from '@api/common/decorators/roles.decorator';
+import { UserRole } from '@api/modules/user/entities/user.entity';
 
 function mockHttpContext(request: { user?: { role?: string } }): ExecutionContext {
   return {

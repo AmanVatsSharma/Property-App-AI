@@ -7,9 +7,9 @@
  */
 
 import { Module } from '@nestjs/common';
-import { AdminGuard } from '../../common/guards/admin.guard';
-import { UserModule } from '../user/user.module';
-import { PropertyModule } from '../property/property.module';
+import { AdminGuard } from '@api/common/guards/admin.guard';
+import { UserModule } from '@api/modules/user/user.module';
+import { PropertyModule } from '@api/modules/property/property.module';
 import { AdminResolver } from './resolvers/admin.resolver';
 
 @Module({
