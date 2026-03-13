@@ -1,7 +1,7 @@
 /**
  * @file property-api.spec.ts
  * @module lib
- * @description Unit tests for getPropertyById (mock resolution)
+ * @description Unit tests for getPropertyById (no mock; returns null when API not configured or not found).
  * @author BharatERP
  * @created 2025-03-10
  */
@@ -10,38 +10,25 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { getPropertyById } from "./property-api";
 
 describe("getPropertyById", () => {
-  const origEnv = process.env.NEXT_PUBLIC_API_URL;
+  const origGraphql = process.env.NEXT_PUBLIC_GRAPHQL_HTTP;
+  const origApiUrl = process.env.NEXT_PUBLIC_API_URL;
 
   beforeEach(() => {
+    delete process.env.NEXT_PUBLIC_GRAPHQL_HTTP;
     delete process.env.NEXT_PUBLIC_API_URL;
   });
 
   afterEach(() => {
-    process.env.NEXT_PUBLIC_API_URL = origEnv;
+    process.env.NEXT_PUBLIC_GRAPHQL_HTTP = origGraphql;
+    process.env.NEXT_PUBLIC_API_URL = origApiUrl;
   });
 
-  it("returns mock property for sobha-city-vista when no API URL", async () => {
+  it("returns null when no API URL configured", async () => {
     const result = await getPropertyById("sobha-city-vista");
-    expect(result).not.toBeNull();
-    expect(result?.id).toBe("sobha-city-vista");
-    expect(result?.title).toContain("Sobha City Vista");
-    expect(result?.price).toBe("₹2.85 Cr");
+    expect(result).toBeNull();
   });
 
-  it("returns mock property for detail slug (alias)", async () => {
-    const result = await getPropertyById("detail");
-    expect(result).not.toBeNull();
-    expect(result?.title).toContain("Sobha City Vista");
-  });
-
-  it("returns mock property for dlf-mypad", async () => {
-    const result = await getPropertyById("dlf-mypad");
-    expect(result).not.toBeNull();
-    expect(result?.id).toBe("dlf-mypad");
-    expect(result?.title).toContain("DLF MyPad");
-  });
-
-  it("returns null for unknown id when no API", async () => {
+  it("returns null for any id when no API URL", async () => {
     const result = await getPropertyById("unknown-slug-xyz");
     expect(result).toBeNull();
   });

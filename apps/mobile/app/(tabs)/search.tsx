@@ -1,7 +1,7 @@
 /**
  * @file search.tsx
  * @module app/(tabs)
- * @description Search properties screen; list/map view; uses API when configured, fallback mock otherwise
+ * @description Search properties screen; list/map view; API only, no mock data.
  * @author BharatERP
  * @created 2025-03-10
  */
@@ -19,12 +19,6 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { fetchProperties, type ApiProperty } from '@/lib/graphql-client';
 import { PropertyMap, type PropertyMapItem } from '@/components/PropertyMap';
-
-const FALLBACK_PROPERTIES: Array<{ id: string; price: string; name: string; loc: string; score: number; badges: string[] }> = [
-  { id: '1', price: '₹2.85 Cr', name: 'Sobha City Vista — 4 BHK Ultra Luxury', loc: 'Sector 108, Gurgaon · 2,850 sqft', score: 94, badges: ['⭐ Premium', '✦ AI Pick'] },
-  { id: '2', price: '₹78 L', name: 'DLF MyPad — 2 BHK Studio, Noida', loc: 'Sector 59, Noida · 1,100 sqft', score: 88, badges: ['✓ Verified', '🔥 Hot'] },
-  { id: '3', price: '₹1.45 Cr', name: 'M3M Golf Hills — 3 BHK Premium', loc: 'Sector 79, Gurgaon · 1,890 sqft', score: 91, badges: ['NEW', '✦ AI Pick'] },
-];
 
 function formatPrice(price: number): string {
   return price >= 1_00_00_000 ? `₹${(price / 1_00_00_000).toFixed(2)} Cr` : `₹${(price / 1_00_000).toFixed(0)} L`;

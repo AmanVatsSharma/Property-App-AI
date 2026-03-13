@@ -12,7 +12,6 @@ import Link from "next/link";
 import dynamic from "next/dynamic";
 import { useCallback, useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { DEMO_IMAGES } from "@/lib/demo-images";
 import { PropertyImage } from "@/components/ui/PropertyImage";
 import { gqlProperties, type ApiProperty } from "@/lib/graphql-client";
 import type { PropertyMapItem } from "./PropertyMap";
@@ -25,27 +24,6 @@ const PropertyMap = dynamic(() => import("./PropertyMap").then((m) => m.Property
     </div>
   ),
 });
-
-const PROPERTIES: Array<{
-  id: string;
-  price: string;
-  name: string;
-  loc: string;
-  specs: string[];
-  tip: string;
-  badges: string[];
-  badgeLabels: string[];
-  score: number;
-  bg: string;
-  imageUrl: string;
-}> = [
-  { id: "sobha-city-vista", price: "₹2.85 Cr", name: "Sobha City Vista — 4 BHK Ultra Luxury", loc: "Sector 108, Gurgaon · 2,850 sqft", specs: ["4 BHK", "4 Bath", "2 Park", "RERA"], tip: "18% appreciation expected. Metro 1.2km. Priced 8% below market.", badges: ["badge-gold", "badge-teal"], badgeLabels: ["⭐ Premium", "✦ AI Pick"], score: 94, bg: "linear-gradient(135deg,#132238,#1e3a5f)", imageUrl: DEMO_IMAGES.properties["sobha-city-vista"].cover },
-  { id: "dlf-mypad", price: "₹78 L", name: "DLF MyPad — 2 BHK Studio, Noida", loc: "Sector 59, Noida · 1,100 sqft", specs: ["2 BHK", "2 Bath", "1,100"], tip: "Best value in locality. 92% of seekers shortlisted this.", badges: ["badge-green", "badge-coral"], badgeLabels: ["✓ Verified", "🔥 Hot"], score: 88, bg: "linear-gradient(135deg,#1a2e1a,#2a4a2a)", imageUrl: DEMO_IMAGES.properties["dlf-mypad"].cover },
-  { id: "m3m-golf-hills", price: "₹1.45 Cr", name: "M3M Golf Hills — 3 BHK Premium", loc: "Sector 79, Gurgaon · 1,890 sqft", specs: ["3 BHK", "3 Bath", "1 Park"], tip: "37 views today. Price rising after DDJK highway opens Q2.", badges: ["badge-white", "badge-teal"], badgeLabels: ["NEW", "✦ AI Pick"], score: 91, bg: "linear-gradient(135deg,#1a1a30,#2a2a50)", imageUrl: DEMO_IMAGES.properties["m3m-golf-hills"].cover },
-  { id: "prestige-sunrise-park", price: "₹62 L", name: "Prestige Sunrise Park — 2 BHK", loc: "Whitefield, Bangalore · 1,250 sqft", specs: ["2 BHK", "2 Bath", "RERA"], tip: "IT corridor adjacency. 28% YoY appreciation recorded.", badges: ["badge-gold"], badgeLabels: ["⭐ Featured"], score: 86, bg: "linear-gradient(135deg,#2a1a1a,#4a2a2a)", imageUrl: DEMO_IMAGES.properties["prestige-sunrise-park"].cover },
-  { id: "brigade-cornerstone-utopia", price: "₹95 L", name: "Brigade Cornerstone Utopia — 3 BHK", loc: "Yelahanka, Bangalore · 1,580 sqft", specs: ["3 BHK", "3 Bath", "Dec 2026"], tip: "Launch price — 22% gains likely at possession.", badges: ["badge-coral"], badgeLabels: ["Under Construction"], score: 79, bg: "linear-gradient(135deg,#1a2a1a,#253a25)", imageUrl: DEMO_IMAGES.properties["brigade-cornerstone-utopia"].cover },
-  { id: "godrej-meridian", price: "₹1.8 Cr", name: "Godrej Meridian — 4 BHK, Gurgaon", loc: "Sector 106, Gurgaon · 2,200 sqft", specs: ["4 BHK", "4 Bath", "2 Park"], tip: "Golf course views. Excellent school access score of 88.", badges: ["badge-green"], badgeLabels: ["✓ Verified"], score: 83, bg: "linear-gradient(135deg,#0d1a2a,#162a3a)", imageUrl: DEMO_IMAGES.properties["godrej-meridian"].cover },
-];
 
 const BHK_OPTIONS = ["1", "2", "3", "4+"];
 const SORT_OPTIONS = [
@@ -122,18 +100,27 @@ export default function SearchPageClient() {
   const searchParams = useSearchParams();
   const [viewMode, setViewMode] = useState<"grid" | "list" | "map">("grid");
   const [apiProperties, setApiProperties] = useState<ApiProperty[] | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   const params = parseSearchParams(searchParams);
   const activeFilters = buildActiveFilters(params);
 
   useEffect(() => {
+    setLoadError(null);
     const filter = {
       ...(params.city && { location: params.city }),
       ...(params.bhk && { bedrooms: params.bhk === "4+" ? 4 : parseInt(params.bhk, 10) }),
       limit: 50,
       offset: 0,
     };
-    gqlProperties(filter).then(setApiProperties).catch(() => setApiProperties([]));
+    gqlProperties(filter)
+      .then((list) => {
+        setApiProperties(list);
+      })
+      .catch((e) => {
+        setApiProperties([]);
+        setLoadError(e instanceof Error ? e.message : "Failed to load properties");
+      });
   }, [params.city, params.bhk]);
 
   const setParams = useCallback(
@@ -190,7 +177,9 @@ export default function SearchPageClient() {
           />
           <button type="button" style={{ background: "var(--teal)", border: "none", color: "var(--night)", padding: "6px 14px", borderRadius: 8, fontFamily: "inherit", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>Search</button>
         </div>
-        <span className="results-meta" style={{ marginLeft: 20 }}>Showing <strong>2,847</strong> properties</span>
+        <span className="results-meta" style={{ marginLeft: 20 }}>
+          {apiProperties === null ? "Loading…" : `Showing ${apiProperties.length} propert${apiProperties.length === 1 ? "y" : "ies"}`}
+        </span>
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginLeft: "auto" }}>
           <select
             className="sort-select"
@@ -304,43 +293,61 @@ export default function SearchPageClient() {
 
         <div className="search-main">
           <div className="listings-wrap">
-            {viewMode === "map" ? (
+            {apiProperties === null ? (
+              <div style={{ padding: 48, textAlign: "center", color: "var(--text-muted)" }}>
+                Loading properties…
+              </div>
+            ) : viewMode === "map" ? (
               <PropertyMap
-                properties={apiToMapItems(apiProperties ?? [])}
+                properties={apiToMapItems(apiProperties)}
                 className="search-map-container"
               />
             ) : (
               <>
+            {loadError && (
+              <div style={{ padding: 12, marginBottom: 16, background: "var(--coral)", color: "var(--night)", borderRadius: 8 }}>
+                {loadError}
+              </div>
+            )}
+            {apiProperties.length === 0 ? (
+              <div style={{ padding: 48, textAlign: "center", color: "var(--text-muted)" }}>
+                No properties found. Try adjusting your filters or ensure the backend is connected.
+              </div>
+            ) : (
             <div className="prop-grid">
-              {(apiProperties != null ? apiProperties.map(apiToCardItem) : PROPERTIES).map((p) => (
+              {apiProperties.map((p) => {
+                const card = apiToCardItem(p);
+                return (
                 <Link key={p.id} href={`/property/${p.id}`} className="prop-card reveal">
                   <div className="prop-img">
                     <PropertyImage
-                      src={p.imageUrl}
-                      alt={p.name}
+                      src={card.imageUrl}
+                      alt={card.name}
                       className="prop-img-bg"
                       sizes="(max-width: 768px) 100vw, 33vw"
-                      placeholderGradient={p.bg}
+                      placeholderGradient={card.bg}
                     />
                     <div className="prop-img-grad" />
                     <div className="prop-badges">
-                      {p.badgeLabels.map((l, j) => (
-                        <span key={j} className={`badge ${p.badges[j]}`}>{l}</span>
+                      {card.badgeLabels.map((l, j) => (
+                        <span key={j} className={`badge ${card.badges[j]}`}>{l}</span>
                       ))}
                     </div>
                     <button type="button" className="prop-heart" onClick={(e) => e.stopPropagation()} aria-label="Save">♡</button>
-                    <div className="prop-ai-score"><div className="score-n">{p.score}</div><div className="score-l">AI Score</div></div>
+                    <div className="prop-ai-score"><div className="score-n">{card.score}</div><div className="score-l">AI Score</div></div>
                   </div>
                   <div className="prop-body">
-                    <div className="prop-price">{p.price} <span>onwards</span></div>
-                    <div className="prop-name">{p.name}</div>
-                    <div className="prop-loc">📍 {p.loc}</div>
-                    <div className="prop-specs">{p.specs.map((s, j) => <span key={j} className="prop-spec">{s}</span>)}</div>
-                    <div className="prop-ai-tip"><strong>✦ AI:</strong> {p.tip}</div>
+                    <div className="prop-price">{card.price} <span>onwards</span></div>
+                    <div className="prop-name">{card.name}</div>
+                    <div className="prop-loc">📍 {card.loc}</div>
+                    <div className="prop-specs">{card.specs.map((s, j) => <span key={j} className="prop-spec">{s}</span>)}</div>
+                    <div className="prop-ai-tip"><strong>✦ AI:</strong> {card.tip}</div>
                   </div>
                 </Link>
-              ))}
+                );
+              })}
             </div>
+            )}
                 <div className="pagination">
                   <button type="button" className="page-btn" onClick={() => setParams({ page: params.page - 1 })} disabled={params.page <= 1}>‹</button>
                   {[1, 2, 3].map((n) => (
