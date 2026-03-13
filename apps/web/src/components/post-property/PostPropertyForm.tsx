@@ -69,46 +69,49 @@ export default function PostPropertyForm() {
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
+  const graphqlUrl = typeof window !== "undefined"
+    ? (process.env.NEXT_PUBLIC_GRAPHQL_HTTP ?? (process.env.NEXT_PUBLIC_API_URL ? `${process.env.NEXT_PUBLIC_API_URL.replace(/\/$/, "")}/graphql` : ""))
+    : "";
+
   const onSubmit = async (data: PostPropertyFormValues) => {
+    if (!graphqlUrl) {
+      setErrorMessage("Backend not configured. Set NEXT_PUBLIC_GRAPHQL_HTTP or NEXT_PUBLIC_API_URL to submit listings.");
+      setSubmitStatus("error");
+      return;
+    }
     setSubmitStatus("loading");
     setErrorMessage("");
     setImageError("");
     logger.debug("PostPropertyForm:submit", data);
 
     try {
-      const graphqlUrl = process.env.NEXT_PUBLIC_GRAPHQL_HTTP ?? (process.env.NEXT_PUBLIC_API_URL ? `${process.env.NEXT_PUBLIC_API_URL.replace(/\/$/, "")}/graphql` : "");
-      if (graphqlUrl) {
-        let coverImageUrl: string | undefined;
-        let imageUrls: string[] | undefined;
-        if (selectedFiles.length > 0 && process.env.NEXT_PUBLIC_API_URL) {
-          const urls: string[] = [];
-          for (const file of selectedFiles) {
-            const { url } = await uploadImage(file);
-            urls.push(url);
-          }
-          coverImageUrl = urls[0];
-          if (urls.length > 1) imageUrls = urls;
+      let coverImageUrl: string | undefined;
+      let imageUrls: string[] | undefined;
+      if (selectedFiles.length > 0 && process.env.NEXT_PUBLIC_API_URL) {
+        const urls: string[] = [];
+        for (const file of selectedFiles) {
+          const { url } = await uploadImage(file);
+          urls.push(url);
         }
-        const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
-        const result = await gqlCreateProperty(
-          {
-            title: data.title,
-            location: data.address,
-            price: Number(data.price),
-            type: data.propertyType,
-            listingFor: data.listingFor,
-            coverImageUrl,
-            imageUrls: imageUrls ?? (coverImageUrl ? [coverImageUrl] : undefined),
-          },
-          headers,
-        );
-        setCreatedId(result.id);
-        logger.info("PostPropertyForm:submit success", { id: result.id });
-        setSubmitStatus("success");
-      } else {
-        logger.debug("PostPropertyForm:submit mock success (no GraphQL URL)");
-        setSubmitStatus("success");
+        coverImageUrl = urls[0];
+        if (urls.length > 1) imageUrls = urls;
       }
+      const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
+      const result = await gqlCreateProperty(
+        {
+          title: data.title,
+          location: data.address,
+          price: Number(data.price),
+          type: data.propertyType,
+          listingFor: data.listingFor,
+          coverImageUrl,
+          imageUrls: imageUrls ?? (coverImageUrl ? [coverImageUrl] : undefined),
+        },
+        headers,
+      );
+      setCreatedId(result.id);
+      logger.info("PostPropertyForm:submit success", { id: result.id });
+      setSubmitStatus("success");
     } catch (e) {
       const raw = e instanceof Error ? e.message : "Something went wrong. Please try again.";
       const isAuthError = /Unauthorized|401|authorization|invalid.*token/i.test(raw);
@@ -125,9 +128,7 @@ export default function PostPropertyForm() {
         <div style={{ fontSize: 48, marginBottom: 16 }}>✅</div>
         <h3 className="h3" style={{ marginBottom: 12 }}>Listing submitted</h3>
         <p style={{ color: "var(--text-muted)", fontSize: 15 }}>
-          {createdId
-            ? "Your property has been created. You can view it in search."
-            : "Form validated. Connect NEXT_PUBLIC_GRAPHQL_HTTP or NEXT_PUBLIC_API_URL to submit to the backend."}
+          Your property has been created. You can view it in search.
         </p>
       </div>
     );
@@ -135,6 +136,11 @@ export default function PostPropertyForm() {
 
   return (
     <div className="form-section reveal">
+      {!graphqlUrl && (
+        <div style={{ padding: 12, marginBottom: 16, background: "var(--coral)", color: "var(--night)", borderRadius: 8 }}>
+          Backend not configured. Set NEXT_PUBLIC_GRAPHQL_HTTP or NEXT_PUBLIC_API_URL to submit listings.
+        </div>
+      )}
       <h3>🏠 Step 1 — Basic Details</h3>
       <form onSubmit={handleSubmit(onSubmit)} noValidate>
         <div className="form-field" style={{ marginBottom: 16 }}>
@@ -273,8 +279,8 @@ export default function PostPropertyForm() {
             {errorMessage}
           </p>
         )}
-        <button type="submit" className="btn-primary" style={{ padding: 13, borderRadius: 12 }} disabled={submitStatus === "loading"}>
-          {submitStatus === "loading" ? "Submitting…" : "Submit listing"}
+        <button type="submit" className="btn-primary" style={{ padding: 13, borderRadius: 12 }} disabled={submitStatus === "loading" || !graphqlUrl} aria-disabled={submitStatus === "loading" || !graphqlUrl}>
+          {submitStatus === "loading" ? "Submitting…" : !graphqlUrl ? "Backend not configured" : "Submit listing"}
         </button>
       </form>
     </div>

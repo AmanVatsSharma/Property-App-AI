@@ -1,7 +1,7 @@
 /**
  * @file demo-images.ts
  * @module lib
- * @description Central demo image URLs (Unsplash) for landing, search, and property detail
+ * @description Image URLs for marketing/landing and fallback when a real property has no image. Not used to drive listing data.
  * @author BharatERP
  * @created 2025-03-11
  */
@@ -9,8 +9,10 @@
 const U = (id: string, w = 800) =>
   `https://images.unsplash.com/photo-${id}?w=${w}&q=80`;
 
-/** Known-good Unsplash IDs (real estate, city, people) so demo always shows images */
+/** Marketing/landing and fallback only. Use defaultPropertyCover when API returns a property with no cover image. */
 export const DEMO_IMAGES = {
+  /** Fallback when a real property has no coverImageUrl (no mock listing data). */
+  defaultPropertyCover: U("1600596542815-ffad4c1539a9"),
   cities: {
     Mumbai: U("1600596542815-ffad4c1539a9"),
     Bangalore: U("1600585154340-be6161a56a0c"),

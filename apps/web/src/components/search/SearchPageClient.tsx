@@ -13,6 +13,7 @@ import dynamic from "next/dynamic";
 import { useCallback, useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { PropertyImage } from "@/components/ui/PropertyImage";
+import { DEMO_IMAGES } from "@/lib/demo-images";
 import { gqlProperties, type ApiProperty } from "@/lib/graphql-client";
 import type { PropertyMapItem } from "./PropertyMap";
 
@@ -91,7 +92,7 @@ function apiToCardItem(p: ApiProperty) {
     badgeLabels: p.aiScore && p.aiScore >= 90 ? ["✦ AI Pick"] : ["✓ Verified"],
     score: p.aiScore ?? 0,
     bg: "linear-gradient(135deg,#132238,#1e3a5f)",
-    imageUrl: p.coverImageUrl ?? "",
+    imageUrl: p.coverImageUrl ?? DEMO_IMAGES.defaultPropertyCover,
   };
 }
 
