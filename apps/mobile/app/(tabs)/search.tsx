@@ -85,7 +85,8 @@ export default function SearchScreen() {
     return () => { cancelled = true; };
   }, []);
 
-  const listItems = apiList != null && apiList.length > 0 ? apiList.map(toCardItem) : FALLBACK_PROPERTIES;
+  const listItems = apiList ?? [];
+  const displayList = listItems.map(toCardItem);
 
   return (
     <SafeAreaView className="flex-1 bg-night" edges={['top']}>
@@ -103,7 +104,7 @@ export default function SearchScreen() {
         </View>
         <View className="flex-row items-center justify-between mt-3">
           <Text className="text-text-muted text-sm">
-            Showing <Text className="text-white font-semibold">{listItems.length}</Text> properties
+            {loading ? 'Loading…' : `Showing ${displayList.length} propert${displayList.length === 1 ? 'y' : 'ies'}`}
           </Text>
           <View className="flex-row rounded-lg border border-border overflow-hidden">
             <Pressable
@@ -120,21 +121,25 @@ export default function SearchScreen() {
             </Pressable>
           </View>
         </View>
-        {apiUnavailable && (
-          <Text className="text-text-muted text-xs mt-2">Showing demo data (server unavailable)</Text>
+        {!loading && apiUnavailable && (
+          <Text className="text-text-muted text-xs mt-2">No properties. Connect server (EXPO_PUBLIC_API_URL or EXPO_PUBLIC_GRAPHQL_HTTP) or try again.</Text>
         )}
       </View>
       {loading ? (
         <View className="flex-1 items-center justify-center py-12">
           <ActivityIndicator size="large" color="#00d4aa" />
         </View>
+      ) : displayList.length === 0 ? (
+        <View className="flex-1 items-center justify-center px-6 py-12">
+          <Text className="text-text-muted text-center">No properties found. Adjust filters or ensure the backend is connected.</Text>
+        </View>
       ) : viewMode === 'map' ? (
         <View className="flex-1 px-4 pt-2" style={{ minHeight: 400 }}>
-          <PropertyMap properties={apiToMapItems(apiList ?? [])} style={{ flex: 1, borderRadius: 12 }} />
+          <PropertyMap properties={apiToMapItems(listItems)} style={{ flex: 1, borderRadius: 12 }} />
         </View>
       ) : (
       <FlatList
-        data={listItems}
+        data={displayList}
         keyExtractor={(item) => item.id}
         contentContainerStyle={{ padding: 16, paddingBottom: 32 }}
         renderItem={({ item }) => (

@@ -10,6 +10,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getPropertyById } from "@/lib/property-api";
+import { DEMO_IMAGES } from "@/lib/demo-images";
 import { PropertyImage } from "@/components/ui/PropertyImage";
 
 interface PageProps {
@@ -45,7 +46,7 @@ export default async function PropertyDetailPage({ params }: PageProps) {
         <div className="gallery">
           <div className="gallery-main">
             <PropertyImage
-              src={property.coverImage}
+              src={property.coverImage ?? DEMO_IMAGES.defaultPropertyCover}
               alt={property.title}
               className="gallery-main-img"
               sizes="(max-width: 768px) 100vw, 66vw"
@@ -58,7 +59,7 @@ export default async function PropertyDetailPage({ params }: PageProps) {
           </div>
           <div className="gallery-sub">
             <PropertyImage
-              src={property.galleryImages?.[0]}
+              src={property.galleryImages?.[0] ?? DEMO_IMAGES.defaultPropertyCover}
               alt={`${property.title} — view 2`}
               className="gallery-sub-img"
               sizes="(max-width: 768px) 50vw, 33vw"
@@ -67,7 +68,7 @@ export default async function PropertyDetailPage({ params }: PageProps) {
           </div>
           <div className="gallery-sub">
             <PropertyImage
-              src={property.galleryImages?.[1]}
+              src={property.galleryImages?.[1] ?? DEMO_IMAGES.defaultPropertyCover}
               alt={`${property.title} — view 3`}
               className="gallery-sub-img"
               sizes="(max-width: 768px) 50vw, 33vw"
