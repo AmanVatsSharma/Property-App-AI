@@ -61,3 +61,4 @@ Ensure `.env` has `DB_*`, `JWT_SECRET`, and optionally `SMS_PROVIDER` + Twilio/M
 - [ ] Web: `NEXT_PUBLIC_GRAPHQL_HTTP` or `NEXT_PUBLIC_API_URL` set so search and property detail use the API.
 - [ ] Mobile: `EXPO_PUBLIC_GRAPHQL_HTTP` or `EXPO_PUBLIC_API_URL` set.
 - [ ] No mock listing or placeholder data is shown: property list and detail come from the API; post listing requires backend URL; agent placeholder tools return "Coming soon".
+- [ ] (Optional) Image upload: When `JWT_SECRET` is set, upload endpoints require `Authorization: Bearer <token>`. The web app sends the signed-in user's token when uploading images in post-property; no extra config needed.

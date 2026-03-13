@@ -19,10 +19,19 @@ export interface UploadImageResult {
   url: string;
 }
 
+export interface UploadImageOptions {
+  /** When provided, sends Authorization: Bearer for protected upload endpoint. */
+  token?: string | null;
+}
+
 /**
  * Upload a single image file to the backend; backend stores in S3 and returns public URL.
+ * Pass token when the upload endpoint requires auth (e.g. post-property flow).
  */
-export async function uploadImage(file: File): Promise<UploadImageResult> {
+export async function uploadImage(
+  file: File,
+  options?: UploadImageOptions,
+): Promise<UploadImageResult> {
   const baseUrl = getBaseUrl();
   if (!baseUrl) {
     throw new Error("NEXT_PUBLIC_API_URL is not configured");
@@ -31,12 +40,17 @@ export async function uploadImage(file: File): Promise<UploadImageResult> {
   const formData = new FormData();
   formData.append("file", file);
 
+  const headers: Record<string, string> = {
+    "X-Request-Id": `req_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`,
+  };
+  if (options?.token) {
+    headers.Authorization = `Bearer ${options.token}`;
+  }
+
   const res = await fetch(url, {
     method: "POST",
     body: formData,
-    headers: {
-      "X-Request-Id": `req_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`,
-    },
+    headers,
   });
 
   if (!res.ok) {
