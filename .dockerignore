@@ -1,0 +1,28 @@
+# Dependencies and build outputs
+node_modules
+dist
+.nx
+coverage
+*.tsbuildinfo
+
+# Git and IDE
+.git
+.gitignore
+.cursor
+.vscode
+*.md
+!apps/api/README.md
+
+# Apps not needed for API image
+apps/web
+apps/mobile
+apps/admin
+apps/api-e2e
+
+# Tests and tooling
+*.spec.ts
+*.test.ts
+__tests__
+e2e
+jest.config.js
+.github
