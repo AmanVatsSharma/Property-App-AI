@@ -21,7 +21,7 @@ Light/dark theme switching is powered by **next-themes** (class-based on `html`)
 
 ## Responsive
 
-The app is mobile-responsive. Breakpoints: **639px** (small mobile), **1024px** (tablet/desktop). Below 1024px the main nav becomes a hamburger that opens a slide-in drawer with all links, theme toggle, Sign In, and Post Free. Layouts (sections, footer, search, property detail, EMI, post-property, about) use single- or two-column grids on small screens; padding is reduced (16px) on mobile. Touch targets are at least 44px; the AI FAB respects safe-area insets. Test at 320px–1024px in DevTools device toolbar.
+The app is mobile-responsive. Breakpoints: **639px** (small mobile), **1024px** (tablet/desktop). Below 1024px the main nav becomes a hamburger that opens a slide-in drawer with all links, theme toggle, Sign In, and Post Free. Layouts (sections, footer, search, property detail, EMI, post-property, about) use single- or two-column grids on small screens; padding is reduced (16px) on mobile. Touch targets are at least 44px; the AI FAB respects safe-area insets. On viewports ≤768px, a dismissible banner invites users to download the app or continue on device (sessionStorage dismissal). Test at 320px–1024px in DevTools device toolbar.
 
 ## Build
 
@@ -46,7 +46,7 @@ From repo root: `npm run build` then `npm run start`. Or: `nx run web:build`, `n
 - `src/app/` — App Router pages and layout
 - `src/app/globals.css` — Design tokens and shared + page-specific styles
 - `src/components/providers/` — ThemeProvider (next-themes wrapper)
-- `src/components/layout/` — AnnouncementBar, Nav, Footer, AIFab
+- `src/components/layout/` — AnnouncementBar, Nav, Footer, AIFab, MobileAppPrompt
 - `src/components/ui/` — RevealObserver (scroll-triggered reveal)
 - `src/components/landing/` — LandingPage
 - `src/components/search/` — SearchPageClient
