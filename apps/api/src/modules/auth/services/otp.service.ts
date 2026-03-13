@@ -1,13 +1,14 @@
 /**
  * @file otp.service.ts
  * @module auth
- * @description OTP storage and validation (in-memory with TTL); dev stub for send.
+ * @description OTP storage and validation (in-memory with TTL); sends via SmsService (Twilio/MSG91 in prod).
  * @author BharatERP
  * @created 2025-03-12
  */
 
 import { Injectable } from '@nestjs/common';
 import { LoggerService } from '@api/shared/logger';
+import { SmsService } from './sms.service';
 
 const OTP_TTL_MS = 5 * 60 * 1000; // 5 minutes
 const OTP_LENGTH = 6;
@@ -21,7 +22,10 @@ interface StoredOtp {
 export class OtpService {
   private store = new Map<string, StoredOtp>();
 
-  constructor(private readonly logger: LoggerService) {}
+  constructor(
+    private readonly logger: LoggerService,
+    private readonly sms: SmsService,
+  ) {}
 
   generateCode(): string {
     const digits = Array.from({ length: OTP_LENGTH }, () => Math.floor(Math.random() * 10));
@@ -62,15 +66,10 @@ export class OtpService {
     return normalized.length === 10 && /^[6-9]/.test(normalized);
   }
 
-  /** Stub: in dev log OTP to console; in prod would call Twilio/MSG91 */
-  sendOtpToProvider(phone: string, code: string): Promise<void> {
-    this.logger.debug('OTP generated (stub; in production wire SMS provider)', {
-      phone: this.normalizePhone(phone),
-      code: process.env.NODE_ENV === 'production' ? '***' : code,
-    });
-    if (process.env.NODE_ENV !== 'production') {
-      console.log(`[Dev OTP] ${this.normalizePhone(phone)} => ${code}`);
-    }
-    return Promise.resolve();
+  /** Sends OTP via SmsService (Twilio, MSG91, or stub when not configured). */
+  async sendOtpToProvider(phone: string, code: string): Promise<void> {
+    const normalized = this.normalizePhone(phone);
+    const message = `Your UrbanNest.ai verification code is ${code}. Valid for 5 minutes.`;
+    await this.sms.send(normalized, message);
   }
 }

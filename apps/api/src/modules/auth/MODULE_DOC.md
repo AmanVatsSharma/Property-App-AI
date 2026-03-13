@@ -6,7 +6,7 @@ Provides mobile number + OTP sign-in: send OTP, verify OTP, issue JWT. Used by w
 
 ## Flows
 
-1. **Send OTP**: Client calls GraphQL `sendOtp(input: { phone })`. Backend validates Indian mobile (10 digits, 6–9 start), generates 6-digit code, stores in memory with 5-min TTL, and (in dev) logs OTP; in production an SMS provider (e.g. Twilio, MSG91) would be wired.
+1. **Send OTP**: Client calls GraphQL `sendOtp(input: { phone })`. Backend validates Indian mobile (10 digits, 6–9 start), generates 6-digit code, stores in memory with 5-min TTL, and sends via SmsService. In production set `SMS_PROVIDER=twilio` or `SMS_PROVIDER=msg91` with credentials; when unset, stub logs only (dev).
 2. **Verify OTP**: Client calls `verifyOtp(input: { phone, code })`. Backend verifies code, get-or-creates User by phone (UserModule), issues JWT with `sub: user.id` and `phone`, returns `{ token, user: { id, phone, displayName } }`. Client stores token and sends it on API requests.
 
 ## Data
@@ -26,3 +26,4 @@ Both mutations are `@Public()` so unauthenticated users can call them.
 
 - 2025-03-12: Added auth module with sendOtp, verifyOtp, OtpService (in-memory), JWT issue.
 - 2025-03-12: verifyOtp get-or-creates User via UserService; JWT sub is user.id; VerifyOtpResult includes user { id, phone, displayName }.
+- 2025-03-13: SmsService added; OTP sent via Twilio or MSG91 when SMS_PROVIDER and credentials set; stub when unset (no mock in prod when configured).
