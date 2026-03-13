@@ -90,7 +90,7 @@ export default function PostPropertyForm() {
       if (selectedFiles.length > 0 && process.env.NEXT_PUBLIC_API_URL) {
         const urls: string[] = [];
         for (const file of selectedFiles) {
-          const { url } = await uploadImage(file);
+          const { url } = await uploadImage(file, { token });
           urls.push(url);
         }
         coverImageUrl = urls[0];
