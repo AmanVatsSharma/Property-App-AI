@@ -139,6 +139,8 @@ export interface PropertyFilter {
   minPrice?: number;
   maxPrice?: number;
   bedrooms?: number;
+  sortBy?: "createdAt" | "price" | "aiScore";
+  sortOrder?: "asc" | "desc";
   limit?: number;
   offset?: number;
 }

@@ -7,6 +7,7 @@
  */
 
 import { Test, TestingModule } from '@nestjs/testing';
+import { UnauthorizedException } from '@nestjs/common';
 import { PropertyNotFoundError } from '@api/common/errors';
 import { PropertyService } from '../services/property.service';
 import { PropertyRepository } from '../repository/property.repository';
@@ -37,6 +38,7 @@ describe('PropertyService', () => {
     coverImageUrl: null,
     imageUrls: null,
     createdByUserId: null,
+    isFreeListing: true,
     createdAt: new Date(),
     updatedAt: new Date(),
   };
@@ -48,6 +50,7 @@ describe('PropertyService', () => {
       create: jest.fn(),
       update: jest.fn(),
       delete: jest.fn(),
+      countByUserId: jest.fn(),
     };
     const mockLogger = { debug: jest.fn(), log: jest.fn(), error: jest.fn(), warn: jest.fn() };
     const mockGeocoding = { geocode: jest.fn().mockResolvedValue(null) };
@@ -91,13 +94,33 @@ describe('PropertyService', () => {
   });
 
   describe('create', () => {
-    it('should delegate to repository create', async () => {
+    it('should throw when user is not signed in', async () => {
+      const dto = { title: 'New', location: 'City', price: 500000 };
+      await expect(service.create(dto as any)).rejects.toThrow(UnauthorizedException);
+    });
+
+    it('should mark first listing as free', async () => {
+      repo.countByUserId.mockResolvedValue(0);
       repo.create.mockResolvedValue(mockProperty);
       const dto = { title: 'New', location: 'City', price: 500000 };
-      const result = await service.create(dto as any);
+      const result = await service.create(dto as any, 'user-1');
       expect(result).toEqual(mockProperty);
       expect(repo.create).toHaveBeenCalledWith(
         expect.objectContaining({ title: 'New', location: 'City', price: 500000 }),
+        'user-1',
+        true,
+      );
+    });
+
+    it('should mark non-first listing as paid tier', async () => {
+      repo.countByUserId.mockResolvedValue(2);
+      repo.create.mockResolvedValue({ ...mockProperty, isFreeListing: false });
+      const dto = { title: 'New', location: 'City', price: 500000 };
+      await service.create(dto as any, 'user-1');
+      expect(repo.create).toHaveBeenCalledWith(
+        expect.objectContaining({ title: 'New', location: 'City', price: 500000 }),
+        'user-1',
+        false,
       );
     });
   });

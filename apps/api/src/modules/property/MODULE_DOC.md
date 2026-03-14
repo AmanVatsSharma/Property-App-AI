@@ -31,6 +31,7 @@
 **Env vars:** Uses root DB_* (DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME). Optional `MAPBOX_ACCESS_TOKEN` for server-side geocoding (address → lat/lng) on create/update when client does not send coordinates.
 
 **Change-log:**
+- 2026-03-14: Search robustness: added `sortBy`/`sortOrder` in PropertyFilterDto and repository-level sorting (createdAt/price/aiScore) with existing pagination support. Listing robustness: createProperty now requires authenticated user and marks the owner's first listing as `isFreeListing=true` (subsequent listings `false`), plus migration `AddPropertyIsFreeListing`.
 - 2025-03-13: Property-to-maps: added latitude/longitude (nullable) to entity and DTOs; migration AddPropertyLatLng. GeocodingService (Mapbox) geocodes address when lat/lng not provided on create/update. PropertyFilterDto and repository support map viewport bounds (minLat, maxLat, minLng, maxLng). Env: MAPBOX_ACCESS_TOKEN optional.
 - 2025-03-12: Added createdByUserId to entity and repository; createProperty resolver passes ctx.req.user.sub so listings are owned by signed-in user when JWT is set.
 - 2025-03-12: Added coverImageUrl and imageUrls to entity, DTOs, and repository; migration AddPropertyImageUrls. Images uploaded via storage module (S3) and passed to createProperty/updateProperty.

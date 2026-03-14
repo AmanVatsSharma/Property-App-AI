@@ -90,6 +90,10 @@ export class Property {
   @Column({ type: 'uuid', nullable: true })
   createdByUserId: string | null;
 
+  @Field(() => Boolean)
+  @Column({ type: 'boolean', default: true })
+  isFreeListing: boolean;
+
   @Field()
   @CreateDateColumn()
   createdAt: Date;
