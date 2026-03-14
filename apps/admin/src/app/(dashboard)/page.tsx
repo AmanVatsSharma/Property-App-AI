@@ -21,7 +21,11 @@ export default function DashboardPage() {
 
   useEffect(() => {
     const token = getToken();
-    if (!token) return;
+    if (!token) {
+      setError("Not authenticated");
+      setLoading(false);
+      return;
+    }
     Promise.all([
       gqlAdminStats(token),
       gqlProperties({ limit: 10, offset: 0 }, token),
@@ -35,11 +39,22 @@ export default function DashboardPage() {
   }, []);
 
   if (loading) {
-    return <p className="text-[var(--admin-muted)]">Loading dashboard…</p>;
+    return (
+      <p className="text-[var(--admin-muted)]" data-testid="dashboard-loading">
+        Loading dashboard…
+      </p>
+    );
   }
 
   if (error) {
-    return <p className="text-red-400">{error}</p>;
+    return (
+      <div data-testid="dashboard-error">
+        <p className="text-red-400">{error}</p>
+        <Link href="/login" className="mt-2 inline-block text-sm text-[var(--admin-accent)] hover:underline">
+          Go to login
+        </Link>
+      </div>
+    );
   }
 
   return (
@@ -59,7 +74,9 @@ export default function DashboardPage() {
         <h2 className="text-lg font-medium mb-3">Recent properties</h2>
         <ul className="rounded-lg border border-[var(--admin-border)] overflow-hidden">
           {recent.length === 0 ? (
-            <li className="p-4 text-[var(--admin-muted)]">No properties yet.</li>
+            <li className="p-4 text-[var(--admin-muted)]" data-testid="dashboard-empty-properties">
+              No properties yet.
+            </li>
           ) : (
             recent.map((p) => (
               <li
