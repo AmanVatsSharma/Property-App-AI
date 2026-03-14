@@ -1,15 +1,17 @@
 /**
  * @file _layout.tsx
  * @module app/(tabs)
- * @description Tab layout: Home, Search, Post, More; theme-aware tab bar and AppHeader.
+ * @description Tab layout: Home, Search, Post, More; theme-aware tab bar and AppHeader; Ionicons for tab icons.
  * @author BharatERP
  * @created 2025-03-10
  */
 
 import { AppHeader } from '@/components/AppHeader';
 import { useTheme } from '@/components/providers/ThemeProvider';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { Tabs } from 'expo-router';
-import { Text } from 'react-native';
+
+const TAB_ICON_SIZE = 22;
 
 export default function TabLayout() {
   const { isDark } = useTheme();
@@ -30,28 +32,36 @@ export default function TabLayout() {
         name="index"
         options={{
           title: 'Home',
-          tabBarIcon: ({ color }) => <Text style={{ fontSize: 20 }}>🏠</Text>,
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons name={focused ? 'home' : 'home-outline'} size={TAB_ICON_SIZE} color={color} />
+          ),
         }}
       />
       <Tabs.Screen
         name="search"
         options={{
           title: 'Search',
-          tabBarIcon: ({ color }) => <Text style={{ fontSize: 20 }}>🔍</Text>,
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons name={focused ? 'search' : 'search-outline'} size={TAB_ICON_SIZE} color={color} />
+          ),
         }}
       />
       <Tabs.Screen
         name="post"
         options={{
           title: 'Post',
-          tabBarIcon: ({ color }) => <Text style={{ fontSize: 20 }}>📝</Text>,
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons name={focused ? 'add-circle' : 'add-circle-outline'} size={TAB_ICON_SIZE} color={color} />
+          ),
         }}
       />
       <Tabs.Screen
         name="more"
         options={{
           title: 'More',
-          tabBarIcon: ({ color }) => <Text style={{ fontSize: 20 }}>⋯</Text>,
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons name="ellipsis-horizontal" size={TAB_ICON_SIZE} color={color} />
+          ),
         }}
       />
     </Tabs>
