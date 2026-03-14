@@ -1,11 +1,12 @@
 /**
  * @file post.tsx
  * @module app/(tabs)
- * @description Post property screen with form; submits via GraphQL createProperty.
+ * @description Post property screen with form; submits via GraphQL createProperty; theme-aware.
  * @author BharatERP
  * @created 2025-03-10
  */
 
+import { useTheme } from '@/components/providers/ThemeProvider';
 import { useState } from 'react';
 import { ScrollView, View, Text, Pressable, TextInput, ActivityIndicator, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -26,6 +27,7 @@ const PROPERTY_TYPE_OPTIONS = [
 ] as const;
 
 export default function PostPropertyScreen() {
+  const { isDark } = useTheme();
   const [title, setTitle] = useState('');
   const [listingFor, setListingFor] = useState<'sell' | 'rent'>('sell');
   const [propertyType, setPropertyType] = useState<string>('apartment');
@@ -34,6 +36,19 @@ export default function PostPropertyScreen() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const bgMain = isDark ? 'bg-night' : 'bg-light-night';
+  const bgCard = isDark ? 'bg-dark' : 'bg-light-dark';
+  const bgCard2 = isDark ? 'bg-dark-2' : 'bg-light-dark-2';
+  const bgInput = isDark ? 'bg-night' : 'bg-light-night';
+  const borderCls = isDark ? 'border-border' : 'border-light-border';
+  const textCls = isDark ? 'text-white' : 'text-light-heading';
+  const textMuted = isDark ? 'text-text-muted' : 'text-light-text-muted';
+  const tealCls = isDark ? 'text-teal' : 'text-light-teal';
+  const tealDimCls = isDark ? 'bg-teal-dim border-teal' : 'bg-light-teal-dim border-light-teal';
+  const btnPrimaryText = isDark ? 'text-night' : 'text-light-btn-primary-text';
+  const placeholderColor = isDark ? 'rgba(255,255,255,0.45)' : '#5c6370';
+  const indicatorColor = isDark ? '#0f1623' : '#eef1f5';
 
   const handleSubmit = async () => {
     const apiUrl = process.env.EXPO_PUBLIC_API_URL ?? process.env.EXPO_PUBLIC_GRAPHQL_HTTP;
@@ -82,11 +97,11 @@ export default function PostPropertyScreen() {
 
   if (success) {
     return (
-      <SafeAreaView className="flex-1 bg-night" edges={['top']}>
+      <SafeAreaView className={`flex-1 ${bgMain}`} edges={['top']}>
         <View className="flex-1 justify-center items-center px-6">
           <Text className="text-4xl mb-4">✅</Text>
-          <Text className="text-white text-xl font-bold mb-2">Listing created</Text>
-          <Text className="text-text-muted text-center">
+          <Text className={`${textCls} text-xl font-bold mb-2`}>Listing created</Text>
+          <Text className={`${textMuted} text-center`}>
             Your property has been created. You can view it in Search.
           </Text>
         </View>
@@ -95,81 +110,81 @@ export default function PostPropertyScreen() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-night" edges={['top']}>
+    <SafeAreaView className={`flex-1 ${bgMain}`} edges={['top']}>
       <ScrollView className="flex-1" contentContainerStyle={{ paddingBottom: 32 }} keyboardShouldPersistTaps="handled">
         <View className="px-4 pt-6 pb-8">
-          <View className="bg-teal-dim px-3 py-1 rounded-full self-start mb-4">
-            <Text className="text-teal font-bold text-xs">✦ 100% Free for Owners</Text>
+          <View className={`${tealDimCls} px-3 py-1 rounded-full self-start mb-4 border`}>
+            <Text className={`${tealCls} font-bold text-xs`}>✦ 100% Free for Owners</Text>
           </View>
-          <Text className="text-white text-2xl font-bold mb-2">
+          <Text className={`${textCls} text-2xl font-bold mb-2`}>
             Post Your Property.{'\n'}
-            <Text className="text-teal">Reach Millions.</Text>
+            <Text className={tealCls}>Reach Millions.</Text>
           </Text>
-          <Text className="text-text-muted text-base leading-6 mb-6 max-w-md">
+          <Text className={`${textMuted} text-base leading-6 mb-6 max-w-md`}>
             2.4 million active buyers on UrbanNest.ai. Verified leads. AI-matched to your property.
           </Text>
         </View>
 
-        <View className="px-4 py-6 bg-dark border-t border-border">
-          <Text className="text-text-muted text-xs uppercase tracking-wider mb-2">Create Listing</Text>
-          <Text className="text-white text-xl font-bold mb-4">Basic Details</Text>
-          <View className="bg-dark-2 rounded-xl p-4 border border-border gap-4">
+        <View className={`px-4 py-6 ${bgCard} border-t ${borderCls}`}>
+          <Text className={`${textMuted} text-xs uppercase tracking-wider mb-2`}>Create Listing</Text>
+          <Text className={`${textCls} text-xl font-bold mb-4`}>Basic Details</Text>
+          <View className={`${bgCard2} rounded-xl p-4 border ${borderCls} gap-4`}>
             <View>
-              <Text className="text-text-muted text-sm mb-1">Title *</Text>
+              <Text className={`${textMuted} text-sm mb-1`}>Title *</Text>
               <TextInput
-                className="bg-night rounded-lg border border-border px-3 py-2 text-white"
+                className={`${bgInput} rounded-lg border ${borderCls} px-3 py-2 ${textCls}`}
                 placeholder="e.g. 2BHK Apartment in Koramangala"
-                placeholderTextColor="rgba(255,255,255,0.45)"
+                placeholderTextColor={placeholderColor}
                 value={title}
                 onChangeText={setTitle}
                 editable={!loading}
               />
             </View>
             <View>
-              <Text className="text-text-muted text-sm mb-1">Listing For</Text>
+              <Text className={`${textMuted} text-sm mb-1`}>Listing For</Text>
               <View className="flex-row gap-2">
                 {LISTING_FOR_OPTIONS.map((o) => (
                   <Pressable
                     key={o.value}
                     onPress={() => setListingFor(o.value)}
-                    className={`flex-1 py-2 rounded-lg border ${listingFor === o.value ? 'bg-teal-dim border-teal' : 'bg-night border-border'}`}
+                    className={`flex-1 py-2 rounded-lg border ${listingFor === o.value ? tealDimCls : `${bgInput} ${borderCls}`}`}
                   >
-                    <Text className={`text-center font-medium ${listingFor === o.value ? 'text-teal' : 'text-white'}`}>{o.label}</Text>
+                    <Text className={`text-center font-medium ${listingFor === o.value ? tealCls : textCls}`}>{o.label}</Text>
                   </Pressable>
                 ))}
               </View>
             </View>
             <View>
-              <Text className="text-text-muted text-sm mb-1">Property Type</Text>
+              <Text className={`${textMuted} text-sm mb-1`}>Property Type</Text>
               <ScrollView horizontal showsHorizontalScrollIndicator={false} className="gap-2">
                 {PROPERTY_TYPE_OPTIONS.map((o) => (
                   <Pressable
                     key={o.value}
                     onPress={() => setPropertyType(o.value)}
-                    className={`px-3 py-2 rounded-lg border ${propertyType === o.value ? 'bg-teal-dim border-teal' : 'bg-night border-border'}`}
+                    className={`px-3 py-2 rounded-lg border ${propertyType === o.value ? tealDimCls : `${bgInput} ${borderCls}`}`}
                   >
-                    <Text className={propertyType === o.value ? 'text-teal font-medium' : 'text-white'}>{o.label}</Text>
+                    <Text className={propertyType === o.value ? `${tealCls} font-medium` : textCls}>{o.label}</Text>
                   </Pressable>
                 ))}
               </ScrollView>
             </View>
             <View>
-              <Text className="text-text-muted text-sm mb-1">Address / Location *</Text>
+              <Text className={`${textMuted} text-sm mb-1`}>Address / Location *</Text>
               <TextInput
-                className="bg-night rounded-lg border border-border px-3 py-2 text-white"
+                className={`${bgInput} rounded-lg border ${borderCls} px-3 py-2 ${textCls}`}
                 placeholder="City, locality, project name"
-                placeholderTextColor="rgba(255,255,255,0.45)"
+                placeholderTextColor={placeholderColor}
                 value={address}
                 onChangeText={setAddress}
                 editable={!loading}
               />
             </View>
             <View>
-              <Text className="text-text-muted text-sm mb-1">Price (₹) *</Text>
+              <Text className={`${textMuted} text-sm mb-1`}>Price (₹) *</Text>
               <TextInput
-                className="bg-night rounded-lg border border-border px-3 py-2 text-white"
+                className={`${bgInput} rounded-lg border ${borderCls} px-3 py-2 ${textCls}`}
                 placeholder="0"
-                placeholderTextColor="rgba(255,255,255,0.45)"
+                placeholderTextColor={placeholderColor}
                 keyboardType="numeric"
                 value={price}
                 onChangeText={setPrice}
@@ -182,17 +197,17 @@ export default function PostPropertyScreen() {
             <Pressable
               onPress={handleSubmit}
               disabled={loading}
-              className="bg-teal py-3 rounded-xl items-center mt-2"
+              className={`${isDark ? 'bg-teal' : 'bg-light-teal'} py-3 rounded-xl items-center mt-2`}
             >
               {loading ? (
-                <ActivityIndicator color="#0f172a" />
+                <ActivityIndicator color={indicatorColor} />
               ) : (
-                <Text className="text-night font-bold">Submit listing</Text>
+                <Text className={`${btnPrimaryText} font-bold`}>Submit listing</Text>
               )}
             </Pressable>
           </View>
           {!process.env.EXPO_PUBLIC_API_URL && !process.env.EXPO_PUBLIC_GRAPHQL_HTTP ? (
-            <Text className="text-text-muted text-sm mt-3">Set EXPO_PUBLIC_API_URL or EXPO_PUBLIC_GRAPHQL_HTTP to submit to the backend.</Text>
+            <Text className={`${textMuted} text-sm mt-3`}>Set EXPO_PUBLIC_API_URL or EXPO_PUBLIC_GRAPHQL_HTTP to submit to the backend.</Text>
           ) : null}
         </View>
       </ScrollView>
