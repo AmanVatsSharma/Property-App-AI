@@ -1,20 +1,16 @@
 /**
  * @file AppHeader.tsx
  * @module components
- * @description Shared header for tab screens: location (left) and avatar menu with theme toggle (right).
+ * @description Shared header for tab screens: location (left) and avatar menu with theme toggle (right); uses Ionicons.
  * @author BharatERP
  * @created 2025-03-14
  */
 
 import { useTheme } from '@/components/providers/ThemeProvider';
 import { useLocation } from '@/lib/location-context';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { useState } from 'react';
-import {
-  Modal,
-  Pressable,
-  Text,
-  View,
-} from 'react-native';
+import { Modal, Pressable, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export function AppHeader() {
@@ -42,11 +38,19 @@ export function AppHeader() {
           accessibilityLabel="Change location"
           accessibilityRole="button"
         >
-          <Text className="text-lg">📍</Text>
+          <Ionicons
+            name="location-outline"
+            size={20}
+            color={isDark ? 'rgba(255,255,255,0.9)' : '#1a1d24'}
+          />
           <Text className={`${textCls} font-medium flex-1`} numberOfLines={1}>
             {locationLabel}
           </Text>
-          <Text className={textMuted}>▼</Text>
+          <Ionicons
+            name="chevron-down"
+            size={18}
+            color={isDark ? 'rgba(255,255,255,0.45)' : '#5c6370'}
+          />
         </Pressable>
         <Pressable
           onPress={() => setAvatarMenuVisible(true)}
@@ -54,7 +58,11 @@ export function AppHeader() {
           accessibilityLabel="Profile and settings"
           accessibilityRole="button"
         >
-          <Text className={`${isDark ? 'text-night' : 'text-white'} text-lg font-semibold`}>U</Text>
+          <Ionicons
+            name="person"
+            size={22}
+            color={isDark ? '#080c14' : '#ffffff'}
+          />
         </Pressable>
       </View>
 
@@ -80,22 +88,32 @@ export function AppHeader() {
                   setTheme('light');
                   setAvatarMenuVisible(false);
                 }}
-                className={`py-3 px-4 rounded-xl ${theme === 'light' ? (isDark ? 'bg-teal-dim' : 'bg-light-teal-dim') : ''}`}
+                className={`flex-row items-center gap-3 py-3 px-4 rounded-xl ${theme === 'light' ? (isDark ? 'bg-teal-dim' : 'bg-light-teal-dim') : ''}`}
                 accessibilityLabel="Switch to light theme"
                 accessibilityRole="button"
               >
-                <Text className={theme === 'light' ? tealCls : textMuted}>☀️ Light</Text>
+                <Ionicons
+                  name="sunny"
+                  size={20}
+                  color={theme === 'light' ? (isDark ? '#00d4aa' : '#00b894') : (isDark ? 'rgba(255,255,255,0.45)' : '#5c6370')}
+                />
+                <Text className={theme === 'light' ? tealCls : textMuted}>Light</Text>
               </Pressable>
               <Pressable
                 onPress={() => {
                   setTheme('dark');
                   setAvatarMenuVisible(false);
                 }}
-                className={`py-3 px-4 rounded-xl ${theme === 'dark' ? (isDark ? 'bg-teal-dim' : 'bg-light-teal-dim') : ''}`}
+                className={`flex-row items-center gap-3 py-3 px-4 rounded-xl ${theme === 'dark' ? (isDark ? 'bg-teal-dim' : 'bg-light-teal-dim') : ''}`}
                 accessibilityLabel="Switch to dark theme"
                 accessibilityRole="button"
               >
-                <Text className={theme === 'dark' ? tealCls : textMuted}>🌙 Dark</Text>
+                <Ionicons
+                  name="moon"
+                  size={20}
+                  color={theme === 'dark' ? (isDark ? '#00d4aa' : '#00b894') : (isDark ? 'rgba(255,255,255,0.45)' : '#5c6370')}
+                />
+                <Text className={theme === 'dark' ? tealCls : textMuted}>Dark</Text>
               </Pressable>
             </View>
           </Pressable>

@@ -1,7 +1,7 @@
 /**
  * @file LocationSheet.tsx
  * @module components
- * @description Modal sheet for location: "Use your current location" and city list.
+ * @description Modal sheet for location: "Use your current location" and city list; uses Ionicons.
  * @author BharatERP
  * @created 2025-03-14
  */
@@ -9,6 +9,7 @@
 import { useTheme } from '@/components/providers/ThemeProvider';
 import { CITIES } from '@/constants/cities';
 import { useLocation } from '@/lib/location-context';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { Modal, Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -54,7 +55,7 @@ export function LocationSheet() {
               accessibilityLabel="Use your current location"
               accessibilityRole="button"
             >
-              <Text className="text-2xl">📍</Text>
+              <Ionicons name="locate" size={24} color={isDark ? '#00d4aa' : '#00b894'} />
               <View className="flex-1">
                 <Text className={`${tealCls} font-semibold`}>Use your current location</Text>
                 <Text className={`${textMuted} text-sm`}>Search near you</Text>
@@ -70,7 +71,11 @@ export function LocationSheet() {
                 }}
                 className={`${bgCard} border ${borderCls} rounded-xl p-4 mb-2 flex-row items-center gap-3`}
               >
-                <Text className="text-2xl">{c.emoji}</Text>
+                <Ionicons
+                  name="business-outline"
+                  size={22}
+                  color={isDark ? 'rgba(255,255,255,0.9)' : '#1a1d24'}
+                />
                 <Text className={`${textCls} font-medium flex-1`}>{c.name}</Text>
                 <Text className={textMuted}>{c.count}</Text>
               </Pressable>
