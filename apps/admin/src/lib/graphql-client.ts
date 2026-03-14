@@ -10,16 +10,16 @@ import { runGraphQL } from "@property-app-ai/shared";
 
 function getGraphQLUrl(): string {
   if (typeof window !== "undefined") {
-    return (
-      process.env.NEXT_PUBLIC_GRAPHQL_HTTP ??
-      (process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") + "/graphql") ??
-      ""
-    );
+    const fromApi =
+      process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") + "/graphql";
+    return process.env.NEXT_PUBLIC_GRAPHQL_HTTP ?? fromApi ?? "";
   }
+  const fromApi =
+    process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") + "/graphql";
   return (
     process.env.NEXT_PUBLIC_GRAPHQL_HTTP ??
     process.env.API_GRAPHQL_HTTP ??
-    (process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") + "/graphql") ??
+    fromApi ??
     ""
   );
 }
