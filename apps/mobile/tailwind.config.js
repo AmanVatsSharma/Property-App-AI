@@ -2,9 +2,11 @@
 module.exports = {
   content: ['./app/**/*.{js,jsx,ts,tsx}', './components/**/*.{js,jsx,ts,tsx}'],
   presets: [require('nativewind/preset')],
+  darkMode: 'class',
   theme: {
     extend: {
       colors: {
+        // Dark theme (default for class-based dark mode)
         night: '#080c14',
         dark: '#0f1623',
         'dark-2': '#161d2e',
@@ -25,6 +27,24 @@ module.exports = {
         'text-muted': 'rgba(255,255,255,0.45)',
         'text-dim': 'rgba(255,255,255,0.2)',
         border: 'rgba(255,255,255,0.06)',
+        heading: '#ffffff',
+        'btn-primary-text': '#080c14',
+        // Light theme (for conditional classes when isDark is false)
+        'light-night': '#f5f7fa',
+        'light-dark': '#eef1f5',
+        'light-dark-2': '#e4e8ee',
+        'light-dark-3': '#d8dde5',
+        'light-teal': '#00b894',
+        'light-teal-dim': 'rgba(0, 184, 148, 0.12)',
+        'light-coral': '#e85d4c',
+        'light-gold': '#d4a82e',
+        'light-green': '#2ecc71',
+        'light-text': '#1a1d24',
+        'light-text-muted': '#5c6370',
+        'light-text-dim': '#8b92a0',
+        'light-heading': '#1a1d24',
+        'light-border': 'rgba(0, 0, 0, 0.08)',
+        'light-btn-primary-text': '#ffffff',
       },
       borderRadius: {
         DEFAULT: 18,
