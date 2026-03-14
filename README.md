@@ -22,11 +22,14 @@ Open [http://localhost:3000](http://localhost:3000).
 
 ## Environment
 
-Copy [.env.example](.env.example) to `.env` in the repo root (or set vars in the shell). Do not commit `.env`. All API vars are documented in `.env.example`; key ones:
+Each app has its own `.env` (or `.env.local` for Next.js) in **apps/\<app\>/**; copy from the app’s `.env.example` in that directory. Do not commit `.env` or `.env.local`.
 
-- **API:** `DB_*`, `OPENAI_API_KEY` or `ANTHROPIC_API_KEY`, optional `JWT_SECRET`, `REDIS_URL` if using async agent.
-- **Web:** `NEXT_PUBLIC_API_URL` or `NEXT_PUBLIC_GRAPHQL_HTTP` (e.g. `http://localhost:3333/graphql`) so the web app can call the API.
-- **Mobile:** `EXPO_PUBLIC_API_URL` or `EXPO_PUBLIC_GRAPHQL_HTTP` (e.g. `http://localhost:3333` or `http://localhost:3333/graphql`) so the Expo app can reach the API; set in app config or env when running `npm run mobile`.
+- **API:** Copy [apps/api/.env.example](apps/api/.env.example) to `apps/api/.env` (or use a root `.env` when running from repo root; the API loads `apps/api/.env` first if present). Key vars: `DB_*`, `OPENAI_API_KEY` or `ANTHROPIC_API_KEY`, optional `JWT_SECRET`, `REDIS_URL` if using async agent.
+- **Web:** Copy [apps/web/.env.example](apps/web/.env.example) to `apps/web/.env.local` and set `NEXT_PUBLIC_API_URL` or `NEXT_PUBLIC_GRAPHQL_HTTP` so the web app can call the API.
+- **Admin:** Copy [apps/admin/.env.example](apps/admin/.env.example) to `apps/admin/.env.local` and set `NEXT_PUBLIC_GRAPHQL_HTTP` or `NEXT_PUBLIC_API_URL`.
+- **Mobile:** Copy [apps/mobile/.env.example](apps/mobile/.env.example) to `apps/mobile/.env` and set `EXPO_PUBLIC_API_URL` or `EXPO_PUBLIC_GRAPHQL_HTTP` so the Expo app can reach the API.
+
+Full-stack reference: root [.env.example](.env.example) lists all vars for deploy/CI; per-app examples list only what each app needs.
 
 ## Run full stack (web + API + DB)
 
@@ -34,11 +37,7 @@ To run the web app with the NestJS API and database:
 
 1. **Start PostgreSQL** and create a database (e.g. `property_app`).
 2. **Optional:** Start Redis if you use the async agent queue (`AGENT_QUEUE_ENABLED=true`, `REDIS_URL=redis://localhost:6379`).
-3. **Environment:** Copy `.env.example` to `.env` and set at least:
-   - `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, `DB_NAME` for Postgres
-   - `OPENAI_API_KEY` or `ANTHROPIC_API_KEY` for the AI agent
-   - For web: `NEXT_PUBLIC_API_URL=http://localhost:3333` or `NEXT_PUBLIC_GRAPHQL_HTTP=http://localhost:3333/graphql`
-   - For mobile: `EXPO_PUBLIC_API_URL=http://localhost:3333` or `EXPO_PUBLIC_GRAPHQL_HTTP=http://localhost:3333/graphql` (see [apps/mobile/README.md](apps/mobile/README.md) for env setup)
+3. **Environment:** Per app, copy from each app’s `.env.example` (see [apps/api/.env.example](apps/api/.env.example), [apps/web/.env.example](apps/web/.env.example), [apps/mobile/.env.example](apps/mobile/.env.example)). Set at least: API — `DB_*`, `OPENAI_API_KEY` or `ANTHROPIC_API_KEY`; web — `NEXT_PUBLIC_API_URL` or `NEXT_PUBLIC_GRAPHQL_HTTP`; mobile — `EXPO_PUBLIC_API_URL` or `EXPO_PUBLIC_GRAPHQL_HTTP`.
 4. **Terminals:**
    - API: `npm run dev:api` (NestJS on port 3333, GraphQL at `/graphql`)
    - Web: `npm run dev` (Next.js on port 3000)

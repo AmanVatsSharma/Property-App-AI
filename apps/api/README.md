@@ -36,7 +36,7 @@ nx run api:build
 | `NODE_ENV` | -          | `production` disables playground and DB sync |
 | `LOG_LEVEL`| `debug` (dev) / `info` (prod) | Pino log level |
 
-Create a `.env` in the repo root or set env before running. In development, TypeORM `synchronize` is on (schema auto-updated); disable in production and use migrations.
+Copy `apps/api/.env.example` to `apps/api/.env` (or use a root `.env` when running from repo root). The API loads `apps/api/.env` first if present, then falls back to root `.env`. Set env before running. In development, TypeORM `synchronize` is on (schema auto-updated); disable in production and use migrations.
 
 ## GraphQL API
 

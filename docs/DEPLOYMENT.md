@@ -1,6 +1,6 @@
 # Deployment
 
-This document describes how to deploy Property-App-AI (UrbanNest.ai) for a working MVP with **no mock data**. Use [.env.example](../.env.example) as the source for all environment variables.
+This document describes how to deploy Property-App-AI (UrbanNest.ai) for a working MVP with **no mock data**. Use the root [.env.example](../.env.example) as a full-stack reference for all environment variables. For local per-app setup, use each app’s `.env.example`: [apps/api/.env.example](../apps/api/.env.example), [apps/web/.env.example](../apps/web/.env.example), [apps/admin/.env.example](../apps/admin/.env.example), [apps/mobile/.env.example](../apps/mobile/.env.example).
 
 ## Prerequisites
 

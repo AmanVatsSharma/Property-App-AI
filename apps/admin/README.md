@@ -28,7 +28,7 @@ nx run admin:build
 
 ## Environment
 
-Create `.env.local` in `apps/admin` (or set env vars):
+Copy `apps/admin/.env.example` to `apps/admin/.env.local` (or set env vars):
 
 - `NEXT_PUBLIC_GRAPHQL_HTTP` — GraphQL endpoint (e.g. `http://localhost:3333/graphql`)
 - Or `NEXT_PUBLIC_API_URL` — API base URL; GraphQL is `${NEXT_PUBLIC_API_URL}/graphql`

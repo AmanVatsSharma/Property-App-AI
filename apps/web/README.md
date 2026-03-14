@@ -15,6 +15,10 @@ Or from this directory: `nx run web:dev`.
 
 Open [http://localhost:3000](http://localhost:3000).
 
+## Environment
+
+Copy `apps/web/.env.example` to `apps/web/.env.local` and set `NEXT_PUBLIC_API_URL` and/or `NEXT_PUBLIC_GRAPHQL_HTTP` so the web app can call the API (e.g. `http://localhost:3333` and `http://localhost:3333/graphql`). Optional: `NEXT_PUBLIC_APP_STORE_URL`, `NEXT_PUBLIC_PLAY_STORE_URL` for app links.
+
 ## Theme
 
 Light/dark theme switching is powered by **next-themes** (class-based on `html`). Use the sun/moon toggle in the nav to switch; preference is persisted in `localStorage` under `urbannest-theme`.
