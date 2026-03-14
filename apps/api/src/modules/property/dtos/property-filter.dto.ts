@@ -7,7 +7,7 @@
  */
 
 import { ArgsType, Field, Float, Int } from '@nestjs/graphql';
-import { IsOptional, IsString, IsNumber, Min, Max } from 'class-validator';
+import { IsOptional, IsString, IsNumber, Min, Max, IsIn } from 'class-validator';
 import { Type } from 'class-transformer';
 
 @ArgsType()
@@ -75,6 +75,19 @@ export class PropertyFilterDto {
   @Min(0)
   @Max(20)
   bedrooms?: number;
+
+
+  @Field({ nullable: true, description: 'Sort field: createdAt, price, aiScore' })
+  @IsOptional()
+  @IsString()
+  @IsIn(['createdAt', 'price', 'aiScore'])
+  sortBy?: string;
+
+  @Field({ nullable: true, description: 'Sort order: asc or desc' })
+  @IsOptional()
+  @IsString()
+  @IsIn(['asc', 'desc', 'ASC', 'DESC'])
+  sortOrder?: string;
 
   @Field(() => Int, { nullable: true, defaultValue: 20 })
   @IsOptional()

@@ -6,7 +6,7 @@
  * @created 2025-03-10
  */
 
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { Property } from '../entities/property.entity';
 import { CreatePropertyDto } from '../dtos/create-property.dto';
 import { UpdatePropertyDto } from '../dtos/update-property.dto';
@@ -43,6 +43,11 @@ export class PropertyService {
 
   async create(dto: CreatePropertyDto, createdByUserId?: string | null): Promise<Property> {
     this.logger.debug('create entry', { method: 'create', createdByUserId });
+    if (!createdByUserId) {
+      throw new UnauthorizedException('Sign in is required to create a listing');
+    }
+    const existingListingCount = await this.propertyRepo.countByUserId(createdByUserId);
+    const isFreeListing = existingListingCount === 0;
     let latitude = dto.latitude;
     let longitude = dto.longitude;
     if ((latitude == null || longitude == null) && dto.location) {
@@ -55,8 +60,9 @@ export class PropertyService {
     const result = await this.propertyRepo.create(
       { ...dto, latitude, longitude },
       createdByUserId,
+      isFreeListing,
     );
-    this.logger.debug('create exit', { method: 'create', id: result.id });
+    this.logger.debug('create exit', { method: 'create', id: result.id, isFreeListing });
     return result;
   }
 

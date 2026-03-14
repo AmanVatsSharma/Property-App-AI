@@ -35,6 +35,8 @@ const SORT_OPTIONS = [
   { value: "ai-score", label: "AI Score" },
 ];
 
+const PROPERTY_TYPE_FILTERS = ["apartment", "villa", "plot", "builder-floor", "office", "pg"];
+
 function parseSearchParams(searchParams: URLSearchParams) {
   return {
     city: searchParams.get("city") ?? "",
@@ -43,6 +45,7 @@ function parseSearchParams(searchParams: URLSearchParams) {
     maxPrice: searchParams.get("maxPrice") ?? "",
     page: Math.max(1, parseInt(searchParams.get("page") ?? "1", 10) || 1),
     sort: searchParams.get("sort") ?? "relevance",
+    type: searchParams.get("type") ?? "",
     ready: searchParams.get("ready") === "1",
     verified: searchParams.get("verified") === "1",
   };
@@ -51,6 +54,7 @@ function parseSearchParams(searchParams: URLSearchParams) {
 function buildActiveFilters(params: ReturnType<typeof parseSearchParams>) {
   const list: { key: string; label: string }[] = [];
   if (params.city) list.push({ key: "city", label: params.city });
+  if (params.type) list.push({ key: "type", label: params.type });
   if (params.bhk) list.push({ key: "bhk", label: `${params.bhk} BHK` });
   if (params.minPrice || params.maxPrice) list.push({ key: "budget", label: params.maxPrice ? `Under ₹${params.maxPrice}` : params.minPrice ? `From ₹${params.minPrice}` : "Budget" });
   if (params.ready) list.push({ key: "ready", label: "Ready to Move" });
@@ -107,22 +111,35 @@ export default function SearchPageClient() {
   const activeFilters = buildActiveFilters(params);
 
   useEffect(() => {
-    setLoadError(null);
+    const sortMap: Record<string, { sortBy?: "createdAt" | "price" | "aiScore"; sortOrder?: "asc" | "desc" }> = {
+      relevance: { sortBy: "createdAt", sortOrder: "desc" },
+      newest: { sortBy: "createdAt", sortOrder: "desc" },
+      "price-asc": { sortBy: "price", sortOrder: "asc" },
+      "price-desc": { sortBy: "price", sortOrder: "desc" },
+      "ai-score": { sortBy: "aiScore", sortOrder: "desc" },
+    };
+    const sortConfig = sortMap[params.sort] ?? sortMap.relevance;
     const filter = {
       ...(params.city && { location: params.city }),
-      ...(params.bhk && { bedrooms: params.bhk === "4+" ? 4 : parseInt(params.bhk, 10) }),
-      limit: 50,
-      offset: 0,
+      ...(params.type && { type: params.type }),
+      ...(params.bhk && { bedrooms: parseInt(params.bhk, 10) }),
+      ...(params.minPrice && { minPrice: parseInt(params.minPrice, 10) }),
+      ...(params.maxPrice && { maxPrice: parseInt(params.maxPrice, 10) }),
+      limit: 20,
+      offset: (params.page - 1) * 20,
+      ...sortConfig,
     };
+
     gqlProperties(filter)
       .then((list) => {
+        setLoadError(null);
         setApiProperties(list);
       })
       .catch((e) => {
         setApiProperties([]);
         setLoadError(e instanceof Error ? e.message : "Failed to load properties");
       });
-  }, [params.city, params.bhk]);
+  }, [params.city, params.type, params.bhk, params.minPrice, params.maxPrice, params.page, params.sort]);
 
   const setParams = useCallback(
     (updates: Partial<ReturnType<typeof parseSearchParams>>) => {
@@ -137,6 +154,7 @@ export default function SearchPageClient() {
       if (updates.maxPrice !== undefined) apply("maxPrice", updates.maxPrice);
       if (updates.page !== undefined) apply("page", updates.page);
       if (updates.sort !== undefined) apply("sort", updates.sort);
+      if (updates.type !== undefined) apply("type", updates.type);
       if (updates.ready !== undefined) apply("ready", updates.ready ? "1" : "");
       if (updates.verified !== undefined) apply("verified", updates.verified ? "1" : "");
       router.replace(`/search?${next.toString()}`, { scroll: false });
@@ -147,6 +165,7 @@ export default function SearchPageClient() {
   const removeFilter = useCallback(
     (key: string) => {
       if (key === "city") setParams({ city: "" });
+      else if (key === "type") setParams({ type: "" });
       else if (key === "bhk") setParams({ bhk: "" });
       else if (key === "budget") setParams({ minPrice: "", maxPrice: "" });
       else if (key === "ready") setParams({ ready: false });
@@ -227,7 +246,10 @@ export default function SearchPageClient() {
             <div className="filter-title">Property Type</div>
             <div className="bhk-grid" style={{ gridTemplateColumns: "repeat(2,1fr)" }}>
               {["Apartment", "Villa", "Plot", "Builder Floor", "Office", "PG/Co-living"].map((t, i) => (
-                <button key={t} type="button" className={`bhk-btn ${propertyTypeIndex === i ? "active" : ""}`} onClick={() => setPropertyTypeIndex(i)}>{t}</button>
+                <button key={t} type="button" className={`bhk-btn ${propertyTypeIndex === i ? "active" : ""}`} onClick={() => {
+                    setPropertyTypeIndex(i);
+                    setParams({ type: PROPERTY_TYPE_FILTERS[i] ?? "" });
+                  }}>{t}</button>
               ))}
             </div>
           </div>

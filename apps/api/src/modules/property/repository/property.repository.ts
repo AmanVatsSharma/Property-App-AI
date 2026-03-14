@@ -52,7 +52,14 @@ export class PropertyRepository {
     if (filter.bedrooms != null) {
       qb.andWhere('p.bedrooms = :bedrooms', { bedrooms: filter.bedrooms });
     }
-    qb.orderBy('p.createdAt', 'DESC');
+    const sortByMap: Record<string, string> = {
+      createdAt: 'p.createdAt',
+      price: 'p.price',
+      aiScore: 'p.aiScore',
+    };
+    const sortField = sortByMap[filter.sortBy ?? ''] ?? 'p.createdAt';
+    const sortOrder = (filter.sortOrder ?? 'desc').toLowerCase() === 'asc' ? 'ASC' : 'DESC';
+    qb.orderBy(sortField, sortOrder as 'ASC' | 'DESC');
     qb.take(filter.limit ?? 20);
     qb.skip(filter.offset ?? 0);
     return qb.getMany();
@@ -62,7 +69,7 @@ export class PropertyRepository {
     return this.repo.findOne({ where: { id } });
   }
 
-  async create(dto: CreatePropertyDto, createdByUserId?: string | null): Promise<Property> {
+  async create(dto: CreatePropertyDto, createdByUserId?: string | null, isFreeListing = true): Promise<Property> {
     const entity = this.repo.create({
       title: dto.title,
       location: dto.location,
@@ -81,6 +88,7 @@ export class PropertyRepository {
       coverImageUrl: dto.coverImageUrl ?? null,
       imageUrls: dto.imageUrls ?? null,
       createdByUserId: createdByUserId ?? null,
+      isFreeListing,
     });
     return this.repo.save(entity);
   }
@@ -93,6 +101,10 @@ export class PropertyRepository {
   async delete(id: string): Promise<boolean> {
     const result = await this.repo.delete(id);
     return (result.affected ?? 0) > 0;
+  }
+
+  async countByUserId(userId: string): Promise<number> {
+    return this.repo.count({ where: { createdByUserId: userId } });
   }
 
   async count(): Promise<number> {
