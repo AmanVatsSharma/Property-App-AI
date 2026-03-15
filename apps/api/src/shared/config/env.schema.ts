@@ -43,6 +43,8 @@ export const envSchema = Joi.object({
   BROKER_PHONES: Joi.string().optional().allow(''),
   AREA_ASSESSMENT_TTL_DAYS: Joi.number().min(0).max(365).default(30),
   AREA_PROVIDER: Joi.string().valid('none', 'mapbox').default('none'),
+  /** OTP: stub (default, log only) | twilio | msg91. For production set twilio (TWILIO_*) or msg91 (MSG91_AUTH_KEY). */
+  SMS_PROVIDER: Joi.string().valid('stub', 'twilio', 'msg91').optional().allow(''),
 }).unknown(true);
 
 export type EnvSchema = {
@@ -80,4 +82,5 @@ export type EnvSchema = {
   BROKER_PHONES?: string;
   AREA_ASSESSMENT_TTL_DAYS?: number;
   AREA_PROVIDER?: string;
+  SMS_PROVIDER?: 'stub' | 'twilio' | 'msg91';
 };
