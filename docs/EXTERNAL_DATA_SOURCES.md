@@ -35,12 +35,13 @@ This document describes external data requirements for property rating and local
 
 ### Provider interface
 
-The Area module defines `AreaDataProvider`: `getAreaData(locality: string, city?: string): Promise<AreaData | null>`. Concrete implementations (e.g. `MapboxAreaProvider`, `OgdBulkProvider`) can be plugged in via config. Set `AREA_PROVIDER=none` for LLM-only assessment; `AREA_PROVIDER=mapbox` when a Mapbox-based provider is implemented.
+The [Area module](../apps/api/src/modules/area/MODULE_DOC.md) defines `AreaDataProvider`: `getAreaData(locality: string, city?: string): Promise<AreaData | null>`. Concrete implementations (e.g. `MapboxAreaProvider`, `OgdBulkProvider`) can be plugged in via config. Set `AREA_PROVIDER=none` for LLM-only assessment; `AREA_PROVIDER=mapbox` when a Mapbox-based provider is implemented.
 
 ## Env vars (area and scoring)
 
 | Variable | Description |
 |----------|-------------|
+| `MAPBOX_ACCESS_TOKEN` | Used for geocoding; extend for POI/Places when needed (see API [property](../apps/api/src/modules/property/MODULE_DOC.md) and [area](../apps/api/src/modules/area/MODULE_DOC.md) modules). |
 | `AREA_ASSESSMENT_TTL_DAYS` | Re-assess area only if older than this (default 30). |
 | `AREA_PROVIDER` | `none` (LLM only) or `mapbox` (when implemented). |
 
