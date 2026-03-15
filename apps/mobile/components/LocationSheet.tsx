@@ -77,7 +77,6 @@ export function LocationSheet() {
                   color={isDark ? 'rgba(255,255,255,0.9)' : '#1a1d24'}
                 />
                 <Text className={`${textCls} font-medium flex-1`}>{c.name}</Text>
-                <Text className={textMuted}>{c.count}</Text>
               </Pressable>
             ))}
           </ScrollView>
