@@ -89,7 +89,10 @@ describe('PropertyService', () => {
 
     it('should throw PropertyNotFoundError when not found', async () => {
       repo.findById.mockResolvedValue(null);
-      await expect(service.findOne('missing')).rejects.toThrow(PropertyNotFoundError);
+      await expect(service.findOne('missing')).rejects.toMatchObject({
+        name: 'PropertyNotFoundError',
+        message: expect.stringContaining('not found'),
+      });
     });
   });
 
@@ -128,9 +131,10 @@ describe('PropertyService', () => {
   describe('update', () => {
     it('should throw when property not found', async () => {
       repo.findById.mockResolvedValue(null);
-      await expect(service.update('missing', { title: 'Updated' } as any)).rejects.toThrow(
-        PropertyNotFoundError,
-      );
+      await expect(service.update('missing', { title: 'Updated' } as any)).rejects.toMatchObject({
+        name: 'PropertyNotFoundError',
+        message: expect.stringContaining('not found'),
+      });
     });
 
     it('should delegate to repository update when found', async () => {
