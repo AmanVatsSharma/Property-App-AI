@@ -15,6 +15,8 @@ import { UserRole } from '@api/modules/user/entities/user.entity';
 function mockHttpContext(request: { user?: { role?: string } }): ExecutionContext {
   return {
     getType: () => 'http',
+    getHandler: () => () => {},
+    getClass: () => ({} as any),
     switchToHttp: () => ({ getRequest: () => request }),
   } as unknown as ExecutionContext;
 }
