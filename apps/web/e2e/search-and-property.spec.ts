@@ -62,6 +62,6 @@ test.describe("AI Fab", () => {
     await expect(dialog).toBeVisible({ timeout: 5000 });
     await dialog.getByPlaceholder(/3 BHK|Describe your home|e\.g\. 3 BHK under/i).fill("2 BHK in Bangalore under 80 lakh");
     await dialog.getByRole("button", { name: /^Send$/ }).click();
-    await expect(page.getByText(/Sources:|Sorry|error|Failed|GraphQL|not configured|Try again/i)).toBeVisible({ timeout: 20000 });
+    await expect(dialog.getByText(/Sources:|Sorry|error|Failed|GraphQL|not configured|Try again/i).first()).toBeVisible({ timeout: 20000 });
   });
 });
