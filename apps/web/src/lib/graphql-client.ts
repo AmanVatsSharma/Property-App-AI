@@ -23,7 +23,7 @@ function getGraphQLUrl(): string {
 }
 
 const PROPERTY_FIELDS = `
-  id title location latitude longitude price type bedrooms bathrooms areaSqft status listingFor specs aiTip aiScore coverImageUrl imageUrls createdAt updatedAt
+  id title location latitude longitude price type bedrooms bathrooms areaSqft status listingFor specs aiTip aiScore coverImageUrl imageUrls createdByUserId isFreeListing createdAt updatedAt
 `;
 
 export const QUERY_PROPERTIES = `
@@ -129,6 +129,7 @@ export const QUERY_AGENT_JOB_STATUS = `
   }
 `;
 
+/** Matches API PropertyFilterDto (property-filter.dto.ts). */
 export interface PropertyFilter {
   type?: string;
   location?: string;
@@ -140,11 +141,12 @@ export interface PropertyFilter {
   maxPrice?: number;
   bedrooms?: number;
   sortBy?: "createdAt" | "price" | "aiScore";
-  sortOrder?: "asc" | "desc";
+  sortOrder?: "asc" | "desc" | "ASC" | "DESC";
   limit?: number;
   offset?: number;
 }
 
+/** Matches API Property entity (GraphQL ObjectType). */
 export interface ApiProperty {
   id: string;
   title: string;
@@ -163,6 +165,8 @@ export interface ApiProperty {
   aiScore: number | null;
   coverImageUrl: string | null;
   imageUrls: string[] | null;
+  createdByUserId: string | null;
+  isFreeListing: boolean;
   createdAt: string;
   updatedAt: string;
 }
