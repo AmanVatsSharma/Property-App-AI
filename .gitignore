@@ -30,6 +30,8 @@ next-env.d.ts
 # Testing
 coverage/
 .nyc_output/
+playwright-report/
+test-results/
 
 # Environment and secrets
 .env
@@ -57,3 +59,4 @@ Thumbs.db
 
 # Optional (uncomment if used)
 # .nx-cloud/
+.turbo/
