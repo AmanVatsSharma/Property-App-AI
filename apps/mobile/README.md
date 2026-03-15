@@ -1,6 +1,8 @@
 # UrbanNest.ai — Mobile App
 
-Native iOS/Android app for Property-App-AI, built with **Expo**, **React Native**, **NativeWind** (Tailwind), and **TypeScript**. Mirrors the web app flows and branding.
+Native iOS/Android app for Property-App-AI, built with **Expo**, **React Native**, **NativeWind** (Tailwind), and **TypeScript**. Mirrors the web app flows and branding. For module purpose, flows, and key files see [MODULE_DOC.md](./MODULE_DOC.md).
+
+**Main features:** Home (landing, city cards, featured listings), Search (AI bar, location filter), Post property (form flow), More (tools: About, EMI Calculator, Legal Checker, Neighbourhood, Price Forecast), Property detail; theme (light/dark) with persistence; location picker (city list + current location).
 
 ## Prerequisites
 
@@ -9,14 +11,16 @@ Native iOS/Android app for Property-App-AI, built with **Expo**, **React Native*
 - iOS: Xcode (macOS only)
 - Android: Android Studio / SDK
 
-## Environment (API URL)
+## Environment
 
-The app calls the NestJS API for properties and property detail. Set one of:
+The app calls the NestJS API for properties and property detail. Copy `apps/mobile/.env.example` to `apps/mobile/.env` and configure:
 
-- **EXPO_PUBLIC_API_URL** — base URL (e.g. `http://localhost:3333`). The client will append `/graphql` for GraphQL.
-- **EXPO_PUBLIC_GRAPHQL_HTTP** — full GraphQL endpoint (e.g. `http://localhost:3333/graphql`).
+| Variable | Description |
+|----------|-------------|
+| `EXPO_PUBLIC_API_URL` | Base API URL (e.g. `http://localhost:3333`). Client appends `/graphql` for GraphQL. |
+| `EXPO_PUBLIC_GRAPHQL_HTTP` | Full GraphQL endpoint (e.g. `http://localhost:3333/graphql`). |
 
-Without these, the app shows fallback demo data. Copy `apps/mobile/.env.example` to `apps/mobile/.env` and set `EXPO_PUBLIC_API_URL` and/or `EXPO_PUBLIC_GRAPHQL_HTTP` (e.g. `http://localhost:3333` for local dev; use your machine’s IP if testing on a device). For production, point to your deployed API URL.
+Without these, the app shows fallback demo data. For local device testing use your machine’s IP; for production point to the deployed API URL.
 
 ## Run from repo root
 

@@ -31,7 +31,6 @@ export default function PropertyDetailScreen() {
   const textMuted = isDark ? 'text-text-muted' : 'text-light-text-muted';
   const tealCls = isDark ? 'text-teal' : 'text-light-teal';
   const greenCls = isDark ? 'text-green' : 'text-light-green';
-  const goldCls = isDark ? 'text-gold' : 'text-light-gold';
   const indicatorColor = isDark ? '#00d4aa' : '#00b894';
 
   useEffect(() => {
@@ -44,32 +43,8 @@ export default function PropertyDetailScreen() {
     return () => { cancelled = true; };
   }, [id]);
 
-  const p = property ?? undefined;
   const loading = property === undefined && id != null;
-  const title = p?.title ?? 'Sobha City Vista — 4 BHK Ultra Luxury Apartment';
-  const location = p?.location ?? 'Sector 108, Dwarka Expressway, Gurgaon';
-  const priceStr = p ? formatPrice(p.price) : '₹2.85 Cr';
-  const pricePerSqft = p?.areaSqft ? `₹${Math.round(p.price / p.areaSqft).toLocaleString()} / sq.ft` : '₹10,000 / sq.ft';
-  const aiScore = p?.aiScore ?? 94;
-  const aiTip = p?.aiTip ?? 'Top 6% in locality';
-  const specs = p
-    ? [
-        { icon: '🛏', val: `${p.bedrooms} BHK`, label: 'Bedrooms' },
-        { icon: '🚿', val: String(p.bathrooms), label: 'Bathrooms' },
-        { icon: '📐', val: p.areaSqft?.toLocaleString() ?? '—', label: 'Sq.ft' },
-        { icon: '📅', val: p.status ?? 'Ready', label: 'Status' },
-      ]
-    : [
-        { icon: '🛏', val: '4 BHK', label: 'Bedrooms' },
-        { icon: '🚿', val: '4', label: 'Bathrooms' },
-        { icon: '📐', val: '2,850', label: 'Sq.ft' },
-        { icon: '📅', val: 'Ready', label: 'Status' },
-      ];
-  const overview = [
-    { label: 'Project', val: p?.title ?? 'Sobha City Vista', green: false },
-    { label: 'Location', val: p?.location ?? 'Sector 108', green: false },
-    { label: 'RERA No.', val: 'HRERA-PKL-NOV-...', green: true },
-  ];
+  const notFound = id != null && property === null;
 
   if (loading) {
     return (
@@ -81,34 +56,55 @@ export default function PropertyDetailScreen() {
     );
   }
 
+  if (notFound) {
+    return (
+      <SafeAreaView className={`flex-1 ${bgMain}`} edges={['top']}>
+        <View className="flex-1 px-6 items-center justify-center">
+          <Text className="text-6xl mb-4">🔍</Text>
+          <Text className={`${textCls} text-xl font-bold text-center mb-2`}>Property not found</Text>
+          <Text className={`${textMuted} text-sm text-center mb-6`}>
+            This property may have been removed or the link is incorrect.
+          </Text>
+          <Pressable onPress={() => router.back()} className={`${isDark ? 'bg-teal' : 'bg-light-teal'} py-3 px-6 rounded-xl`}>
+            <Text className={isDark ? 'text-night font-semibold' : 'text-light-btn-primary-text font-semibold'}>Go back</Text>
+          </Pressable>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  const p = property!;
+  const priceStr = formatPrice(p.price);
+  const pricePerSqft = p.areaSqft ? `₹${Math.round(p.price / p.areaSqft).toLocaleString()} / sq.ft` : null;
+  const specs = [
+    { icon: '🛏', val: `${p.bedrooms} BHK`, label: 'Bedrooms' },
+    { icon: '🚿', val: String(p.bathrooms), label: 'Bathrooms' },
+    { icon: '📐', val: p.areaSqft?.toLocaleString() ?? '—', label: 'Sq.ft' },
+    { icon: '📅', val: p.status ?? '—', label: 'Status' },
+  ];
+
   return (
     <SafeAreaView className={`flex-1 ${bgMain}`} edges={['top']}>
       <ScrollView className="flex-1" contentContainerStyle={{ paddingBottom: 32 }}>
         <View className={`px-4 pt-4 pb-4 border-b ${borderCls}`}>
-          <View className="flex-row flex-wrap gap-1 mb-2">
-            <Text className={`${textMuted} text-sm`} onPress={() => router.back()}>
-              Home / Buy in Gurgaon / Sector 108 /
-            </Text>
-            <Text className={`${textMuted} text-sm`}>{title}</Text>
-          </View>
-          <View className={`${bgCard2} rounded-2xl h-48 items-center justify-center mb-4`}>
+          <Pressable onPress={() => router.back()}>
+            <Text className={`${textMuted} text-sm`}>← Back</Text>
+          </Pressable>
+          <View className={`${bgCard2} rounded-2xl h-48 items-center justify-center mb-4 mt-2`}>
             <Text className="text-6xl">🏡</Text>
             <View className="flex-row gap-2 mt-2">
-              <Pressable className={`${bgCard} px-3 py-1.5 rounded-lg`}>
-                <Text className={`${textCls} text-sm`}>📸 All Photos (24)</Text>
-              </Pressable>
-              <Pressable className={`${bgCard} px-3 py-1.5 rounded-lg`}>
+              <View className={`${bgCard} px-3 py-1.5 rounded-lg`}>
+                <Text className={`${textCls} text-sm`}>📸 Photos</Text>
+              </View>
+              <View className={`${bgCard} px-3 py-1.5 rounded-lg`}>
                 <Text className={`${textCls} text-sm`}>🎬 Video Tour</Text>
-              </Pressable>
+              </View>
             </View>
           </View>
         </View>
 
         <View className="px-4 pt-4">
           <View className="flex-row flex-wrap gap-2 mb-3">
-            <View className={`${isDark ? 'bg-gold-dim' : 'bg-light-teal-dim'} px-2 py-0.5 rounded`}>
-              <Text className={`${goldCls} text-xs font-semibold`}>⭐ Premium</Text>
-            </View>
             <View className={`${isDark ? 'bg-teal-dim' : 'bg-light-teal-dim'} px-2 py-0.5 rounded`}>
               <Text className={`${tealCls} text-xs font-semibold`}>✦ AI Pick</Text>
             </View>
@@ -116,12 +112,12 @@ export default function PropertyDetailScreen() {
               <Text className={`${greenCls} text-xs font-semibold`}>✓ RERA Verified</Text>
             </View>
           </View>
-          <Text className={`${textCls} text-xl font-bold mb-1`}>{title}</Text>
-          <Text className={`${textMuted} text-sm mb-3`}>📍 {location}</Text>
+          <Text className={`${textCls} text-xl font-bold mb-1`}>{p.title}</Text>
+          <Text className={`${textMuted} text-sm mb-3`}>📍 {p.location}</Text>
           <View className="flex-row justify-between items-start mb-4">
             <View>
               <Text className={`${tealCls} text-2xl font-bold`}>{priceStr}</Text>
-              <Text className={`${textMuted} text-sm`}>{pricePerSqft}</Text>
+              {pricePerSqft != null && <Text className={`${textMuted} text-sm`}>{pricePerSqft}</Text>}
             </View>
             <View className="flex-row gap-2">
               <Pressable className={`${bgCard2} px-3 py-2 rounded-lg border ${borderCls}`}>
@@ -145,25 +141,29 @@ export default function PropertyDetailScreen() {
 
           <View className={`${bgCard} rounded-xl p-4 border ${borderCls} mb-4`}>
             <Text className={`${textCls} font-bold text-lg mb-3`}>Overview</Text>
-            {overview.map((o) => (
-              <View key={o.label} className={`flex-row justify-between py-2 border-b ${borderCls} last:border-0`}>
-                <Text className={`${textMuted} text-sm`}>{o.label}</Text>
-                <Text className={`text-sm font-medium ${o.green ? greenCls : textCls}`}>{o.val}</Text>
-              </View>
-            ))}
-          </View>
-
-          <View className={`${isDark ? 'bg-teal-dim' : 'bg-light-teal-dim'} rounded-xl p-4 border ${isDark ? 'border-teal/30' : 'border-light-teal/30'} mb-4`}>
-            <View className="flex-row items-center gap-3">
-              <View className={`w-14 h-14 rounded-full ${isDark ? 'bg-teal/20' : 'bg-light-teal/20'} items-center justify-center`}>
-                <Text className={`${tealCls} text-xl font-bold`}>{aiScore}</Text>
-              </View>
-              <View>
-                <Text className={`${tealCls} font-bold`}>AI Score: Excellent</Text>
-                <Text className={`${textMuted} text-xs`}>{aiTip}</Text>
-              </View>
+            <View className={`flex-row justify-between py-2 border-b ${borderCls}`}>
+              <Text className={`${textMuted} text-sm`}>Project</Text>
+              <Text className={`text-sm font-medium ${textCls}`}>{p.title}</Text>
+            </View>
+            <View className={`flex-row justify-between py-2 border-b ${borderCls}`}>
+              <Text className={`${textMuted} text-sm`}>Location</Text>
+              <Text className={`text-sm font-medium ${textCls}`}>{p.location}</Text>
             </View>
           </View>
+
+          {p.aiScore != null && (
+            <View className={`${isDark ? 'bg-teal-dim' : 'bg-light-teal-dim'} rounded-xl p-4 border ${isDark ? 'border-teal/30' : 'border-light-teal/30'} mb-4`}>
+              <View className="flex-row items-center gap-3">
+                <View className={`w-14 h-14 rounded-full ${isDark ? 'bg-teal/20' : 'bg-light-teal/20'} items-center justify-center`}>
+                  <Text className={`${tealCls} text-xl font-bold`}>{p.aiScore}</Text>
+                </View>
+                <View>
+                  <Text className={`${tealCls} font-bold`}>AI Score</Text>
+                  {p.aiTip != null && <Text className={`${textMuted} text-xs`}>{p.aiTip}</Text>}
+                </View>
+              </View>
+            </View>
+          )}
 
           <View className={`${bgCard} rounded-xl p-4 border ${borderCls}`}>
             <Text className={`${textCls} font-bold mb-2`}>Contact Owner</Text>

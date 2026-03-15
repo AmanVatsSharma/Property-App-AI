@@ -8,15 +8,30 @@
 
 import { useTheme } from '@/components/providers/ThemeProvider';
 import { CITIES } from '@/constants/cities';
+import { fetchProperties, type ApiProperty } from '@/lib/graphql-client';
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
-import { ScrollView, View, Text, Pressable, TextInput } from 'react-native';
+import { useEffect, useState } from 'react';
+import { ScrollView, View, Text, Pressable, TextInput, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+
+function formatPrice(price: number): string {
+  return price >= 1_00_00_000 ? `₹${(price / 1_00_00_000).toFixed(2)} Cr` : `₹${(price / 1_00_000).toFixed(0)} L`;
+}
 
 export default function HomeScreen() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState('buy');
   const { isDark } = useTheme();
+  const [featuredProperty, setFeaturedProperty] = useState<ApiProperty | null | undefined>(undefined);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const list = await fetchProperties({ limit: 1 });
+      if (!cancelled) setFeaturedProperty(list?.[0] ?? null);
+    })();
+    return () => { cancelled = true; };
+  }, []);
 
   const bgMain = isDark ? 'bg-night' : 'bg-light-night';
   const bgCard = isDark ? 'bg-dark' : 'bg-light-dark';
@@ -74,19 +89,19 @@ export default function HomeScreen() {
             </Pressable>
           </View>
 
-          {/* Stats */}
+          {/* Stats — neutral labels only for no-mock MVP; counts from API when available */}
           <View className="flex-row flex-wrap justify-between mt-6 gap-4">
             <View className="flex-1 min-w-[80px]">
-              <Text className={`${tealCls} text-xl font-bold`}>2.4<Text className={`text-sm ${textMuted}`}>M+</Text></Text>
-              <Text className={`${textMuted} text-xs`}>Active Listings</Text>
+              <Text className={`${tealCls} text-xl font-bold`}>Listings</Text>
+              <Text className={`${textMuted} text-xs`}>Verified properties</Text>
             </View>
             <View className="flex-1 min-w-[80px]">
-              <Text className={`${tealCls} text-xl font-bold`}>1.2<Text className={`text-sm ${textMuted}`}>L+</Text></Text>
-              <Text className={`${textMuted} text-xs`}>Happy Families</Text>
+              <Text className={`${tealCls} text-xl font-bold`}>Trusted</Text>
+              <Text className={`${textMuted} text-xs`}>RERA verified</Text>
             </View>
             <View className="flex-1 min-w-[80px]">
-              <Text className={`${tealCls} text-xl font-bold`}>340<Text className={`text-sm ${textMuted}`}>+</Text></Text>
-              <Text className={`${textMuted} text-xs`}>Cities</Text>
+              <Text className={`${tealCls} text-xl font-bold`}>Cities</Text>
+              <Text className={`${textMuted} text-xs`}>Nationwide</Text>
             </View>
           </View>
         </View>
@@ -113,7 +128,7 @@ export default function HomeScreen() {
               >
                 <Text className="text-4xl mb-2">{c.emoji}</Text>
                 <Text className={`${textHeading} font-semibold`}>{c.name}</Text>
-                <Text className={`${textMuted} text-xs`}>{c.count} listings</Text>
+                <Text className={`${textMuted} text-xs`}>Explore</Text>
               </Pressable>
             ))}
           </ScrollView>
@@ -123,34 +138,54 @@ export default function HomeScreen() {
         <View className="px-4 pb-6">
           <Text className={`${textMuted} text-xs uppercase tracking-wider mb-2`}>AI-Curated For You</Text>
           <Text className={`${textHeading} text-xl font-bold mb-4`}>Properties You'll Love</Text>
-          <Pressable
-            onPress={() => router.push('/property/1')}
-            className={`${bgCard} rounded-2xl overflow-hidden border ${borderCls}`}
-          >
-            <View className={`h-40 ${bgCard2} items-center justify-center`}>
-              <Text className="text-6xl">🏡</Text>
-              <View className="absolute top-2 left-2 flex-row gap-2">
-                <View className={`${isDark ? 'bg-gold-dim' : 'bg-light-teal-dim'} px-2 py-0.5 rounded`}>
-                  <Text className={`${isDark ? 'text-gold' : 'text-light-teal'} text-xs font-semibold`}>⭐ PREMIUM</Text>
-                </View>
-                <View className={`${badgeTealCls} border px-2 py-0.5 rounded ${isDark ? 'border-teal/30' : 'border-light-teal/30'}`}>
-                  <Text className={`${tealCls} text-xs font-semibold`}>✦ AI PICK</Text>
-                </View>
-              </View>
-              <View className={`absolute bottom-2 right-2 ${badgeTealCls} px-2 py-1 rounded`}>
-                <Text className={`${tealCls} font-bold`}>94</Text>
-                <Text className={`${tealCls} text-xs`}>AI Score</Text>
-              </View>
+          {featuredProperty === undefined ? (
+            <View className={`${bgCard} rounded-2xl overflow-hidden border ${borderCls} h-40 items-center justify-center`}>
+              <ActivityIndicator size="large" color={isDark ? '#00d4aa' : '#00b894'} />
             </View>
-            <View className="p-4">
-              <Text className={`${tealCls} font-bold text-lg`}>₹2.85 Cr</Text>
-              <Text className={`${textHeading} font-semibold mt-1`}>Sobha City Vista — 4 BHK Ultra Luxury, Gurgaon</Text>
-              <Text className={`${textMuted} text-sm mt-1`}>📍 Sector 108 · 2,850 sq.ft · Ready</Text>
+          ) : featuredProperty ? (
+            <>
+              <Pressable
+                onPress={() => router.push(`/property/${featuredProperty.id}`)}
+                className={`${bgCard} rounded-2xl overflow-hidden border ${borderCls}`}
+              >
+                <View className={`h-40 ${bgCard2} items-center justify-center`}>
+                  <Text className="text-6xl">🏡</Text>
+                  <View className="absolute top-2 left-2 flex-row gap-2">
+                    <View className={`${badgeTealCls} border px-2 py-0.5 rounded ${isDark ? 'border-teal/30' : 'border-light-teal/30'}`}>
+                      <Text className={`${tealCls} text-xs font-semibold`}>✦ AI PICK</Text>
+                    </View>
+                  </View>
+                  {featuredProperty.aiScore != null && (
+                    <View className={`absolute bottom-2 right-2 ${badgeTealCls} px-2 py-1 rounded`}>
+                      <Text className={`${tealCls} font-bold`}>{featuredProperty.aiScore}</Text>
+                      <Text className={`${tealCls} text-xs`}>AI Score</Text>
+                    </View>
+                  )}
+                </View>
+                <View className="p-4">
+                  <Text className={`${tealCls} font-bold text-lg`}>{formatPrice(featuredProperty.price)}</Text>
+                  <Text className={`${textHeading} font-semibold mt-1`}>{featuredProperty.title}</Text>
+                  <Text className={`${textMuted} text-sm mt-1`}>
+                    📍 {featuredProperty.location}
+                    {featuredProperty.areaSqft != null ? ` · ${featuredProperty.areaSqft.toLocaleString()} sq.ft` : ''}
+                    {featuredProperty.status ? ` · ${featuredProperty.status}` : ''}
+                  </Text>
+                </View>
+              </Pressable>
+              <Pressable onPress={() => router.push('/(tabs)/search')} className="mt-3">
+                <Text className={`${tealCls} font-semibold text-center`}>View all listings →</Text>
+              </Pressable>
+            </>
+          ) : (
+            <View className={`${bgCard} rounded-2xl overflow-hidden border ${borderCls} p-6 items-center`}>
+              <Text className="text-5xl mb-3">🏠</Text>
+              <Text className={`${textHeading} font-semibold text-center mb-1`}>No featured property yet</Text>
+              <Text className={`${textMuted} text-sm text-center mb-4`}>Explore search to find your perfect home.</Text>
+              <Pressable onPress={() => router.push('/(tabs)/search')} className={`${isDark ? 'bg-teal' : 'bg-light-teal'} py-3 px-6 rounded-xl`}>
+                <Text className={`${btnPrimaryText} font-bold`}>Explore search</Text>
+              </Pressable>
             </View>
-          </Pressable>
-          <Pressable onPress={() => router.push('/(tabs)/search')} className="mt-3">
-            <Text className={`${tealCls} font-semibold text-center`}>View all 2.4M+ listings →</Text>
-          </Pressable>
+          )}
         </View>
 
         {/* CTA */}
