@@ -22,6 +22,8 @@
 
 **Tool list (agent-tools.service):** search_properties, get_property, score_property, get_neighbourhood_score, assess_region, get_price_forecast, check_rera, analyze_document, get_negotiation_advice, compare_properties, create_listing.
 
+**search_properties tool:** Accepts query, location, min_price, max_price, bedrooms, type (apartment, villa, plot, etc.), sort_by (createdAt | price | aiScore), sort_order (asc | desc), limit. Returns ToolResult with content (text summary) and sources (one per property: type 'property', label, id) so clients can render property cards.
+
 **Dependencies:** PropertyModule (search, get, update, create), AreaModule (getOrCreate, area assessment), ConfigModule (env), LoggerModule. Optional: **BullMQ**, **Redis** for async jobs when AGENT_QUEUE_ENABLED and REDIS_URL are set. AgentRateLimitGuard (AGENT_RATE_LIMIT_PER_MIN).
 
 **APIs (GraphQL):**
@@ -67,6 +69,7 @@ No mock listing data, no fake property or user data, and no tool execution.
 ---
 
 **Change-log:**
+- 2025-03-15: search_properties extended with min_price, type, sort_by, sort_order; returns ToolResult with sources (property id per result) for client card display. Aligns agent filters with PropertyFilterDto (location, price range, bedrooms, type, sort).
 - 2026-03-15: MVP readiness: documented stub (when API keys missing) and Coming soon tool placeholders; no mock listing data.
 - 2025-03-11: Added agent module scaffold (resolver, orchestrator, tools service, DTOs, config).
 - 2025-03-11: Implemented LangChain/LangGraph orchestrator with ChatOpenAI and ReAct-style tool loop; eight tools (search, get property, score, neighbourhood, price forecast, RERA, document analysis, negotiation); askAgent and scoreProperty GraphQL mutations; env schema and AgentError; unit tests for orchestrator and tools.
