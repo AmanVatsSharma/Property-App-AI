@@ -15,6 +15,7 @@ import { DEMO_IMAGES } from "@/lib/demo-images";
 import { PropertyImage } from "@/components/ui/PropertyImage";
 import { SEARCH_TABS } from "@property-app-ai/shared";
 import { useAIFab } from "@/components/providers/AIFabProvider";
+import { gqlProperties, type ApiProperty } from "@/lib/graphql-client";
 
 const PLACEHOLDERS = [
   "Describe your home... e.g. 3BHK near good school, walkable to metro, budget ₹1.2Cr in Pune",
@@ -23,6 +24,7 @@ const PLACEHOLDERS = [
   "1BHK near IT park in Whitefield Bangalore under ₹50L...",
 ];
 
+/** Illustrative marketing copy; counts and trends are not live data. */
 const CITIES = [
   { name: "Mumbai", count: "4.2L+ listings", trend: "↑ 22% YoY growth", emoji: "🌆", bg: "linear-gradient(135deg,#1a2340,#0d1626)" },
   { name: "Bangalore", count: "3.8L+ listings", trend: "↑ 31% YoY growth", emoji: "🏙️", bg: "linear-gradient(135deg,#1a2916,#0d1e0d)" },
@@ -32,11 +34,20 @@ const CITIES = [
   { name: "Chennai", count: "1.4L+ listings", trend: "↑ 15% YoY growth", emoji: "🏛️", bg: "linear-gradient(135deg,#121a26,#060d1a)" },
 ];
 
+function formatPrice(price: number): string {
+  return price >= 1_00_00_000
+    ? `₹${(price / 1_00_00_000).toFixed(2)} Cr`
+    : `₹${(price / 1_00_000).toFixed(0)} L`;
+}
+
 export default function LandingPage() {
   const { setOpen: openAIPanel } = useAIFab();
   const [activeTab, setActiveTab] = useState("buy");
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
-  const [hearts, setHearts] = useState<Record<number, boolean>>({ 0: false, 1: false, 2: false });
+  const [featuredProperties, setFeaturedProperties] = useState<ApiProperty[] | null>(null);
+  const [featuredLoading, setFeaturedLoading] = useState(true);
+  const [featuredError, setFeaturedError] = useState<string | null>(null);
+  const [hearts, setHearts] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     const t = setInterval(() => {
@@ -45,8 +56,27 @@ export default function LandingPage() {
     return () => clearInterval(t);
   }, []);
 
-  const toggleHeart = (i: number) => {
-    setHearts((prev) => ({ ...prev, [i]: !prev[i] }));
+  useEffect(() => {
+    setFeaturedLoading(true);
+    setFeaturedError(null);
+    gqlProperties({
+      limit: 3,
+      sortBy: "createdAt",
+      sortOrder: "desc",
+    })
+      .then((list) => {
+        setFeaturedProperties(list);
+        setFeaturedError(null);
+      })
+      .catch((e) => {
+        setFeaturedProperties([]);
+        setFeaturedError(e instanceof Error ? e.message : "Failed to load featured properties");
+      })
+      .finally(() => setFeaturedLoading(false));
+  }, []);
+
+  const toggleHeart = (id: string) => {
+    setHearts((prev) => ({ ...prev, [id]: !prev[id] }));
   };
 
   return (
@@ -220,104 +250,70 @@ export default function LandingPage() {
             <div className="sec-eyebrow">AI-Curated For You</div>
             <h2 className="sec-title">Properties You&apos;ll <em>Love</em></h2>
           </div>
-          <Link href="/search" className="view-all-link">View all 2.4M+ listings →</Link>
+          <Link href="/search" className="view-all-link">View all listings →</Link>
         </div>
         <div className="listings-grid">
-          <Link href="/property/detail" className="l-card featured reveal">
-            <div className="l-img">
-              <PropertyImage
-                src={DEMO_IMAGES.properties["sobha-city-vista"].cover}
-                alt="Sobha City Vista — 4 BHK Ultra Luxury"
-                className="l-img-bg"
-                sizes="(max-width: 768px) 100vw, 50vw"
-              />
-              <div className="l-img-gradient" />
-              <div className="l-badges">
-                <span className="lb lb-premium">⭐ PREMIUM</span>
-                <span className="lb lb-ai">✦ AI PICK</span>
+          {featuredLoading ? (
+            <>
+              <div className="l-card featured reveal" aria-hidden>
+                <div className="l-img"><div className="l-img-bg" style={{ background: "var(--bg-subtle)" }} /><div className="l-img-gradient" /></div>
+                <div className="l-body"><div className="l-price" style={{ opacity: 0.5 }}>—</div><div className="l-name" style={{ opacity: 0.5 }}>Loading…</div></div>
               </div>
-              <button type="button" className="l-heart" onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleHeart(0); }} aria-label="Save">{hearts[0] ? "❤️" : "♡"}</button>
-              <div className="l-score" style={{ bottom: 72 }}>
-                <div className="l-score-num">94</div>
-                <div className="l-score-label">AI Score</div>
-              </div>
+              <div className="l-card reveal" aria-hidden><div className="l-img"><div className="l-img-bg" style={{ background: "var(--bg-subtle)" }} /><div className="l-img-gradient" /></div><div className="l-body"><div className="l-name" style={{ opacity: 0.5 }}>Loading…</div></div></div>
+              <div className="l-card reveal" aria-hidden><div className="l-img"><div className="l-img-bg" style={{ background: "var(--bg-subtle)" }} /><div className="l-img-gradient" /></div><div className="l-body"><div className="l-name" style={{ opacity: 0.5 }}>Loading…</div></div></div>
+            </>
+          ) : featuredError || !featuredProperties?.length ? (
+            <div className="l-card featured reveal" style={{ gridColumn: "1 / -1", textAlign: "center", padding: "48px 24px" }}>
+              <p style={{ marginBottom: 16, color: "var(--text-muted)" }}>
+                {featuredError ?? "No featured properties right now."}
+              </p>
+              <Link href="/search" className="btn-nav-primary" style={{ padding: "12px 24px", borderRadius: 12 }}>
+                Explore all properties →
+              </Link>
             </div>
-            <div className="l-body">
-              <div className="l-price">₹2.85 Cr <span className="l-unit">onwards</span></div>
-              <div className="l-name">Sobha City Vista — 4 BHK Ultra Luxury Apartment, Gurgaon</div>
-              <div className="l-loc">📍 Sector 108, Gurgaon · 2,850 sq.ft · Ready to Move</div>
-              <div className="l-specs">
-                <span className="l-spec">🛏 4 BHK</span>
-                <span className="l-spec">🚿 4 Bath</span>
-                <span className="l-spec">🚗 2 Park</span>
-                <span className="l-spec">📐 2,850 sqft</span>
-                <span className="l-spec">✅ RERA</span>
-              </div>
-              <div className="l-ai-box"><strong>✦ AI Insight:</strong> 18% price appreciation expected in 24 months. Metro 1.2km. 94/100 Livability. Priced 8% below market.</div>
-            </div>
-          </Link>
-          <Link href="/property/detail" className="l-card reveal">
-            <div className="l-img">
-              <PropertyImage
-                src={DEMO_IMAGES.properties["dlf-mypad"].cover}
-                alt="DLF MyPad — 2 BHK Studio, Noida"
-                className="l-img-bg"
-                sizes="(max-width: 768px) 100vw, 33vw"
-              />
-              <div className="l-img-gradient" />
-              <div className="l-badges">
-                <span className="lb lb-verified">✓ Verified</span>
-                <span className="lb lb-hot">🔥 Hot</span>
-              </div>
-              <button type="button" className="l-heart" onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleHeart(1); }} aria-label="Save">{hearts[1] ? "❤️" : "♡"}</button>
-              <div className="l-score">
-                <div className="l-score-num">88</div>
-                <div className="l-score-label">AI Score</div>
-              </div>
-            </div>
-            <div className="l-body">
-              <div className="l-price">₹78 L <span className="l-unit">onwards</span></div>
-              <div className="l-name">DLF MyPad — 2 BHK Studio Apartments, Noida</div>
-              <div className="l-loc">📍 Sector 59, Noida · 1,100 sq.ft</div>
-              <div className="l-specs">
-                <span className="l-spec">🛏 2 BHK</span>
-                <span className="l-spec">🚿 2 Bath</span>
-                <span className="l-spec">📐 1,100 sqft</span>
-              </div>
-              <div className="l-ai-box"><strong>✦ AI:</strong> Best value in locality. 92% of similar seekers shortlisted this.</div>
-            </div>
-          </Link>
-          <Link href="/property/detail" className="l-card reveal">
-            <div className="l-img">
-              <PropertyImage
-                src={DEMO_IMAGES.properties["m3m-golf-hills"].cover}
-                alt="M3M Golf Hills — 3 BHK Premium"
-                className="l-img-bg"
-                sizes="(max-width: 768px) 100vw, 33vw"
-              />
-              <div className="l-img-gradient" />
-              <div className="l-badges">
-                <span className="lb lb-new">NEW</span>
-                <span className="lb lb-ai">✦ AI PICK</span>
-              </div>
-              <button type="button" className="l-heart" onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleHeart(2); }} aria-label="Save">{hearts[2] ? "❤️" : "♡"}</button>
-              <div className="l-score">
-                <div className="l-score-num">91</div>
-                <div className="l-score-label">AI Score</div>
-              </div>
-            </div>
-            <div className="l-body">
-              <div className="l-price">₹1.45 Cr <span className="l-unit">onwards</span></div>
-              <div className="l-name">M3M Golf Hills — 3 BHK Premium Floors, Gurgaon</div>
-              <div className="l-loc">📍 Sector 79, Gurgaon · 1,890 sq.ft</div>
-              <div className="l-specs">
-                <span className="l-spec">🛏 3 BHK</span>
-                <span className="l-spec">🚿 3 Bath</span>
-                <span className="l-spec">📐 1,890 sqft</span>
-              </div>
-              <div className="l-ai-box"><strong>✦ AI:</strong> 37 people viewed today. Price rising after DDJK highway opens Q2 2025.</div>
-            </div>
-          </Link>
+          ) : (
+            featuredProperties.map((p, idx) => {
+              const coverUrl = p.coverImageUrl ?? DEMO_IMAGES.defaultPropertyCover;
+              const isFeatured = idx === 0;
+              const score = p.aiScore ?? 0;
+              const sqft = p.areaSqft ? ` · ${p.areaSqft.toLocaleString()} sq.ft` : "";
+              return (
+                <Link key={p.id} href={`/property/${p.id}`} className={`l-card reveal${isFeatured ? " featured" : ""}`}>
+                  <div className="l-img">
+                    <PropertyImage
+                      src={coverUrl}
+                      alt={p.title}
+                      className="l-img-bg"
+                      sizes={isFeatured ? "(max-width: 768px) 100vw, 50vw" : "(max-width: 768px) 100vw, 33vw"}
+                    />
+                    <div className="l-img-gradient" />
+                    <div className="l-badges">
+                      {score >= 90 && <span className="lb lb-ai">✦ AI PICK</span>}
+                      {score >= 90 ? <span className="lb lb-premium">⭐ PREMIUM</span> : <span className="lb lb-verified">✓ Verified</span>}
+                    </div>
+                    <button type="button" className="l-heart" onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleHeart(p.id); }} aria-label="Save">{hearts[p.id] ? "❤️" : "♡"}</button>
+                    {score > 0 && (
+                      <div className="l-score" style={isFeatured ? { bottom: 72 } : undefined}>
+                        <div className="l-score-num">{score}</div>
+                        <div className="l-score-label">AI Score</div>
+                      </div>
+                    )}
+                  </div>
+                  <div className="l-body">
+                    <div className="l-price">{formatPrice(p.price)} <span className="l-unit">onwards</span></div>
+                    <div className="l-name">{p.title}</div>
+                    <div className="l-loc">📍 {p.location}{sqft}</div>
+                    <div className="l-specs">
+                      <span className="l-spec">🛏 {p.bedrooms} BHK</span>
+                      <span className="l-spec">🚿 {p.bathrooms} Bath</span>
+                      {p.areaSqft != null && <span className="l-spec">📐 {p.areaSqft.toLocaleString()} sqft</span>}
+                    </div>
+                    {p.aiTip && <div className="l-ai-box"><strong>✦ AI:</strong> {p.aiTip}</div>}
+                  </div>
+                </Link>
+              );
+            })
+          )}
         </div>
       </section>
 
@@ -335,6 +331,7 @@ export default function LandingPage() {
           </div>
           <Link href="/search" className="btn-nav-primary" style={{ marginTop: 32, padding: "14px 28px", fontSize: 15, borderRadius: 14 }}>See Score for Any Property</Link>
         </div>
+        {/* Illustrative score example; image is marketing placeholder. */}
         <div className="score-visual reveal">
           <div className="score-property-thumb-wrap">
             <Image src={DEMO_IMAGES.properties["prestige-sunrise-park"].cover} alt="Prestige Sunrise Park" fill className="score-property-thumb" sizes="280px" />
@@ -473,6 +470,7 @@ export default function LandingPage() {
           <div className="sec-eyebrow">Real Stories</div>
           <h2 className="sec-title">They Found Their<br />Home with <em>UrbanNest.ai</em></h2>
         </div>
+        {/* Illustrative testimonials for marketing; not from live user data. */}
         <div className="testi-grid">
           {[
             { quote: "\"The AI search is genuinely magical. I typed a paragraph describing my dream home and it showed me exactly what I wanted. Bought in 3 weeks.\"", savings: "💰 Saved ₹14 lakhs via AI Price Check", name: "Priya Sharma", detail: "Bought 3BHK in Sector 62, Noida · ₹1.1 Cr", avatarIndex: 0 },
@@ -498,6 +496,7 @@ export default function LandingPage() {
       </section>
 
       <section className="app-section">
+        {/* Phone mockup uses illustrative imagery only. */}
         <div className="app-mockup reveal">
           <div className="phone-frame">
             <div className="phone-notch" />

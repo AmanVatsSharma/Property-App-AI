@@ -1,7 +1,8 @@
 /**
  * @file SearchPageClient.tsx
  * @module search
- * @description Search page client — filters, grid, map view, pagination; URL state for shareable links
+ * @description Search page client — filters, grid, map view, pagination; URL state for shareable links.
+ * Uses only API data (properties query); DEMO_IMAGES only as fallback for missing cover images.
  * @author BharatERP
  * @created 2025-03-10
  */

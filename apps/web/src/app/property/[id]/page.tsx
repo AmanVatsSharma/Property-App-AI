@@ -1,7 +1,7 @@
 /**
  * @file page.tsx
  * @module app/property/[id]
- * @description Dynamic property detail page; fetches by id/slug
+ * @description Dynamic property detail page; fetches by id/slug. Uses only API data (property query); DEMO_IMAGES only as fallback for missing cover/gallery images.
  * @author BharatERP
  * @created 2025-03-10
  */
