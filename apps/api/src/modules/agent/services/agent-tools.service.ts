@@ -52,7 +52,19 @@ export class AgentToolsService {
     const self = this;
     const tools: StructuredToolInterface[] = [
       tool(
-        async (input: { query: string; location?: string; max_price?: number; bedrooms?: number; limit?: number }) => {
+        async (
+          input: {
+            query: string;
+            location?: string;
+            min_price?: number;
+            max_price?: number;
+            bedrooms?: number;
+            type?: string;
+            sort_by?: string;
+            sort_order?: string;
+            limit?: number;
+          },
+        ) => {
           return self.searchPropertiesImpl(input);
         },
         {
@@ -62,8 +74,18 @@ export class AgentToolsService {
           schema: z.object({
             query: z.string().describe('Natural language or keywords (e.g. 3BHK Bangalore 1 Cr)'),
             location: z.string().optional().describe('City or locality (e.g. Whitefield, Mumbai)'),
+            min_price: z.number().optional().describe('Min budget in INR'),
             max_price: z.number().optional().describe('Max budget in INR'),
             bedrooms: z.number().optional().describe('Number of BHK'),
+            type: z
+              .string()
+              .optional()
+              .describe('Property type: apartment, villa, plot, builder-floor, office, pg'),
+            sort_by: z
+              .enum(['createdAt', 'price', 'aiScore'])
+              .optional()
+              .describe('Sort field: createdAt, price, aiScore'),
+            sort_order: z.enum(['asc', 'desc']).optional().describe('Sort order: asc or desc'),
             limit: z.number().optional().default(10).describe('Max results'),
           }),
         },
@@ -291,20 +313,29 @@ export class AgentToolsService {
   private async searchPropertiesImpl(input: {
     query: string;
     location?: string;
+    min_price?: number;
     max_price?: number;
     bedrooms?: number;
+    type?: string;
+    sort_by?: string;
+    sort_order?: string;
     limit?: number;
-  }): Promise<string> {
+  }): Promise<ToolResult> {
+    const locationVal = input.location ?? input.query;
     const filter = {
-      location: input.location ?? input.query,
-      maxPrice: input.max_price,
-      bedrooms: input.bedrooms,
+      ...(locationVal && { location: locationVal }),
+      ...(input.min_price != null && { minPrice: input.min_price }),
+      ...(input.max_price != null && { maxPrice: input.max_price }),
+      ...(input.bedrooms != null && { bedrooms: input.bedrooms }),
+      ...(input.type && { type: input.type }),
+      sortBy: (input.sort_by as 'createdAt' | 'price' | 'aiScore') ?? 'createdAt',
+      sortOrder: (input.sort_order as 'asc' | 'desc') ?? 'desc',
       limit: input.limit ?? 10,
       offset: 0,
     };
     const list = await this.propertyService.findAll(filter as Parameters<PropertyService['findAll']>[0]);
     if (list.length === 0) {
-      return 'No properties found matching the criteria.';
+      return { content: 'No properties found matching the criteria.' };
     }
     const summary = list
       .slice(0, 5)
@@ -313,7 +344,9 @@ export class AgentToolsService {
           `- ${p.title} (${p.location}): ₹${Number(p.price).toLocaleString('en-IN')}, ${p.bedrooms} BHK, ${p.type}`,
       )
       .join('\n');
-    return `Found ${list.length} properties.\n${summary}${list.length > 5 ? `\n... and ${list.length - 5} more.` : ''}`;
+    const content = `Found ${list.length} properties.\n${summary}${list.length > 5 ? `\n... and ${list.length - 5} more.` : ''}`;
+    const sources = list.map((p) => ({ type: 'property' as const, label: p.title, id: p.id }));
+    return { content, sources };
   }
 
   private async getPropertyImpl(propertyId: string): Promise<string> {
