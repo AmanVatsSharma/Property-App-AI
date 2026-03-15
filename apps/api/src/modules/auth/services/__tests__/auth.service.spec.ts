@@ -8,11 +8,11 @@
 
 import { AuthService } from '../auth.service';
 import { OtpService } from '../otp.service';
-import { UserService } from '../../../../user/services/user.service';
+import { UserService } from '@api/modules/user/services/user.service';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
-import { LoggerService } from '../../../shared/logger';
-import { UserRole } from '../../../../user/entities/user.entity';
+import { LoggerService } from '@api/shared/logger';
+import { UserRole } from '@api/modules/user/entities/user.entity';
 
 describe('AuthService', () => {
   let authService: AuthService;
@@ -44,12 +44,13 @@ describe('AuthService', () => {
       return undefined;
     }) };
     jwt = { signAsync: jest.fn().mockResolvedValue('jwt-token') };
+    const logger = { debug: jest.fn(), log: jest.fn(), warn: jest.fn(), error: jest.fn() };
     authService = new AuthService(
       otpService as unknown as OtpService,
       jwt as unknown as JwtService,
       config as unknown as ConfigService,
       userService as unknown as UserService,
-      {} as LoggerService,
+      logger as unknown as LoggerService,
     );
   });
 
