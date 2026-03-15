@@ -12,6 +12,8 @@ import { useState, useCallback, useEffect } from "react";
 import { gqlAskAgent, type AgentSource, type AgentSuggestedAction } from "@/lib/graphql-client";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useAIFab } from "@/components/providers/AIFabProvider";
+import { AIThinkingChain } from "@/components/agent/AIThinkingChain";
+import { AIPropertyCards } from "@/components/agent/AIPropertyCards";
 
 interface ChatMessage {
   role: "user" | "assistant";
@@ -155,9 +157,14 @@ export default function AIFab() {
                   >
                     {displayContent}
                     {msg.role === "assistant" && !isTypingThis && msg.sources?.length ? (
-                      <div className="mt-2 text-xs text-[var(--text-muted)]">
-                        Sources: {msg.sources.map((s) => s.label).join(", ")}
-                      </div>
+                      <>
+                        <div className="mt-2 text-xs text-[var(--text-muted)]">
+                          Sources: {msg.sources.map((s) => s.label).join(", ")}
+                        </div>
+                        {msg.sources.some((s) => s.type === "property" && s.id) ? (
+                          <AIPropertyCards sources={msg.sources} />
+                        ) : null}
+                      </>
                     ) : null}
                     {msg.role === "assistant" && !isTypingThis && msg.suggestedActions?.length ? (
                       <div className="mt-2 flex flex-wrap gap-2">
@@ -177,10 +184,8 @@ export default function AIFab() {
               );
               })}
               {loading && (
-                <div className="flex justify-start">
-                  <div className="rounded-xl bg-[var(--dark-2)] border border-[var(--border)] px-3 py-2 text-sm text-[var(--text-muted)]">
-                    Thinking…
-                  </div>
+                <div className="flex justify-start" data-testid="ai-loading">
+                  <AIThinkingChain active />
                 </div>
               )}
               {error && (

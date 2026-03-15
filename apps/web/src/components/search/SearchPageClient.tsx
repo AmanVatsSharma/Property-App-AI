@@ -16,6 +16,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { PropertyImage } from "@/components/ui/PropertyImage";
 import { DEMO_IMAGES } from "@/lib/demo-images";
 import { gqlProperties, type ApiProperty } from "@/lib/graphql-client";
+import { useAIFab } from "@/components/providers/AIFabProvider";
 import type { PropertyMapItem } from "./PropertyMap";
 
 const PropertyMap = dynamic(() => import("./PropertyMap").then((m) => m.PropertyMap), {
@@ -104,12 +105,20 @@ function apiToCardItem(p: ApiProperty) {
 export default function SearchPageClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { openPanelWithPrompt } = useAIFab();
   const [viewMode, setViewMode] = useState<"grid" | "list" | "map">("grid");
   const [apiProperties, setApiProperties] = useState<ApiProperty[] | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [aiQuery, setAiQuery] = useState("");
 
   const params = parseSearchParams(searchParams);
   const activeFilters = buildActiveFilters(params);
+
+  useEffect(() => {
+    if (params.city && !aiQuery) {
+      setAiQuery(params.bhk ? `${params.bhk} BHK in ${params.city}` : `in ${params.city}`);
+    }
+  }, [params.city, params.bhk]);
 
   useEffect(() => {
     const sortMap: Record<string, { sortBy?: "createdAt" | "price" | "aiScore"; sortOrder?: "asc" | "desc" }> = {
@@ -179,6 +188,16 @@ export default function SearchPageClient() {
     router.replace("/search", { scroll: false });
   }, [router]);
 
+  const buildAIPromptFromFilters = useCallback(() => {
+    const parts: string[] = [];
+    if (params.bhk) parts.push(`${params.bhk} BHK`);
+    if (params.city) parts.push(`in ${params.city}`);
+    if (params.type) parts.push(params.type);
+    if (params.maxPrice) parts.push(`under ₹${params.maxPrice}`);
+    if (params.minPrice) parts.push(`from ₹${params.minPrice}`);
+    return parts.length > 0 ? parts.join(" ") : "Find my perfect home based on current filters";
+  }, [params.bhk, params.city, params.type, params.minPrice, params.maxPrice]);
+
   const [propertyTypeIndex, setPropertyTypeIndex] = useState(0);
   const [bhkIndex, setBhkIndex] = useState(2);
   useEffect(() => {
@@ -194,9 +213,25 @@ export default function SearchPageClient() {
           <input
             className="search-q-input"
             placeholder="AI Search: 3BHK near metro under ₹1Cr in Gurgaon..."
-            defaultValue={params.city ? `${params.bhk ? params.bhk + " BHK " : ""}in ${params.city}` : undefined}
+            value={aiQuery}
+            onChange={(e) => setAiQuery(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                openPanelWithPrompt(aiQuery.trim() || "Find properties matching my criteria");
+              }
+            }}
+            aria-label="AI search query"
+            data-testid="ai-search-input"
           />
-          <button type="button" style={{ background: "var(--teal)", border: "none", color: "var(--night)", padding: "6px 14px", borderRadius: 8, fontFamily: "inherit", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>Search</button>
+          <button
+            type="button"
+            style={{ background: "var(--teal)", border: "none", color: "var(--night)", padding: "6px 14px", borderRadius: 8, fontFamily: "inherit", fontSize: 12, fontWeight: 700, cursor: "pointer" }}
+            onClick={() => openPanelWithPrompt(aiQuery.trim() || "Find properties matching my criteria")}
+            aria-label="Open AI search"
+            data-testid="ai-search-submit"
+          >
+            Search
+          </button>
         </div>
         <span className="results-meta" style={{ marginLeft: 20 }}>
           {apiProperties === null ? "Loading…" : `Showing ${apiProperties.length} propert${apiProperties.length === 1 ? "y" : "ies"}`}
@@ -240,7 +275,15 @@ export default function SearchPageClient() {
       <div className="search-layout">
         <aside className="sidebar">
           <div style={{ marginBottom: 20 }}>
-            <button type="button" className="ai-match-btn">✦ AI Smart Match</button>
+            <button
+              type="button"
+              className="ai-match-btn"
+              onClick={() => openPanelWithPrompt(buildAIPromptFromFilters())}
+              aria-label="Open AI Smart Match with current filters"
+              data-testid="ai-smart-match-btn"
+            >
+              ✦ AI Smart Match
+            </button>
             <p style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 8, textAlign: "center" }}>Let AI find your perfect home automatically</p>
           </div>
           <div className="filter-block">
