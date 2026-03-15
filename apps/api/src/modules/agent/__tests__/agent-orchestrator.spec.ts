@@ -31,6 +31,8 @@ describe('AgentOrchestratorService', () => {
     };
     const mockTools = {
       getTools: jest.fn().mockReturnValue([]),
+      setAgentContext: jest.fn(),
+      clearAgentContext: jest.fn(),
     };
     const mockLogger = { debug: jest.fn(), log: jest.fn(), error: jest.fn(), warn: jest.fn() };
 

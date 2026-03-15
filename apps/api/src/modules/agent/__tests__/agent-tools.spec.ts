@@ -156,7 +156,10 @@ describe('AgentToolsService', () => {
 
     it('should throw when property not found', async () => {
       propertyService.findOne.mockRejectedValue(new PropertyNotFoundError('missing'));
-      await expect(service.scoreAndPersistProperty('missing')).rejects.toThrow(PropertyNotFoundError);
+      await expect(service.scoreAndPersistProperty('missing')).rejects.toMatchObject({
+        name: 'PropertyNotFoundError',
+        message: expect.stringContaining('not found'),
+      });
     });
   });
 });
