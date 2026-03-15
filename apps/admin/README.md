@@ -1,6 +1,6 @@
 # Admin Panel
 
-Next.js admin app for the property listing SaaS. Manages properties and users; access is restricted to users with role `admin` (assigned via `ADMIN_PHONES` on the API).
+Next.js admin app for UrbanNest (property listing). Manages properties and users; access is restricted to users with role `admin` (assigned via `ADMIN_PHONES` on the API). **MVP uses the real API only; no mock or fake data in production.**
 
 ## Run
 
@@ -22,30 +22,26 @@ Default: [http://localhost:4200](http://localhost:4200) (or the port Nx assigns)
 
 ```bash
 npm run build:admin
-# or
+```
+
+Or:
+
+```bash
 nx run admin:build
 ```
 
 ## Environment
 
-Copy `apps/admin/.env.example` to `apps/admin/.env.local` (or set env vars):
+Copy `apps/admin/.env.example` to `apps/admin/.env.local` (or set env vars in your environment). See `.env.example` in this directory for the list of variables.
 
-- `NEXT_PUBLIC_GRAPHQL_HTTP` — GraphQL endpoint (e.g. `http://localhost:3333/graphql`)
-- Or `NEXT_PUBLIC_API_URL` — API base URL; GraphQL is `${NEXT_PUBLIC_API_URL}/graphql`
+- **NEXT_PUBLIC_GRAPHQL_HTTP** — GraphQL endpoint (e.g. `http://localhost:3333/graphql`).
+- **NEXT_PUBLIC_API_URL** — Optional; API base URL. If set, GraphQL URL is derived as `${NEXT_PUBLIC_API_URL}/graphql` when `NEXT_PUBLIC_GRAPHQL_HTTP` is not set.
 
-## Login
+## Main features
 
-1. Open `/login`.
-2. Enter a 10-digit Indian mobile number and request OTP.
-3. Enter the 6-digit code.
-4. If the phone is listed in the API env `ADMIN_PHONES` (comma-separated), the user gets role `admin` and is redirected to the dashboard. Otherwise, "Access denied. Admin only." is shown.
+- **Login** — OTP flow at `/login`: enter 10-digit Indian mobile, request OTP, verify. If the phone is in the API env `ADMIN_PHONES`, the user gets role `admin` and is redirected to the dashboard; otherwise "Access denied. Admin only." is shown.
+- **Dashboard** — Total properties, total users, recent properties with links to edit. Requires valid admin JWT.
+- **Properties** — List (table, pagination), create new, edit, delete. All under `/properties` and protected.
+- **Users** — List (table, pagination) with phone, display name, role, created date at `/users`.
 
-Ensure the API has `ADMIN_PHONES` set (e.g. `ADMIN_PHONES=9876543210`) and that OTP is sent (in-memory OTP in dev or configured provider).
-
-## Features
-
-- **Dashboard:** Total properties, total users, recent properties with links to edit.
-- **Properties:** List (table, pagination), create new, edit, delete.
-- **Users:** List (table, pagination) with phone, display name, role, created date.
-
-All dashboard routes require a valid admin JWT; otherwise the app redirects to `/login`.
+All dashboard routes require a valid admin JWT; unauthenticated or non-admin users are redirected to `/login`.

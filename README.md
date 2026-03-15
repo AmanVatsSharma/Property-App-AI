@@ -37,10 +37,11 @@ To run the web app with the NestJS API and database:
 
 1. **Start PostgreSQL** and create a database (e.g. `property_app`).
 2. **Optional:** Start Redis if you use the async agent queue (`AGENT_QUEUE_ENABLED=true`, `REDIS_URL=redis://localhost:6379`).
-3. **Environment:** Per app, copy from each app’s `.env.example` (see [apps/api/.env.example](apps/api/.env.example), [apps/web/.env.example](apps/web/.env.example), [apps/mobile/.env.example](apps/mobile/.env.example)). Set at least: API — `DB_*`, `OPENAI_API_KEY` or `ANTHROPIC_API_KEY`; web — `NEXT_PUBLIC_API_URL` or `NEXT_PUBLIC_GRAPHQL_HTTP`; mobile — `EXPO_PUBLIC_API_URL` or `EXPO_PUBLIC_GRAPHQL_HTTP`.
+3. **Environment:** Per app, copy from each app’s `.env.example` (see [apps/api/.env.example](apps/api/.env.example), [apps/web/.env.example](apps/web/.env.example), [apps/admin/.env.example](apps/admin/.env.example), [apps/mobile/.env.example](apps/mobile/.env.example)). Set at least: API — `DB_*`, `OPENAI_API_KEY` or `ANTHROPIC_API_KEY`; web — `NEXT_PUBLIC_API_URL` or `NEXT_PUBLIC_GRAPHQL_HTTP`; admin — `NEXT_PUBLIC_GRAPHQL_HTTP` or `NEXT_PUBLIC_API_URL`; mobile — `EXPO_PUBLIC_API_URL` or `EXPO_PUBLIC_GRAPHQL_HTTP`.
 4. **Terminals:**
    - API: `npm run dev:api` (NestJS on port 3333, GraphQL at `/graphql`)
    - Web: `npm run dev` (Next.js on port 3000)
+   - Admin (optional): `npm run dev:admin` (admin dashboard)
 
 Then open [http://localhost:3000](http://localhost:3000); the web app will call the API for properties and the AI assistant.
 
@@ -50,8 +51,10 @@ Then open [http://localhost:3000](http://localhost:3000); the web app will call 
 |------------------|---------------------------|----------------------------|
 | `dev`            | `nx run web:dev`          | Start Next.js dev server   |
 | `dev:api`        | `nx run api:serve`        | Start NestJS API (port 3333) |
+| `dev:admin`      | `nx run admin:dev`       | Start Admin dashboard dev server |
 | `build`          | `nx run web:build`        | Production build (web)     |
 | `build:api`      | `nx run api:build`        | Production build (API)     |
+| `build:admin`    | `nx run admin:build`      | Production build (admin)   |
 | `start`          | `nx run web:start`        | Start production server    |
 | `mobile`         | `nx run mobile:start`     | Start Expo (mobile)       |
 | `mobile:ios`     | `nx run mobile:run-ios`   | Run on iOS simulator      |
@@ -72,7 +75,8 @@ Then open [http://localhost:3000](http://localhost:3000); the web app will call 
 ## Structure
 
 - **apps/web** — Next.js 16 app (UrbanNest.ai web). See [apps/web/README.md](apps/web/README.md).
-- **apps/api** — NestJS GraphQL API (property CRUD, AI agent). See [apps/api/README.md](apps/api/README.md) if present.
+- **apps/api** — NestJS GraphQL API (property CRUD, AI agent). See [apps/api/README.md](apps/api/README.md).
+- **apps/admin** — Next.js admin dashboard (properties, users). See [apps/admin/README.md](apps/admin/README.md).
 - **apps/mobile** — Expo (React Native) app with NativeWind. See [apps/mobile/README.md](apps/mobile/README.md).
 - **libs/shared** — Shared design tokens, types, and GraphQL client helpers for web and mobile.
 - **HTML/** — Original static HTML; reference only.
@@ -107,4 +111,5 @@ For production deployments:
 
 ## Docs
 
-Changelog and module docs: [docs/CHANGELOG.md](docs/CHANGELOG.md).
+- [docs/CHANGELOG.md](docs/CHANGELOG.md) — Changelog and module doc references.
+- [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) — Deployment guide (env, build/run, Docker, checklist). Per-app env: [apps/api/.env.example](apps/api/.env.example), [apps/web/.env.example](apps/web/.env.example), [apps/admin/.env.example](apps/admin/.env.example), [apps/mobile/.env.example](apps/mobile/.env.example).
