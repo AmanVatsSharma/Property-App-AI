@@ -67,6 +67,13 @@
         "cwd": "apps/api"
       },
       "outputs": ["{workspaceRoot}/coverage/apps/api"]
+    },
+    "migration:run": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "node -r @swc-node/register src/database/run-migrations.ts",
+        "cwd": "apps/api"
+      }
     }
   },
   "tags": []

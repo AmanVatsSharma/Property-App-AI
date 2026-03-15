@@ -1,6 +1,15 @@
+/**
+ * @file page.tsx
+ * @module admin/app/(dashboard)/users
+ * @description Users list: API-sourced via gqlUsers with token; empty and error states handled.
+ * @author BharatERP
+ * @created 2025-03-13
+ */
+
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { getToken } from "@/lib/auth";
 import { gqlUsers, type AdminUser } from "@/lib/graphql-client";
 
@@ -14,7 +23,11 @@ export default function UsersPage() {
 
   useEffect(() => {
     const token = getToken();
-    if (!token) return;
+    if (!token) {
+      setError("Not authenticated");
+      setLoading(false);
+      return;
+    }
     gqlUsers(token, limit, offset)
       .then(({ users: u, total: t }) => {
         setUsers(u);
@@ -25,16 +38,35 @@ export default function UsersPage() {
   }, [offset]);
 
   if (loading && users.length === 0) {
-    return <p className="text-[var(--admin-muted)]">Loading users…</p>;
+    return (
+      <p className="text-[var(--admin-muted)]" data-testid="users-loading">
+        Loading users…
+      </p>
+    );
   }
 
   if (error) {
-    return <p className="text-red-400">{error}</p>;
+    return (
+      <div data-testid="users-error">
+        <p className="text-red-400">{error}</p>
+        <Link href="/login" className="mt-2 inline-block text-sm text-[var(--admin-accent)] hover:underline">
+          Go to login
+        </Link>
+      </div>
+    );
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-testid="users-page">
       <h1 className="text-2xl font-semibold">Users</h1>
+      {users.length === 0 ? (
+        <div
+          className="rounded-lg border border-[var(--admin-border)] bg-[var(--admin-sidebar)] p-8 text-center"
+          data-testid="users-empty"
+        >
+          <p className="text-[var(--admin-muted)]">No users found.</p>
+        </div>
+      ) : (
       <div className="rounded-lg border border-[var(--admin-border)] overflow-hidden">
         <table className="w-full text-left">
           <thead className="bg-[var(--admin-sidebar)] border-b border-[var(--admin-border)]">
@@ -69,25 +101,30 @@ export default function UsersPage() {
           </tbody>
         </table>
       </div>
-      <p className="text-sm text-[var(--admin-muted)]">Total: {total}</p>
-      <div className="flex gap-2">
-        <button
-          type="button"
-          disabled={offset === 0}
-          onClick={() => setOffset((o) => Math.max(0, o - limit))}
-          className="rounded px-3 py-1 border border-[var(--admin-border)] text-sm disabled:opacity-50"
-        >
-          Previous
-        </button>
-        <button
-          type="button"
-          disabled={offset + users.length >= total}
-          onClick={() => setOffset((o) => o + limit)}
-          className="rounded px-3 py-1 border border-[var(--admin-border)] text-sm disabled:opacity-50"
-        >
-          Next
-        </button>
-      </div>
+      )}
+      {users.length > 0 && (
+        <>
+          <p className="text-sm text-[var(--admin-muted)]">Total: {total}</p>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              disabled={offset === 0}
+              onClick={() => setOffset((o) => Math.max(0, o - limit))}
+              className="rounded px-3 py-1 border border-[var(--admin-border)] text-sm disabled:opacity-50"
+            >
+              Previous
+            </button>
+            <button
+              type="button"
+              disabled={offset + users.length >= total}
+              onClick={() => setOffset((o) => o + limit)}
+              className="rounded px-3 py-1 border border-[var(--admin-border)] text-sm disabled:opacity-50"
+            >
+              Next
+            </button>
+          </div>
+        </>
+      )}
     </div>
   );
 }

@@ -13,6 +13,11 @@ module.exports = {
   moduleDirectories: ['node_modules', '<rootDir>/../../node_modules'],
   testMatch: ['<rootDir>/src/**/*.spec.ts'],
   moduleNameMapper: {
+    '^slash$': '<rootDir>/jest-mocks/slash.cjs',
+    '^@langchain/core/tools$': '<rootDir>/jest-mocks/langchain-tools.cjs',
+    '^@langchain/core/messages$': '<rootDir>/jest-mocks/langchain-messages.cjs',
+    '^@langchain/openai$': '<rootDir>/jest-mocks/langchain-openai.cjs',
+    '^@langchain/anthropic$': '<rootDir>/jest-mocks/langchain-anthropic.cjs',
     '^@api/shared/(.*)$': '<rootDir>/src/shared/$1',
     '^@api/shared$': '<rootDir>/src/shared',
     '^@api/common/(.*)$': '<rootDir>/src/common/$1',

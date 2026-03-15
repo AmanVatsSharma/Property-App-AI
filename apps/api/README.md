@@ -57,4 +57,18 @@ Frontend can point to this API via `NEXT_PUBLIC_GRAPHQL_HTTP=http://localhost:33
 
 ## Migrations
 
-For production, turn off `synchronize` and use TypeORM migrations. Add a script in `package.json` to run migrations (e.g. `typeorm migration:run`) and add migration files under `src/migrations/` when schema changes.
+Migrations live in `src/database/migrations/`. Production uses `synchronize: false`; run pending migrations before or after deploy.
+
+**From repo root:**
+
+```bash
+nx run api:migration:run
+```
+
+**From `apps/api` directory:**
+
+```bash
+node -r @swc-node/register src/database/run-migrations.ts
+```
+
+Env is loaded in the same order as the app: root `.env` first, then `apps/api/.env` (app overrides). Set `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, `DB_NAME` before running.
