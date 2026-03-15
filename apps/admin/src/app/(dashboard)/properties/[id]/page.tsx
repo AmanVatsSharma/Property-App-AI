@@ -34,7 +34,15 @@ export default function PropertyEditPage() {
 
   useEffect(() => {
     const token = getToken();
-    if (!token || !id) return;
+    if (!id) {
+      setLoading(false);
+      return;
+    }
+    if (!token) {
+      setError("Not authenticated");
+      setLoading(false);
+      return;
+    }
     gqlProperty(id, token)
       .then((p) => {
         if (p) {
@@ -109,14 +117,29 @@ export default function PropertyEditPage() {
   };
 
   if (loading) {
-    return <p className="text-[var(--admin-muted)]">Loading…</p>;
+    return (
+      <p className="text-[var(--admin-muted)]" data-testid="property-edit-loading">
+        Loading…
+      </p>
+    );
+  }
+
+  if (!id) {
+    return (
+      <div data-testid="property-edit-invalid">
+        <p className="text-red-400">Invalid property ID.</p>
+        <Link href="/properties" className="mt-2 inline-block text-[var(--admin-accent)] hover:underline">
+          Back to list
+        </Link>
+      </div>
+    );
   }
 
   if (error && !property) {
     return (
-      <div>
+      <div data-testid="property-edit-error">
         <p className="text-red-400">{error}</p>
-        <Link href="/properties" className="text-[var(--admin-accent)] hover:underline mt-2 inline-block">
+        <Link href="/properties" className="mt-2 inline-block text-[var(--admin-accent)] hover:underline">
           Back to list
         </Link>
       </div>
@@ -125,9 +148,9 @@ export default function PropertyEditPage() {
 
   if (!property) {
     return (
-      <div>
+      <div data-testid="property-edit-not-found">
         <p className="text-[var(--admin-muted)]">Property not found.</p>
-        <Link href="/properties" className="text-[var(--admin-accent)] hover:underline mt-2 inline-block">
+        <Link href="/properties" className="mt-2 inline-block text-[var(--admin-accent)] hover:underline">
           Back to list
         </Link>
       </div>

@@ -24,7 +24,10 @@ export default function NewPropertyPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const token = getToken();
-    if (!token) return;
+    if (!token) {
+      setError("Session expired. Please log in again.");
+      return;
+    }
     const price = parseFloat(form.price);
     if (isNaN(price) || price < 0) {
       setError("Invalid price");

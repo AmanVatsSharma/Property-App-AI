@@ -1,7 +1,7 @@
 /**
  * @file page.tsx
  * @module admin/app/(dashboard)
- * @description Dashboard home: stats cards and recent properties placeholder.
+ * @description Dashboard home: stats cards and recent properties from GraphQL (adminStats, properties).
  * @author BharatERP
  * @created 2025-03-13
  */
