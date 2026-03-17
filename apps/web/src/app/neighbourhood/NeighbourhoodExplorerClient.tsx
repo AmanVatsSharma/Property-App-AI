@@ -286,8 +286,31 @@ export function NeighbourhoodExplorerClient() {
     fetchScore("B", cardB.city, cardB.locality);
   }, [apiUnavailable, cardB.city, cardB.locality, fetchScore]);
 
+  const anyLoading = cardA.loading || cardB.loading;
+  const anyError = cardA.error || cardB.error;
+
   return (
     <div style={{ padding: "40px 52px" }} data-testid="neighbourhood-explorer">
+      {anyLoading && (
+        <div
+          role="status"
+          aria-live="polite"
+          style={{ fontSize: 13, color: "var(--text-muted)", marginBottom: 12 }}
+          data-testid="neighbourhood-loading"
+        >
+          {NEIGHBOURHOOD_COPY.loading}
+        </div>
+      )}
+      {anyError && !anyLoading && (
+        <div
+          role="status"
+          aria-live="polite"
+          style={{ fontSize: 13, color: "var(--coral)", marginBottom: 12 }}
+          data-testid="neighbourhood-error"
+        >
+          {cardA.error || cardB.error || NEIGHBOURHOOD_COPY.errorFallback}
+        </div>
+      )}
       <div style={{ display: "flex", gap: 12, marginBottom: 32, flexWrap: "wrap" }}>
         {CITIES.map((city) => (
           <button
@@ -307,7 +330,7 @@ export function NeighbourhoodExplorerClient() {
       <div className="grid-2" style={{ gap: 20 }}>
         <ScoreCard
           cardKey="A"
-          title="Locality A"
+          title={NEIGHBOURHOOD_COPY.localityA}
           city={cardA.city}
           locality={cardA.locality}
           localities={localitiesA}
@@ -327,7 +350,7 @@ export function NeighbourhoodExplorerClient() {
         />
         <ScoreCard
           cardKey="B"
-          title="Locality B"
+          title={NEIGHBOURHOOD_COPY.localityB}
           city={cardB.city}
           locality={cardB.locality}
           localities={localitiesB}
@@ -348,7 +371,7 @@ export function NeighbourhoodExplorerClient() {
       </div>
       {!apiUnavailable && (
         <p style={{ marginTop: 24, fontSize: 13, color: "var(--text-muted)" }}>
-          Select city and locality, then use Refresh to load scores from the API.
+          {NEIGHBOURHOOD_COPY.helperText}
         </p>
       )}
     </div>

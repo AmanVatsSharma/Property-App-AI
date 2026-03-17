@@ -327,11 +327,13 @@ footer {
 .search-divider { width: 1px; height: 28px; background: var(--border); flex-shrink: 0; }
 .search-field { flex: 1; border: none; outline: none; background: transparent; font-family: inherit; font-size: 16px; font-weight: 400; color: var(--text); }
 .search-field::placeholder { color: var(--text-dim); }
+.search-field:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; border-radius: var(--radius-sm); }
 .search-filters { display: flex; gap: 8px; flex-shrink: 0; }
 .filter-btn { padding: 8px 14px; border: 1px solid var(--border); border-radius: 8px; background: var(--glass); font-family: inherit; font-size: 12px; font-weight: 500; color: var(--text-muted); cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 4px; }
 .filter-btn:hover { border-color: var(--teal); color: var(--teal); }
 .search-go { padding: 12px 26px; border: none; background: linear-gradient(135deg, var(--teal), #00c49a); border-radius: 12px; font-family: inherit; font-size: 14px; font-weight: 700; color: var(--btn-primary-text); cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 20px var(--teal-glow); white-space: nowrap; flex-shrink: 0; }
 .search-go:hover { transform: scale(1.03); box-shadow: 0 6px 28px var(--teal-glow); }
+.search-go:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
 .search-suggestions { padding: 12px 16px 16px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .suggest-label { font-size: 11px; color: var(--text-dim); font-weight: 500; }
 .suggest-chip { padding: 5px 12px; border: 1px solid var(--border); border-radius: 100px; font-size: 12px; color: var(--text-muted); cursor: pointer; transition: all 0.2s; background: var(--glass); }
