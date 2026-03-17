@@ -63,6 +63,8 @@ export class AgentToolsService {
             sort_by?: string;
             sort_order?: string;
             limit?: number;
+            schools_score_min?: number;
+            connectivity_score_min?: number;
           },
         ) => {
           return self.searchPropertiesImpl(input);
@@ -70,9 +72,9 @@ export class AgentToolsService {
         {
           name: 'search_properties',
           description:
-            'Search listings by BHK, budget in ₹/lakh/Cr, city or locality. E.g. "3BHK in Bangalore under 1 Cr", "2 BHK Mumbai under 50 lakh". Returns summary with price, BHK, location.',
+            'Search listings by BHK, budget in ₹/lakh/Cr, city or locality. Use schools_score_min (0-100) when user wants "near school"; use connectivity_score_min (0-100) when user wants "near metro" or good connectivity. E.g. "3BHK near school near metro in Bangalore" → location Bangalore, bedrooms 3, schools_score_min 60, connectivity_score_min 70.',
           schema: z.object({
-            query: z.string().describe('Natural language or keywords (e.g. 3BHK Bangalore 1 Cr)'),
+            query: z.string().describe('Natural language or keywords (e.g. 3BHK Bangalore 1 Cr, near school near metro)'),
             location: z.string().optional().describe('City or locality (e.g. Whitefield, Mumbai)'),
             min_price: z.number().optional().describe('Min budget in INR'),
             max_price: z.number().optional().describe('Max budget in INR'),
@@ -87,6 +89,8 @@ export class AgentToolsService {
               .describe('Sort field: createdAt, price, aiScore'),
             sort_order: z.enum(['asc', 'desc']).optional().describe('Sort order: asc or desc'),
             limit: z.number().optional().default(10).describe('Max results'),
+            schools_score_min: z.number().min(0).max(100).optional().describe('Min area schools score; set when user wants "near school" (e.g. 60)'),
+            connectivity_score_min: z.number().min(0).max(100).optional().describe('Min area connectivity score; set when user wants "near metro" or good transport (e.g. 70)'),
           }),
         },
       ),
@@ -320,6 +324,8 @@ export class AgentToolsService {
     sort_by?: string;
     sort_order?: string;
     limit?: number;
+    schools_score_min?: number;
+    connectivity_score_min?: number;
   }): Promise<ToolResult> {
     const locationVal = input.location ?? input.query;
     const filter = {
@@ -328,6 +334,8 @@ export class AgentToolsService {
       ...(input.max_price != null && { maxPrice: input.max_price }),
       ...(input.bedrooms != null && { bedrooms: input.bedrooms }),
       ...(input.type && { type: input.type }),
+      ...(input.schools_score_min != null && { schoolsScoreMin: input.schools_score_min }),
+      ...(input.connectivity_score_min != null && { connectivityScoreMin: input.connectivity_score_min }),
       sortBy: (input.sort_by as 'createdAt' | 'price' | 'aiScore') ?? 'createdAt',
       sortOrder: (input.sort_order as 'asc' | 'desc') ?? 'desc',
       limit: input.limit ?? 10,
