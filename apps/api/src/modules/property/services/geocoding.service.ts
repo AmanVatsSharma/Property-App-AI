@@ -10,6 +10,7 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
 import { LoggerService } from '@api/shared/logger';
+import { withRetry } from '@api/shared/retry';
 
 const MAPBOX_GEOCODE_URL = 'https://api.mapbox.com/geocoding/v5/mapbox.places';
 
@@ -66,7 +67,10 @@ export class GeocodingService {
     try {
       const encoded = encodeURIComponent(trimmed);
       const url = `${MAPBOX_GEOCODE_URL}/${encoded}.json?access_token=${this.accessToken}&limit=1`;
-      const res = await axios.get<{ features?: MapboxFeature[] }>(url, { timeout: 5000 });
+      const res = await withRetry(
+        () => axios.get<{ features?: MapboxFeature[] }>(url, { timeout: 5000 }),
+        { maxRetries: 2, initialMs: 300 },
+      );
       const features = res.data?.features;
       if (!features?.length || !features[0].center) {
         this.logger.debug('geocode no results', {
@@ -111,7 +115,10 @@ export class GeocodingService {
     }
     try {
       const url = `${MAPBOX_GEOCODE_URL}/${lng},${lat}.json?access_token=${this.accessToken}&limit=1`;
-      const res = await axios.get<{ features?: MapboxFeature[] }>(url, { timeout: 5000 });
+      const res = await withRetry(
+        () => axios.get<{ features?: MapboxFeature[] }>(url, { timeout: 5000 }),
+        { maxRetries: 2, initialMs: 300 },
+      );
       const features = res.data?.features;
       if (!features?.length) {
         this.logger.debug('reverseGeocode no results', { method: 'reverseGeocode', lat, lng });

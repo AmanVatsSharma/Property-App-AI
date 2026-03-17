@@ -10,6 +10,7 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
 import { LoggerService } from '@api/shared/logger';
+import { withRetry } from '@api/shared/retry';
 
 const MAPBOX_GEOCODE_URL = 'https://api.mapbox.com/geocoding/v5/mapbox.places';
 const CATEGORIES = [
@@ -71,9 +72,13 @@ export class NearbyService {
       try {
         const encoded = encodeURIComponent(query);
         const url = `${MAPBOX_GEOCODE_URL}/${encoded}.json?access_token=${this.accessToken}&proximity=${lng},${lat}&limit=1`;
-        const res = await axios.get<{ features?: Array<{ center?: [number, number] }> }>(url, {
-          timeout: 5000,
-        });
+        const res = await withRetry(
+          () =>
+            axios.get<{ features?: Array<{ center?: [number, number] }> }>(url, {
+              timeout: 5000,
+            }),
+          { maxRetries: 2, initialMs: 300 },
+        );
         const features = res.data?.features;
         if (features?.length && features[0].center) {
           const [lng2, lat2] = features[0].center;
