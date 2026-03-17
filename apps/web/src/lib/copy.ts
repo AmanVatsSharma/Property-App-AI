@@ -18,6 +18,25 @@ export const MOBILE_PROMPT_COPY = {
 } as const;
 
 /**
+ * Neighbourhood explorer — keys for i18n (e.g. neighbourhood.connectApi, neighbourhood.loading).
+ */
+export const NEIGHBOURHOOD_COPY = {
+  connectApi:
+    "Connect API — set NEXT_PUBLIC_API_URL or NEXT_PUBLIC_GRAPHQL_HTTP to see live scores.",
+  loading: "Loading neighbourhood scores…",
+  errorFallback: "Something went wrong. Try Refresh or check your connection.",
+  noScore: "No score available for this locality.",
+  overallLivabilityScore: "Overall Livability Score",
+  refresh: "Refresh",
+  city: "City",
+  locality: "Locality",
+  localityA: "Locality A",
+  localityB: "Locality B",
+  helperText:
+    "Select city and locality, then use Refresh to load scores from the API.",
+} as const;
+
+/**
  * App store URLs. Set NEXT_PUBLIC_APP_STORE_URL / NEXT_PUBLIC_PLAY_STORE_URL in env when available.
  */
 export const APP_STORE_URL = process.env.NEXT_PUBLIC_APP_STORE_URL ?? "#";

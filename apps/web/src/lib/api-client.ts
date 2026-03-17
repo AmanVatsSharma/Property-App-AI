@@ -15,6 +15,9 @@ const getBaseUrl = (): string => {
   return process.env.NEXT_PUBLIC_API_URL ?? process.env.API_URL ?? "";
 };
 
+/** Nest API uses header versioning (X-API-Version). Backend defaultVersion is '1', so this header is optional when omitted; we send it for versioned routes (e.g. /api/v1/...). */
+const DEFAULT_API_VERSION_HEADER = { "X-API-Version": "1" };
+
 export interface ApiClientConfig {
   baseUrl?: string;
   headers?: Record<string, string>;
@@ -39,6 +42,7 @@ export async function apiFetch<T>(
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
     "X-Request-Id": requestId,
+    ...DEFAULT_API_VERSION_HEADER,
     ...config.headers,
     ...(typeof options.headers === "object" && !(options.headers instanceof Headers)
       ? (options.headers as Record<string, string>)

@@ -42,6 +42,7 @@ export async function uploadImage(
 
   const headers: Record<string, string> = {
     "X-Request-Id": `req_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`,
+    "X-API-Version": "1",
   };
   if (options?.token) {
     headers.Authorization = `Bearer ${options.token}`;

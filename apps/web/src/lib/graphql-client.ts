@@ -8,9 +8,12 @@
 
 import { runGraphQL } from '@property-app-ai/shared';
 
+/** Builds GraphQL endpoint from API base URL. Use when NEXT_PUBLIC_GRAPHQL_HTTP is unset and NEXT_PUBLIC_API_URL is set. */
+export function fromApiUrl(url: string | undefined): string {
+  return url ? url.replace(/\/$/, '') + '/graphql' : '';
+}
+
 function getGraphQLUrl(): string {
-  const fromApiUrl = (url: string | undefined) =>
-    url ? url.replace(/\/$/, '') + '/graphql' : '';
   if (typeof window !== 'undefined') {
     return process.env.NEXT_PUBLIC_GRAPHQL_HTTP ?? fromApiUrl(process.env.NEXT_PUBLIC_API_URL) ?? '';
   }
