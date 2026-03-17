@@ -1,7 +1,7 @@
 /**
  * @file health.controller.ts
  * @module health
- * @description REST health checks for DB and app (Terminus).
+ * @description REST health checks: liveness (process up), readiness (DB + Redis).
  * @author BharatERP
  * @created 2025-03-10
  */
@@ -24,6 +24,23 @@ export class HealthController {
     private readonly redis: RedisHealthIndicator,
   ) {}
 
+  /** Liveness: process is up. No DB/Redis checks. Use for Kubernetes livenessProbe. */
+  @Get('live')
+  live() {
+    return { status: 'ok' };
+  }
+
+  /** Readiness: DB and optional Redis. Use for Kubernetes readinessProbe. */
+  @Get('ready')
+  @HealthCheck()
+  ready() {
+    return this.health.check([
+      () => this.db.pingCheck('database'),
+      () => this.redis.isHealthy('redis'),
+    ]);
+  }
+
+  /** Legacy combined check (same as readiness). */
   @Get()
   @HealthCheck()
   check() {
