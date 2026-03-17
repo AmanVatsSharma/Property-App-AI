@@ -45,6 +45,13 @@ async function bootstrap() {
         '[Production] JWT_SECRET is not set; protected routes will not require authentication.',
       );
     }
+    const smsProviderRaw = config.get<string>('SMS_PROVIDER');
+    const smsProvider = (smsProviderRaw ?? '').trim() || 'stub';
+    if (smsProvider === 'stub' || smsProvider === '') {
+      throw new Error(
+        'Production requires SMS_PROVIDER=twilio or SMS_PROVIDER=msg91. Set provider and credentials (see .env.example).',
+      );
+    }
   }
   await app.listen(port);
 }

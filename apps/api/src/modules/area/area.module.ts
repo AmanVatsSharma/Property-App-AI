@@ -13,9 +13,11 @@ import { Area } from './entities/area.entity';
 import { AreaRepository } from './repository/area.repository';
 import { AreaService } from './services/area.service';
 import { AreaAssessorService } from './services/area-assessor.service';
+import { NeighbourhoodController } from './controllers/neighbourhood.controller';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Area]), LoggerModule],
+  controllers: [NeighbourhoodController],
   providers: [AreaRepository, AreaService, AreaAssessorService],
   exports: [AreaService],
 })

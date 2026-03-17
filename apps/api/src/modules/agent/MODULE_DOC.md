@@ -58,7 +58,7 @@
 - **suggestedActions:** `[]`
 No mock listing data, no fake property or user data, and no tool execution.
 
-**Coming soon tool placeholders:** Four tools are implemented as placeholders that return a short “coming soon” message only (no real integration yet):
+**Coming soon tool placeholders:** Four tools are implemented as placeholders that return a short “coming soon” message only (no real integration yet). They remain placeholders until real RERA API, forecast, document-analysis, and negotiation integrations exist; no fake numeric data.
 - **get_price_forecast** — Returns: *"Price forecast for localities is coming soon. This feature will use demand and infrastructure data in a future update."*
 - **check_rera** — Returns: *"RERA verification is coming soon. Real-time RERA API integration will be available in a future update."*
 - **analyze_document** — Returns: *"Document and legal risk analysis is coming soon. This feature will be available in a future update."*
@@ -69,6 +69,7 @@ No mock listing data, no fake property or user data, and no tool execution.
 ---
 
 **Change-log:**
+- 2026-03-15: Documented that RERA/forecast/document/negotiation tools are placeholders until real integrations; no fake numeric data.
 - 2025-03-15: search_properties extended with min_price, type, sort_by, sort_order; returns ToolResult with sources (property id per result) for client card display. Aligns agent filters with PropertyFilterDto (location, price range, bedrooms, type, sort).
 - 2026-03-15: MVP readiness: documented stub (when API keys missing) and Coming soon tool placeholders; no mock listing data.
 - 2025-03-11: Added agent module scaffold (resolver, orchestrator, tools service, DTOs, config).
