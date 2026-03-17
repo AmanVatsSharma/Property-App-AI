@@ -13,7 +13,7 @@ Defined in `apps/api/src/modules/agent/services/agent-tools.service.ts`.
 
 | Tool | Description |
 |------|-------------|
-| search_properties | Search by query, location, price, BHK, type, sort; returns ToolResult with sources (property IDs). |
+| search_properties | Search by query, location, price, BHK, type, sort; **schools_score_min** / **connectivity_score_min** for "near school"/"near metro"; returns ToolResult with sources (property IDs). |
 | get_property | Full listing by id. |
 | score_property | AI score (0–100) + tip; uses AreaService; persists aiScore/aiTip. |
 | get_neighbourhood_score | Livability for locality. |
@@ -37,7 +37,7 @@ Defined in `apps/api/src/modules/agent/services/agent-tools.service.ts`.
 | Touchpoint | Location | Behaviour |
 |------------|----------|-----------|
 | AI Fab | AIFab.tsx, AIFabProvider, layout | Multi-turn chat; askAgent; create_listing when signed in. |
-| AI search input | SearchPageClient.tsx | Placeholder "AI Search..."; Search opens AI Fab. |
+| AI search input | SearchPageClient.tsx | Placeholder "AI Search..."; Submit can call **POST /api/v1/search** or **searchPropertiesByQuery** for one-shot NL results; "✦ AI Search" opens AI Fab. |
 | ✦ AI Smart Match | Same | Builds prompt from filters, opens AI Fab. |
 | AI score on cards | Search, detail, AI Fab results | aiScore, "✦ AI Pick" when ≥90, sort by AI Score. |
 | Post-with-AI CTA | PostPropertyAICta.tsx | "Describe & post with AI →" opens Fab. |
@@ -57,7 +57,24 @@ Defined in `apps/api/src/modules/agent/services/agent-tools.service.ts`.
 
 ---
 
-## 4. References
+## 4. NL search (one-shot)
+
+| Endpoint / Query | Behaviour |
+|------------------|-----------|
+| **POST /api/v1/search** | Body `{ query: string }`. SearchParserService (LLM) parses to location, BHK, price, type, schoolsScoreMin, connectivityScoreMin; returns property list. Public. |
+| **GraphQL searchPropertiesByQuery(query: String)** | Same parsing and filter; returns `[Property]`. |
+
+## 5. Listing enrichment (create/update)
+
+| Feature | Status |
+|---------|--------|
+| Geocoding (lat/lng) | Live: GeocodingService on create/update. |
+| Area resolution (areaId, locality, city) | Live: reverse geocode + AreaService.getOrCreate. |
+| Nearby POIs (nearbyAmenities) | Live: NearbyService (Mapbox proximity) on create/update when lat/lng present. |
+| AI listing text analysis | Planned: extract BHK, type, specs from title/description. |
+| AI image analysis | Planned: vision tags (room type, amenities). |
+
+## 6. References
 
 - Agent module: `apps/api/src/modules/agent/MODULE_DOC.md`
 - Architecture (legal/forecast): `docs/architecture-legal-forecast-api.md`

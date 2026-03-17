@@ -26,12 +26,20 @@ function getGraphQLUrl(): string {
 }
 
 const PROPERTY_FIELDS = `
-  id title location latitude longitude price type bedrooms bathrooms areaSqft status listingFor specs aiTip aiScore coverImageUrl imageUrls createdByUserId isFreeListing createdAt updatedAt
+  id title location areaId locality city latitude longitude price type bedrooms bathrooms areaSqft status listingFor specs aiTip aiScore coverImageUrl imageUrls nearbyAmenities createdByUserId isFreeListing createdAt updatedAt
 `;
 
 export const QUERY_PROPERTIES = `
   query Properties($filter: PropertyFilterDto) {
     properties(filter: $filter) {
+      ${PROPERTY_FIELDS}
+    }
+  }
+`;
+
+export const QUERY_SEARCH_BY_QUERY = `
+  query SearchPropertiesByQuery($query: String!) {
+    searchPropertiesByQuery(query: $query) {
       ${PROPERTY_FIELDS}
     }
   }
@@ -154,6 +162,9 @@ export interface ApiProperty {
   id: string;
   title: string;
   location: string;
+  areaId?: string | null;
+  locality?: string | null;
+  city?: string | null;
   latitude: number | null;
   longitude: number | null;
   price: number;
@@ -168,6 +179,7 @@ export interface ApiProperty {
   aiScore: number | null;
   coverImageUrl: string | null;
   imageUrls: string[] | null;
+  nearbyAmenities?: string[] | null;
   createdByUserId: string | null;
   isFreeListing: boolean;
   createdAt: string;
@@ -210,6 +222,17 @@ export async function gqlProperties(filter?: PropertyFilter): Promise<ApiPropert
     variables: { filter: filter ?? {} },
   });
   return data.properties ?? [];
+}
+
+/** One-shot NL search: parses query (e.g. "3 BHK near school near metro in Bangalore") and returns matching properties. */
+export async function gqlSearchPropertiesByQuery(query: string): Promise<ApiProperty[]> {
+  const url = getGraphQLUrl();
+  if (!url) throw new Error('GraphQL URL not configured');
+  const data = await runGraphQL<{ searchPropertiesByQuery: ApiProperty[] }>(url, {
+    query: QUERY_SEARCH_BY_QUERY,
+    variables: { query: query.trim() },
+  });
+  return data.searchPropertiesByQuery ?? [];
 }
 
 export async function gqlProperty(id: string): Promise<ApiProperty | null> {

@@ -16,11 +16,22 @@ export const envSchema = Joi.object({
   DB_USER: Joi.string().default('postgres'),
   DB_PASSWORD: Joi.string().default('postgres'),
   DB_NAME: Joi.string().default('property_app'),
+  DB_POOL_MAX: Joi.number().min(1).max(100).default(20),
+  DB_POOL_IDLE_TIMEOUT_MS: Joi.number().min(1000).max(120000).default(30000),
   LOG_LEVEL: Joi.string().valid('fatal', 'error', 'warn', 'info', 'debug', 'trace').default('debug'),
   THROTTLE_TTL: Joi.number().min(1).default(60),
   THROTTLE_LIMIT: Joi.number().min(1).default(100),
-  CORS_ORIGIN: Joi.string().default('*'),
-  JWT_SECRET: Joi.string().min(16).optional().allow(''),
+  REQUEST_TIMEOUT_MS: Joi.number().min(1000).max(120000).default(30000),
+  CORS_ORIGIN: Joi.when('NODE_ENV', {
+    is: 'production',
+    then: Joi.string().required().invalid('*').messages({ 'any.invalid': 'CORS_ORIGIN must be explicit in production' }),
+    otherwise: Joi.string().default('*'),
+  }),
+  JWT_SECRET: Joi.when('NODE_ENV', {
+    is: 'production',
+    then: Joi.string().min(16).required().messages({ 'string.min': 'JWT_SECRET must be at least 16 characters in production' }),
+    otherwise: Joi.string().min(16).optional().allow(''),
+  }),
   JWT_EXPIRES_IN: Joi.string().default('7d'),
   OPENAI_API_KEY: Joi.string().optional().allow(''),
   AGENT_MODEL: Joi.string().default('gpt-4o'),
@@ -60,9 +71,12 @@ export type EnvSchema = {
   DB_USER: string;
   DB_PASSWORD: string;
   DB_NAME: string;
+  DB_POOL_MAX?: number;
+  DB_POOL_IDLE_TIMEOUT_MS?: number;
   LOG_LEVEL: string;
   THROTTLE_TTL: number;
   THROTTLE_LIMIT: number;
+  REQUEST_TIMEOUT_MS?: number;
   CORS_ORIGIN: string;
   JWT_SECRET?: string;
   JWT_EXPIRES_IN?: string;
