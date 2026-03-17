@@ -76,6 +76,21 @@ export class PropertyFilterDto {
   @Max(20)
   bedrooms?: number;
 
+  @Field(() => Int, { nullable: true, description: 'Min area schools score (0-100); for "near school" intent' })
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(0)
+  @Max(100)
+  schoolsScoreMin?: number;
+
+  @Field(() => Int, { nullable: true, description: 'Min area connectivity score (0-100); for "near metro" intent' })
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(0)
+  @Max(100)
+  connectivityScoreMin?: number;
 
   @Field({ nullable: true, description: 'Sort field: createdAt, price, aiScore' })
   @IsOptional()

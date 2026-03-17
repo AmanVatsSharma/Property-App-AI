@@ -21,6 +21,21 @@ export class UpdatePropertyDto {
   @IsOptional()
   location?: string;
 
+  @Field({ nullable: true })
+  @IsString()
+  @IsOptional()
+  areaId?: string;
+
+  @Field({ nullable: true })
+  @IsString()
+  @IsOptional()
+  locality?: string;
+
+  @Field({ nullable: true })
+  @IsString()
+  @IsOptional()
+  city?: string;
+
   @Field(() => Float, { nullable: true })
   @IsNumber()
   @IsOptional()
@@ -97,4 +112,10 @@ export class UpdatePropertyDto {
   @IsString({ each: true })
   @IsOptional()
   imageUrls?: string[];
+
+  @Field(() => [String], { nullable: true })
+  @IsArray()
+  @IsString({ each: true })
+  @IsOptional()
+  nearbyAmenities?: string[];
 }
