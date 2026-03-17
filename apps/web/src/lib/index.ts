@@ -9,6 +9,7 @@
 export { logger, default as loggerDefault } from "./logger";
 export {
   MOBILE_PROMPT_COPY,
+  NEIGHBOURHOOD_COPY,
   APP_STORE_URL,
   PLAY_STORE_URL,
 } from "./copy";

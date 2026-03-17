@@ -89,7 +89,7 @@ export async function apiFetch<T>(
 export class ApiError extends Error {
   constructor(
     public status: number,
-    statusText: string,
+    public statusText: string,
     public body?: unknown
   ) {
     super(`API ${status}: ${statusText}`);

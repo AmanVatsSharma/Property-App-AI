@@ -34,6 +34,7 @@ export const NEIGHBOURHOOD_COPY = {
   localityB: "Locality B",
   helperText:
     "Select city and locality, then use Refresh to load scores from the API.",
+  requestFailed: "Request failed",
 } as const;
 
 /**
