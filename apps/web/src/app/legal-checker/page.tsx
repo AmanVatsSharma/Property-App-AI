@@ -21,14 +21,45 @@ export default function LegalCheckerPage() {
         <h1 className="h1">Legal Checker & <em className="teal">RERA</em></h1>
         <p className="sub">Verify project RERA status, run document checks, and get a clear legal risk score before you buy.</p>
       </div>
-      <div style={{ padding: "40px 52px", display: "grid", gridTemplateColumns: "1fr 380px", gap: 32 }}>
+      <div style={{ padding: "40px 52px" }} data-testid="legal-checker-page">
+        <div
+          role="status"
+          className="card"
+          style={{
+            padding: 20,
+            marginBottom: 24,
+            background: "var(--teal-dim)",
+            border: "1px solid rgba(0,212,170,0.2)",
+            borderRadius: "var(--radius-sm)",
+          }}
+          data-testid="legal-checker-coming-soon"
+        >
+          <p style={{ fontSize: 15, fontWeight: 600, color: "var(--teal)", marginBottom: 4 }}>
+            Coming soon
+          </p>
+          <p style={{ fontSize: 13, color: "var(--text-muted)" }}>
+            RERA verification will be available soon. The tools below are not live yet.
+          </p>
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 380px", gap: 32 }}>
         <div>
           <div className="card" style={{ padding: 28, marginBottom: 24 }}>
             <h3 className="h3" style={{ marginBottom: 16 }}>RERA Project Search</h3>
             <p style={{ fontSize: 13, color: "var(--text-muted)", marginBottom: 16 }}>Enter project name or RERA registration number to verify status</p>
             <div style={{ display: "flex", gap: 12, marginTop: 16 }}>
-              <input type="text" className="input" placeholder="e.g. Sobha City Vista or HRERA-PKL-..." style={{ flex: 1 }} />
-              <button type="button" className="btn-primary">Search</button>
+              <input
+                type="text"
+                className="input"
+                placeholder="e.g. Sobha City Vista or HRERA-PKL-..."
+                style={{ flex: 1 }}
+                aria-label="RERA project name or registration number"
+                data-testid="legal-checker-search-input"
+                disabled
+                readOnly
+              />
+              <button type="button" className="btn-primary" disabled aria-disabled data-testid="legal-checker-search-btn">
+                Search
+              </button>
             </div>
           </div>
           <div className="card" style={{ padding: 24 }}>
@@ -48,6 +79,7 @@ export default function LegalCheckerPage() {
             <li>✓ Reduces risk of fraud and delayed possession</li>
             <li>✓ Legal clarity score for every listing</li>
           </ul>
+        </div>
         </div>
       </div>
     </div>
