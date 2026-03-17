@@ -31,18 +31,24 @@ async function bootstrap() {
       forbidNonWhitelisted: true,
     }),
   );
+  const corsOrigin = config.get<string>('CORS_ORIGIN') ?? '*';
+  const isProduction = config.get<string>('NODE_ENV') === 'production';
+  if (isProduction && (corsOrigin === '*' || !corsOrigin.trim())) {
+    throw new Error(
+      'Production requires CORS_ORIGIN to be set to explicit origin(s). Do not use * (see .env.example).',
+    );
+  }
   app.enableCors({
-    origin: config.get<string>('CORS_ORIGIN') ?? '*',
+    origin: corsOrigin,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     credentials: true,
   });
   const port = config.get<number>('PORT') ?? 3333;
-  if (config.get<string>('NODE_ENV') === 'production') {
+  if (isProduction) {
     const jwtSecret = config.get<string>('JWT_SECRET');
-    if (!jwtSecret || jwtSecret.trim() === '') {
-      logger.warn(
-        { context: 'bootstrap' },
-        '[Production] JWT_SECRET is not set; protected routes will not require authentication.',
+    if (!jwtSecret || jwtSecret.trim().length < 16) {
+      throw new Error(
+        'Production requires JWT_SECRET to be set (min 16 characters). Set in env (see .env.example).',
       );
     }
     const smsProviderRaw = config.get<string>('SMS_PROVIDER');
