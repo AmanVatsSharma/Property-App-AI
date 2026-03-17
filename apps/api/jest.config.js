@@ -40,5 +40,8 @@ module.exports = {
   moduleFileExtensions: ['ts', 'js', 'json'],
   collectCoverageFrom: ['src/**/*.ts', '!src/**/*.spec.ts', '!src/main.ts'],
   coverageDirectory: '../../coverage/apps/api',
+  coverageThreshold: {
+    global: { branches: 15, functions: 8, lines: 18, statements: 18 },
+  },
   passWithNoTests: true,
 };
