@@ -17,6 +17,19 @@ export interface GeocodeResult {
   lat: number;
   lng: number;
   formattedAddress?: string;
+  locality?: string;
+  city?: string;
+}
+
+export interface ReverseGeocodeResult {
+  locality: string;
+  city: string;
+}
+
+interface MapboxFeature {
+  center?: [number, number];
+  place_name?: string;
+  context?: Array<{ id: string; text: string }>;
 }
 
 @Injectable()
@@ -53,12 +66,7 @@ export class GeocodingService {
     try {
       const encoded = encodeURIComponent(trimmed);
       const url = `${MAPBOX_GEOCODE_URL}/${encoded}.json?access_token=${this.accessToken}&limit=1`;
-      const res = await axios.get<{
-        features?: Array<{
-          center?: [number, number];
-          place_name?: string;
-        }>;
-      }>(url, { timeout: 5000 });
+      const res = await axios.get<{ features?: MapboxFeature[] }>(url, { timeout: 5000 });
       const features = res.data?.features;
       if (!features?.length || !features[0].center) {
         this.logger.debug('geocode no results', {
@@ -68,10 +76,13 @@ export class GeocodingService {
         return null;
       }
       const [lng, lat] = features[0].center;
+      const { locality, city } = this.parseLocalityCityFromContext(features[0].context);
       const result: GeocodeResult = {
         lat,
         lng,
         formattedAddress: features[0].place_name ?? undefined,
+        locality: locality ?? undefined,
+        city: city ?? undefined,
       };
       this.logger.debug('geocode success', {
         method: 'geocode',
@@ -87,5 +98,54 @@ export class GeocodingService {
       });
       return null;
     }
+  }
+
+  /**
+   * Reverse geocode lat/lng to locality and city using Mapbox.
+   * Returns default strings when not configured or no results.
+   */
+  async reverseGeocode(lat: number, lng: number): Promise<ReverseGeocodeResult | null> {
+    if (!this.isConfigured()) {
+      this.logger.debug('reverseGeocode skipped: MAPBOX_ACCESS_TOKEN not set', { method: 'reverseGeocode' });
+      return null;
+    }
+    try {
+      const url = `${MAPBOX_GEOCODE_URL}/${lng},${lat}.json?access_token=${this.accessToken}&limit=1`;
+      const res = await axios.get<{ features?: MapboxFeature[] }>(url, { timeout: 5000 });
+      const features = res.data?.features;
+      if (!features?.length) {
+        this.logger.debug('reverseGeocode no results', { method: 'reverseGeocode', lat, lng });
+        return null;
+      }
+      const { locality, city } = this.parseLocalityCityFromContext(features[0].context);
+      return {
+        locality: locality ?? 'Unknown',
+        city: city ?? '',
+      };
+    } catch (err) {
+      this.logger.warn('reverseGeocode failed', {
+        method: 'reverseGeocode',
+        lat,
+        lng,
+        message: err instanceof Error ? err.message : String(err),
+      });
+      return null;
+    }
+  }
+
+  private parseLocalityCityFromContext(
+    context: MapboxFeature['context'],
+  ): { locality: string | null; city: string | null } {
+    let locality: string | null = null;
+    let city: string | null = null;
+    if (!context?.length) return { locality, city };
+    for (const c of context) {
+      const id = c?.id ?? '';
+      const text = (c?.text ?? '').trim();
+      if (!text) continue;
+      if (id.startsWith('neighborhood.') || id.startsWith('locality.')) locality = text;
+      if (id.startsWith('place.') && !city) city = text;
+    }
+    return { locality, city };
   }
 }
