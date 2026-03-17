@@ -23,6 +23,21 @@ export class PropertyRepository {
 
   async findAllWithFilters(filter: PropertyFilterDto): Promise<Property[]> {
     const qb = this.repo.createQueryBuilder('p');
+    const hasAreaScoreFilter =
+      filter.schoolsScoreMin != null || filter.connectivityScoreMin != null;
+    if (hasAreaScoreFilter) {
+      qb.innerJoin('area', 'a', 'a.id = p."areaId"');
+      if (filter.schoolsScoreMin != null) {
+        qb.andWhere('a."schoolsScore" >= :schoolsScoreMin', {
+          schoolsScoreMin: filter.schoolsScoreMin,
+        });
+      }
+      if (filter.connectivityScoreMin != null) {
+        qb.andWhere('a."connectivityScore" >= :connectivityScoreMin', {
+          connectivityScoreMin: filter.connectivityScoreMin,
+        });
+      }
+    }
     if (filter.type) {
       qb.andWhere('p.type = :type', { type: filter.type });
     }
@@ -73,6 +88,9 @@ export class PropertyRepository {
     const entity = this.repo.create({
       title: dto.title,
       location: dto.location,
+      areaId: dto.areaId ?? null,
+      locality: dto.locality ?? null,
+      city: dto.city ?? null,
       latitude: dto.latitude ?? null,
       longitude: dto.longitude ?? null,
       price: dto.price,
@@ -87,6 +105,7 @@ export class PropertyRepository {
       aiScore: dto.aiScore ?? null,
       coverImageUrl: dto.coverImageUrl ?? null,
       imageUrls: dto.imageUrls ?? null,
+      nearbyAmenities: dto.nearbyAmenities ?? null,
       createdByUserId: createdByUserId ?? null,
       isFreeListing,
     });

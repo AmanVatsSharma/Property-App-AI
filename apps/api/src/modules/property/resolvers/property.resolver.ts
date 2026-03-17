@@ -9,6 +9,7 @@
 import { Resolver, Query, Mutation, Args, Context } from '@nestjs/graphql';
 import { Property } from '../entities/property.entity';
 import { PropertyService } from '../services/property.service';
+import { SearchParserService } from '@api/modules/search/services/search-parser.service';
 import { CreatePropertyDto } from '../dtos/create-property.dto';
 import { UpdatePropertyDto } from '../dtos/update-property.dto';
 import { PropertyFilterDto } from '../dtos/property-filter.dto';
@@ -22,6 +23,7 @@ interface GqlContext {
 export class PropertyResolver {
   constructor(
     private readonly propertyService: PropertyService,
+    private readonly searchParser: SearchParserService,
     private readonly logger: LoggerService,
   ) {}
 
@@ -30,6 +32,28 @@ export class PropertyResolver {
     this.logger.debug('properties query entry', { method: 'properties' });
     const result = await this.propertyService.findAll(filter);
     this.logger.debug('properties query exit', { method: 'properties' });
+    return result;
+  }
+
+  @Query(() => [Property], { name: 'searchPropertiesByQuery' })
+  async searchPropertiesByQuery(@Args('query', { type: () => String }) query: string): Promise<Property[]> {
+    this.logger.debug('searchPropertiesByQuery entry', { method: 'searchPropertiesByQuery' });
+    const parsed = await this.searchParser.parse(query);
+    const filter = {
+      ...(parsed.location && { location: parsed.location }),
+      ...(parsed.bedrooms != null && { bedrooms: parsed.bedrooms }),
+      ...(parsed.minPrice != null && { minPrice: parsed.minPrice }),
+      ...(parsed.maxPrice != null && { maxPrice: parsed.maxPrice }),
+      ...(parsed.type && { type: parsed.type }),
+      ...(parsed.schoolsScoreMin != null && { schoolsScoreMin: parsed.schoolsScoreMin }),
+      ...(parsed.connectivityScoreMin != null && { connectivityScoreMin: parsed.connectivityScoreMin }),
+      sortBy: 'createdAt' as const,
+      sortOrder: 'desc' as const,
+      limit: 20,
+      offset: 0,
+    };
+    const result = await this.propertyService.findAll(filter);
+    this.logger.debug('searchPropertiesByQuery exit', { method: 'searchPropertiesByQuery', count: result.length });
     return result;
   }
 

@@ -30,6 +30,18 @@ export class Property {
   @Column()
   location: string;
 
+  @Field({ nullable: true })
+  @Column({ type: 'uuid', nullable: true })
+  areaId: string | null;
+
+  @Field({ nullable: true })
+  @Column({ type: 'varchar', length: 200, nullable: true })
+  locality: string | null;
+
+  @Field({ nullable: true })
+  @Column({ type: 'varchar', length: 200, nullable: true })
+  city: string | null;
+
   @Field(() => Float, { nullable: true })
   @Column({ type: 'decimal', precision: 11, scale: 8, nullable: true })
   latitude: number | null;
@@ -85,6 +97,10 @@ export class Property {
   @Field(() => [String], { nullable: true })
   @Column({ type: 'jsonb', nullable: true })
   imageUrls: string[] | null;
+
+  @Field(() => [String], { nullable: true, description: 'Nearby amenities e.g. ["metro:1.2km", "school:800m"]' })
+  @Column({ type: 'jsonb', nullable: true })
+  nearbyAmenities: string[] | null;
 
   @Field({ nullable: true })
   @Column({ type: 'uuid', nullable: true })
