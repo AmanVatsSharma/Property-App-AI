@@ -15,7 +15,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { PropertyImage } from "@/components/ui/PropertyImage";
 import { DEMO_IMAGES } from "@/lib/demo-images";
-import { gqlProperties, type ApiProperty } from "@/lib/graphql-client";
+import { gqlProperties, gqlSearchPropertiesByQuery, type ApiProperty } from "@/lib/graphql-client";
 import { useAIFab } from "@/components/providers/AIFabProvider";
 import type { PropertyMapItem } from "./PropertyMap";
 
@@ -110,6 +110,8 @@ export default function SearchPageClient() {
   const [apiProperties, setApiProperties] = useState<ApiProperty[] | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [aiQuery, setAiQuery] = useState("");
+  const [nlSearchResults, setNlSearchResults] = useState<ApiProperty[] | null>(null);
+  const [nlSearchLoading, setNlSearchLoading] = useState(false);
 
   const params = parseSearchParams(searchParams);
   const activeFilters = buildActiveFilters(params);
@@ -153,6 +155,7 @@ export default function SearchPageClient() {
 
   const setParams = useCallback(
     (updates: Partial<ReturnType<typeof parseSearchParams>>) => {
+      setNlSearchResults(null);
       const next = new URLSearchParams(searchParams.toString());
       const apply = (k: string, v: string | number | boolean) => {
         if (v === "" || v === false) next.delete(k);
@@ -198,6 +201,21 @@ export default function SearchPageClient() {
     return parts.length > 0 ? parts.join(" ") : "Find my perfect home based on current filters";
   }, [params.bhk, params.city, params.type, params.minPrice, params.maxPrice]);
 
+  const runNlSearch = useCallback(async () => {
+    const q = aiQuery.trim() || "Find properties matching my criteria";
+    setNlSearchLoading(true);
+    setLoadError(null);
+    try {
+      const list = await gqlSearchPropertiesByQuery(q);
+      setNlSearchResults(list);
+    } catch (e) {
+      setNlSearchResults([]);
+      setLoadError(e instanceof Error ? e.message : "AI search failed. Try opening the AI assistant instead.");
+    } finally {
+      setNlSearchLoading(false);
+    }
+  }, [aiQuery]);
+
   const [propertyTypeIndex, setPropertyTypeIndex] = useState(0);
   const [bhkIndex, setBhkIndex] = useState(2);
   useEffect(() => {
@@ -216,26 +234,42 @@ export default function SearchPageClient() {
             value={aiQuery}
             onChange={(e) => setAiQuery(e.target.value)}
             onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                openPanelWithPrompt(aiQuery.trim() || "Find properties matching my criteria");
-              }
+              if (e.key === "Enter") runNlSearch();
             }}
-            aria-label="AI search — describe what you want in plain language (opens AI assistant on Enter)"
+            aria-label="AI search — describe what you want (e.g. 3 BHK near school near metro); Enter runs search"
             data-testid="ai-search-input"
           />
           <button
             type="button"
             className="search-query-ai-btn"
-            onClick={() => openPanelWithPrompt(aiQuery.trim() || "Find properties matching my criteria")}
-            aria-label="Run AI search — open AI assistant"
+            onClick={() => runNlSearch()}
+            disabled={nlSearchLoading}
+            aria-label="Run AI search"
             data-testid="ai-search-submit"
           >
-            ✦ AI Search
+            {nlSearchLoading ? "…" : "✦ AI Search"}
           </button>
         </div>
         <span className="results-meta" style={{ marginLeft: 20 }}>
-          {apiProperties === null ? "Loading…" : `Showing ${apiProperties.length} propert${apiProperties.length === 1 ? "y" : "ies"}`}
+          {nlSearchLoading
+            ? "Searching…"
+            : nlSearchResults !== null
+              ? `AI search: ${nlSearchResults.length} propert${nlSearchResults.length === 1 ? "y" : "ies"}`
+              : apiProperties === null
+                ? "Loading…"
+                : `Showing ${apiProperties.length} propert${apiProperties.length === 1 ? "y" : "ies"}`}
         </span>
+        {nlSearchResults !== null && (
+          <button
+            type="button"
+            onClick={() => { openPanelWithPrompt(aiQuery.trim() || "Refine my search"); }}
+            className="ai-match-btn"
+            style={{ marginLeft: 12, padding: "6px 12px", fontSize: 12 }}
+            data-testid="refine-with-ai-btn"
+          >
+            Refine with AI
+          </button>
+        )}
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginLeft: "auto" }}>
           <select
             className="sort-select"
@@ -360,29 +394,34 @@ export default function SearchPageClient() {
 
         <div className="search-main">
           <div className="listings-wrap">
-            {apiProperties === null ? (
+            {apiProperties === null && nlSearchResults === null && !nlSearchLoading ? (
               <div style={{ padding: 48, textAlign: "center", color: "var(--text-muted)" }}>
                 Loading properties…
               </div>
             ) : viewMode === "map" ? (
               <PropertyMap
-                properties={apiToMapItems(apiProperties)}
+                properties={apiToMapItems(nlSearchResults ?? apiProperties ?? [])}
                 className="search-map-container"
               />
             ) : (
               <>
-            {loadError && (
+            {nlSearchLoading && (
+              <div style={{ padding: 48, textAlign: "center", color: "var(--text-muted)" }}>
+                Understanding your query and searching…
+              </div>
+            )}
+            {!nlSearchLoading && loadError && (
               <div style={{ padding: 12, marginBottom: 16, background: "var(--coral)", color: "var(--night)", borderRadius: 8 }}>
                 {loadError}
               </div>
             )}
-            {apiProperties.length === 0 ? (
+            {!nlSearchLoading && (nlSearchResults ?? apiProperties ?? []).length === 0 ? (
               <div style={{ padding: 48, textAlign: "center", color: "var(--text-muted)" }}>
                 No properties found. Try adjusting your filters or ensure the backend is connected.
               </div>
-            ) : (
+            ) : !nlSearchLoading ? (
             <div className="prop-grid">
-              {apiProperties.map((p) => {
+              {(nlSearchResults ?? apiProperties ?? []).map((p) => {
                 const card = apiToCardItem(p);
                 return (
                 <Link key={p.id} href={`/property/${p.id}`} className="prop-card reveal">
@@ -414,7 +453,7 @@ export default function SearchPageClient() {
                 );
               })}
             </div>
-            )}
+            ) : null}
                 <div className="pagination">
                   <button type="button" className="page-btn" onClick={() => setParams({ page: params.page - 1 })} disabled={params.page <= 1}>‹</button>
                   {[1, 2, 3].map((n) => (
