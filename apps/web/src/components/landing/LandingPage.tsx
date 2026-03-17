@@ -17,11 +17,12 @@ import { SEARCH_TABS } from "@property-app-ai/shared";
 import { useAIFab } from "@/components/providers/AIFabProvider";
 import { gqlProperties, type ApiProperty } from "@/lib/graphql-client";
 
+/** AI-first search placeholders; no mock data. */
 const PLACEHOLDERS = [
-  "Describe your home... e.g. 3BHK near good school, walkable to metro, budget ₹1.2Cr in Pune",
-  "2BHK investment property with high rental yield in Hyderabad...",
-  "Luxury villa with pool in Gurgaon under ₹4Cr...",
-  "1BHK near IT park in Whitefield Bangalore under ₹50L...",
+  "AI Search... Describe what you want in plain language — e.g. 3BHK near good school, walkable to metro, Pune",
+  "AI Search... e.g. 2BHK investment with high rental yield in Hyderabad",
+  "AI Search... e.g. Luxury villa with pool in Gurgaon under ₹4Cr",
+  "AI Search... e.g. 1BHK near IT park in Whitefield Bangalore under ₹50L",
 ];
 
 /** Illustrative marketing copy; counts and trends are not live data. */
@@ -41,9 +42,10 @@ function formatPrice(price: number): string {
 }
 
 export default function LandingPage() {
-  const { setOpen: openAIPanel } = useAIFab();
+  const { setOpen: openAIPanel, openPanelWithPrompt } = useAIFab();
   const [activeTab, setActiveTab] = useState("buy");
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
+  const [heroSearchQuery, setHeroSearchQuery] = useState("");
   const [featuredProperties, setFeaturedProperties] = useState<ApiProperty[] | null>(null);
   const [featuredLoading, setFeaturedLoading] = useState(true);
   const [featuredError, setFeaturedError] = useState<string | null>(null);
@@ -57,22 +59,30 @@ export default function LandingPage() {
   }, []);
 
   useEffect(() => {
+    let cancelled = false;
     setFeaturedLoading(true);
     setFeaturedError(null);
-    gqlProperties({
-      limit: 3,
-      sortBy: "createdAt",
-      sortOrder: "desc",
-    })
-      .then((list) => {
-        setFeaturedProperties(list);
-        setFeaturedError(null);
-      })
-      .catch((e) => {
-        setFeaturedProperties([]);
-        setFeaturedError(e instanceof Error ? e.message : "Failed to load featured properties");
-      })
-      .finally(() => setFeaturedLoading(false));
+    (async () => {
+      try {
+        const list = await gqlProperties({
+          limit: 3,
+          sortBy: "createdAt",
+          sortOrder: "desc",
+        });
+        if (!cancelled) {
+          setFeaturedProperties(list);
+          setFeaturedError(null);
+        }
+      } catch (e) {
+        if (!cancelled) {
+          setFeaturedProperties([]);
+          setFeaturedError(e instanceof Error ? e.message : "Failed to load featured properties");
+        }
+      } finally {
+        if (!cancelled) setFeaturedLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
   }, []);
 
   const toggleHeart = (id: string) => {
@@ -132,6 +142,7 @@ export default function LandingPage() {
             onClick={() => openAIPanel(true)}
             className="btn-outline"
             style={{ marginBottom: 24, padding: "12px 24px" }}
+            aria-label="Try AI search — open AI assistant"
           >
             Try AI
           </button>
@@ -150,18 +161,36 @@ export default function LandingPage() {
                 ))}
               </div>
               <div className="search-row">
-                <div className="search-ai-badge">✦ AI</div>
-                <div className="search-divider" />
+                <div className="search-ai-badge" aria-hidden>✦ AI</div>
+                <div className="search-divider" aria-hidden />
                 <input
                   className="search-field"
                   placeholder={PLACEHOLDERS[placeholderIndex]}
-                  aria-label="Search properties"
+                  value={heroSearchQuery}
+                  onChange={(e) => setHeroSearchQuery(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      openPanelWithPrompt(heroSearchQuery.trim() || "Find my perfect home");
+                    }
+                  }}
+                  aria-label="Describe what you want in plain language for AI search (opens AI assistant on Enter)"
+                  data-testid="landing-ai-search-input"
                 />
                 <div className="search-filters">
-                  <button type="button" className="filter-btn">📐 Size</button>
-                  <button type="button" className="filter-btn">💰 Budget</button>
+                  <button type="button" className="filter-btn" aria-label="Filter by size">📐 Size</button>
+                  <button type="button" className="filter-btn" aria-label="Filter by budget">💰 Budget</button>
                 </div>
-                <Link href="/search" className="search-go">Search ✦</Link>
+                <button
+                  type="button"
+                  className="search-go"
+                  onClick={() => openPanelWithPrompt(heroSearchQuery.trim() || "Find my perfect home")}
+                  aria-label="Try AI search — open AI assistant"
+                  data-testid="landing-try-ai-cta"
+                >
+                  Try AI
+                </button>
+                <Link href="/search" className="search-go" style={{ marginLeft: 4 }} aria-label="Go to search page">Search ✦</Link>
               </div>
               <div className="search-suggestions">
                 <span className="suggest-label">Trending:</span>
@@ -247,7 +276,7 @@ export default function LandingPage() {
       <section className="section listings-section">
         <div className="listings-header reveal">
           <div>
-            <div className="sec-eyebrow">AI-Curated For You</div>
+            <div className="sec-eyebrow">From Our Listings</div>
             <h2 className="sec-title">Properties You&apos;ll <em>Love</em></h2>
           </div>
           <Link href="/search" className="view-all-link">View all listings →</Link>

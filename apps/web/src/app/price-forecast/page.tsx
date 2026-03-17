@@ -1,12 +1,13 @@
 /**
  * @file page.tsx
  * @module app/price-forecast
- * @description Price Forecast — placeholder until API is ready; no mock data.
+ * @description Price Forecast — coming soon; no mock figures; CTA opens AI Fab with prefill.
  * @author BharatERP
  * @created 2025-03-10
  */
 
 import type { Metadata } from "next";
+import AskAICta from "@/components/layout/AskAICta";
 
 export const metadata: Metadata = {
   title: "Price Forecast — UrbanNest.ai",
@@ -26,6 +27,8 @@ export default function PriceForecastPage() {
         </p>
       </div>
       <div
+        role="status"
+        aria-live="polite"
         className="card"
         style={{
           margin: "0 52px 40px",
@@ -38,17 +41,23 @@ export default function PriceForecastPage() {
       >
         <p
           style={{
-            fontSize: 18,
-            fontWeight: 600,
+            fontSize: 20,
+            fontWeight: 700,
             color: "var(--teal)",
             marginBottom: 12,
           }}
         >
           Coming soon
         </p>
-        <p style={{ fontSize: 14, color: "var(--text-muted)", maxWidth: 480, margin: "0 auto" }}>
+        <p style={{ fontSize: 14, color: "var(--text-muted)", maxWidth: 480, margin: "0 auto 20px" }}>
           Price forecast will use real data when the API is ready. No static or mock figures are shown.
         </p>
+        <AskAICta
+          prompt="Ask about price forecast for a locality"
+          label="Ask AI about this"
+          data-testid="price-forecast-ask-ai-cta"
+          className="btn-outline"
+        />
       </div>
     </div>
   );

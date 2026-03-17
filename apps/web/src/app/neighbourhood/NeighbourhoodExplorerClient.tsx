@@ -147,14 +147,16 @@ function ScoreCard({
           }}
           data-testid="neighbourhood-connect-api"
         >
-          Connect API — set NEXT_PUBLIC_API_URL or NEXT_PUBLIC_GRAPHQL_HTTP to see live scores.
+          {NEIGHBOURHOOD_COPY.connectApi}
         </div>
       )}
       {!apiUnavailable && loading && (
         <div
           className="loading-spinner"
           style={{ margin: "24px auto", display: "block" }}
-          aria-hidden
+          role="status"
+          aria-busy
+          aria-label={NEIGHBOURHOOD_COPY.loading}
           data-testid={`neighbourhood-loading-${cardKey}`}
         />
       )}
@@ -171,7 +173,7 @@ function ScoreCard({
           }}
           data-testid={`neighbourhood-error-${cardKey}`}
         >
-          {error}
+          {error || NEIGHBOURHOOD_COPY.errorFallback}
         </div>
       )}
       {!apiUnavailable && !loading && !error && (
@@ -184,23 +186,31 @@ function ScoreCard({
               color: "var(--teal)",
               letterSpacing: -2,
             }}
-            data-testid={`neighbourhood-score-${cardKey}`}
+            data-testid={score != null ? `neighbourhood-score-${cardKey}` : `neighbourhood-empty-${cardKey}`}
           >
             {score != null ? score : "—"}
           </div>
           <div style={{ fontSize: 13, color: "var(--text-muted)", marginTop: 4 }}>
-            Overall Livability Score
+            {NEIGHBOURHOOD_COPY.overallLivabilityScore}
           </div>
+          {score == null && (
+            <p
+              style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 8 }}
+              data-testid={`neighbourhood-no-score-${cardKey}`}
+            >
+              {NEIGHBOURHOOD_COPY.noScore}
+            </p>
+          )}
           <button
             type="button"
             className="tab"
             style={{ marginTop: 16, padding: "9px 20px" }}
             onClick={onFetch}
             disabled={loading}
-            aria-label={`Refresh ${title} score`}
+            aria-label={`${NEIGHBOURHOOD_COPY.refresh} ${title} score`}
             data-testid={`neighbourhood-refresh-${cardKey}`}
           >
-            Refresh
+            {NEIGHBOURHOOD_COPY.refresh}
           </button>
         </>
       )}
