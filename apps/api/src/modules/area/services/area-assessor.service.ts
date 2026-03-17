@@ -11,6 +11,7 @@ import { ConfigService } from '@nestjs/config';
 import { ChatOpenAI } from '@langchain/openai';
 import { ChatAnthropic } from '@langchain/anthropic';
 import { LoggerService } from '@api/shared/logger';
+import { withRetry } from '@api/shared/retry';
 import { Area } from '../entities/area.entity';
 import { AreaRepository, type UpdateAreaData } from '../repository/area.repository';
 import { getAreaAssessPrompt } from '../prompts/area-assess.prompt';
@@ -72,7 +73,7 @@ export class AreaAssessorService {
         } else {
           const model = this.config.get<string>(AGENT_CONFIG_KEYS.AGENT_ANTHROPIC_MODEL) ?? 'claude-sonnet-4-20250514';
           const llm = new ChatAnthropic({ anthropicApiKey: apiKey, model, temperature: 0.2, maxTokens: 1024 });
-          const response = await llm.invoke(prompt);
+          const response = await withRetry(() => llm.invoke(prompt), { maxRetries: 2, initialMs: 500 });
           const text = typeof response.content === 'string' ? response.content : String(response.content);
           result = this.parseAssessResult(text);
         }
@@ -84,7 +85,7 @@ export class AreaAssessorService {
         } else {
           const model = this.config.get<string>(AGENT_CONFIG_KEYS.AGENT_MODEL) ?? 'gpt-4o';
           const llm = new ChatOpenAI({ modelName: model, temperature: 0.2, openAIApiKey: apiKey });
-          const response = await llm.invoke(prompt);
+          const response = await withRetry(() => llm.invoke(prompt), { maxRetries: 2, initialMs: 500 });
           const text = typeof response.content === 'string' ? response.content : String(response.content);
           result = this.parseAssessResult(text);
         }
