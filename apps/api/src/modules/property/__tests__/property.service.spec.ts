@@ -12,6 +12,8 @@ import { PropertyNotFoundError } from '@api/common/errors';
 import { PropertyService } from '../services/property.service';
 import { PropertyRepository } from '../repository/property.repository';
 import { GeocodingService } from '../services/geocoding.service';
+import { NearbyService } from '../services/nearby.service';
+import { AreaService } from '@api/modules/area/services/area.service';
 import { LoggerService } from '@api/shared/logger';
 import { Property } from '../entities/property.entity';
 
@@ -23,6 +25,9 @@ describe('PropertyService', () => {
     id: 'uuid-1',
     title: 'Test Property',
     location: 'Test City',
+    areaId: null,
+    locality: null,
+    city: null,
     latitude: null,
     longitude: null,
     price: 1000000,
@@ -37,6 +42,7 @@ describe('PropertyService', () => {
     aiScore: null,
     coverImageUrl: null,
     imageUrls: null,
+    nearbyAmenities: null,
     createdByUserId: null,
     isFreeListing: true,
     createdAt: new Date(),
@@ -53,12 +59,18 @@ describe('PropertyService', () => {
       countByUserId: jest.fn(),
     };
     const mockLogger = { debug: jest.fn(), log: jest.fn(), error: jest.fn(), warn: jest.fn() };
-    const mockGeocoding = { geocode: jest.fn().mockResolvedValue(null) };
+    const mockGeocoding = { geocode: jest.fn().mockResolvedValue(null), reverseGeocode: jest.fn().mockResolvedValue(null) };
+    const mockAreaService = {
+      getOrCreate: jest.fn().mockResolvedValue({ id: 'area-1', locality: 'Test City', city: '' }),
+    };
+    const mockNearbyService = { getNearby: jest.fn().mockResolvedValue([]) };
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         PropertyService,
         { provide: PropertyRepository, useValue: mockRepo },
         { provide: GeocodingService, useValue: mockGeocoding },
+        { provide: NearbyService, useValue: mockNearbyService },
+        { provide: AreaService, useValue: mockAreaService },
         { provide: LoggerService, useValue: mockLogger },
       ],
     }).compile();
