@@ -32,6 +32,7 @@
 **Fallback scores (no mock listing data):** When `OPENAI_API_KEY` (or `ANTHROPIC_API_KEY` for anthropic provider) is not set, when the LLM invocation fails, or when the LLM response is missing or unparseable, `AreaAssessorService` uses a fixed fallback result: livability 75, connectivity 70, schools 70, safety 75, price trend 8% annual, and a generic amenities summary. This is backend-only (area metadata); it does not create fake property listings. For production, set an LLM provider to get real locality assessments. Optionally label or filter areas in the UI when `dataSource` or assessment method indicates fallback.
 
 **Change-log:**
+- 2026-03-17: Neighbourhood API contract verified for MVP; response shape matches web NeighbourhoodExplorerClient (locality, city, livabilityScore, connectivityScore, schoolsScore, safetyScore, priceTrendPctAnnual, amenitiesSummary, lastAssessedAt).
 - 2026-03-15: Added HTTP API GET /api/v1/neighbourhood (NeighbourhoodController, NeighbourhoodQueryDto); public route for web app; returns locality, city, scores, priceTrendPctAnnual, amenitiesSummary, lastAssessedAt.
 - 2026-03-15: MVP readiness: fallback scores (when LLM missing/fails) documented; no mock listing data.
 - 2026-03-14: Documentation consistency pass (canonical template and code alignment).

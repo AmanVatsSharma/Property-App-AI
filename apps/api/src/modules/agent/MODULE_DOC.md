@@ -69,6 +69,7 @@ No mock listing data, no fake property or user data, and no tool execution.
 ---
 
 **Change-log:**
+- 2026-03-17: MVP verification—live tools (search_properties, get_property, score_property, get_neighbourhood_score, assess_region, compare_properties, create_listing) use real PropertyService/AreaService; coming-soon tools (get_price_forecast, check_rera, analyze_document, get_negotiation_advice) return clear placeholders only, no fake data.
 - 2026-03-15: Documented that RERA/forecast/document/negotiation tools are placeholders until real integrations; no fake numeric data.
 - 2025-03-15: search_properties extended with min_price, type, sort_by, sort_order; returns ToolResult with sources (property id per result) for client card display. Aligns agent filters with PropertyFilterDto (location, price range, bedrooms, type, sort).
 - 2026-03-15: MVP readiness: documented stub (when API keys missing) and Coming soon tool placeholders; no mock listing data.

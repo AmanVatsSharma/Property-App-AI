@@ -38,10 +38,12 @@
 
 **MVP / Production checklist**
 
-- For a deployable MVP with real OTP, **SMS_PROVIDER** must be set to `twilio` or `msg91` with the corresponding credentials:
+- **main.ts** enforces in production: `SMS_PROVIDER` must be `twilio` or `msg91` (startup throws if `stub` or empty).
+- **SmsService** reads provider and credentials from config only; no hardcoded mock OTP. Stub path only logs; in production the app will not start with stub.
+- For a deployable MVP with real OTP, set **SMS_PROVIDER** to `twilio` or `msg91` and the corresponding credentials:
   - **Twilio:** TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_FROM.
-  - **MSG91:** MSG91_AUTH_KEY.
-- When **SMS_PROVIDER** is unset or `stub`, OTP is only logged—no SMS is sent (suitable for local/dev only).
+  - **MSG91:** MSG91_AUTH_KEY (optional: MSG91_SENDER, default `SMSIND`).
+- When **SMS_PROVIDER** is unset or `stub`, OTP is only logged—no SMS is sent (local/dev only; production blocks stub).
 
 **Flows**
 
@@ -56,6 +58,7 @@
 
 **Change-log**
 
+- 2026-03-17: MVP task 4 — SMS stub vs prod verified: main.ts enforces SMS_PROVIDER=twilio|msg91 in production; SmsService uses config only, no hardcoded mock OTP; env schema includes SMS_PROVIDER and Twilio/MSG91 vars.
 - 2026-03-15: MVP readiness: added production checklist for SMS_PROVIDER (twilio/msg91 required for real OTP).
 - 2026-03-14: Documentation consistency pass (canonical template and code alignment).
 - 2025-03-13: SmsService added; OTP sent via Twilio or MSG91 when SMS_PROVIDER and credentials set; stub when unset (no mock in prod when configured).
