@@ -29,11 +29,13 @@ Copy each app's `.env.example` to `.env` (or `.env.local` for Next.js apps) in t
 | `MAPBOX_ACCESS_TOKEN` | Optional | Geocoding and (when used) area/POI data; see [EXTERNAL_DATA_SOURCES.md](EXTERNAL_DATA_SOURCES.md) |
 | `AREA_PROVIDER`, `AREA_ASSESSMENT_TTL_DAYS` | Optional | Area module; see [EXTERNAL_DATA_SOURCES.md](EXTERNAL_DATA_SOURCES.md) |
 
+**Public API:** `GET /api/v1/neighbourhood` is public (no auth). Query params: `locality`, `city`; returns locality scores and assessment. The web app’s neighbourhood page uses this endpoint when `NEXT_PUBLIC_API_URL` (or the GraphQL base URL) is set.
+
 ### Web (Next.js)
 
 Set at **build time** (and runtime if using server-side env). Copy [apps/web/.env.example](../apps/web/.env.example) to `apps/web/.env.local` (or create from root `.env.example` if the web app's example is not present):
 
-- `NEXT_PUBLIC_GRAPHQL_HTTP` or `NEXT_PUBLIC_API_URL` — **required** so search and property detail use the real API (no mock).
+- `NEXT_PUBLIC_GRAPHQL_HTTP` or `NEXT_PUBLIC_API_URL` — **required** so search and property detail use the real API (no mock). When set, the web neighbourhood page also uses the API via `GET /api/v1/neighbourhood`.
 
 ### Admin (Next.js)
 
