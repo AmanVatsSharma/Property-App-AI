@@ -25,7 +25,7 @@
 
 ## 2. Frontend usage
 
-- **Web:** GraphQL via `graphql-client.ts` (NEXT_PUBLIC_GRAPHQL_HTTP / NEXT_PUBLIC_API_URL). Uses: sendOtp, verifyOtp, me, properties, property, createProperty, askAgent, agentJobStatus; REST upload via `upload-api.ts`.
+- **Web:** GraphQL via `graphql-client.ts` (NEXT_PUBLIC_GRAPHQL_HTTP / NEXT_PUBLIC_API_URL). Uses: sendOtp, verifyOtp, me, properties, property, createProperty, askAgent, agentJobStatus; REST upload via `upload-api.ts`. **REST GET /api/v1/neighbourhood** is called by `NeighbourhoodExplorerClient` via `apiGet` (when `NEXT_PUBLIC_API_URL` or GraphQL base URL is set); locality/city from URL or form, loading and error states, no mock data.
 - **Admin:** Same GraphQL + adminStats, users; no setUserRole UI.
 - **Mobile:** GraphQL for auth, properties, property, createProperty; no REST upload or neighbourhood.
 
@@ -33,8 +33,7 @@
 
 | API                          | Notes                                                                 |
 |-----------------------------|-----------------------------------------------------------------------|
-| **GET /api/v1/neighbourhood** | Web/mobile neighbourhood pages use static data; no fetch to this API. |
+| **setUserRole**             | No admin UI for it.                                                   |
+| **scoreProperty**           | Only agent tools use it; no direct UI.                                |
+| **updateMyProfile**         | No profile/settings screen calling it.                                |
 | **POST /api/v1/upload-multiple** | Only single-file upload used.                                        |
-| **updateMyProfile**         | No profile/settings screen calling it.                               |
-| **scoreProperty**           | Only agent tools use it; no direct UI.                               |
-| **setUserRole**             | No admin UI for it.                                                  |

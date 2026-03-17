@@ -4,6 +4,8 @@
 
 ### Added
 
+- **MVP audit (2026-03-17)** — Backend area, auth, and agent modules verified; web API client sends `X-API-Version`, neighbourhood page uses real API with loading/error/connect-API states; legal-checker and price-forecast show "Coming soon" CTA (no mock); landing and search AI positioning documented; tests and docs (api-web-sync-report, DEPLOYMENT.md MVP checklist, ai-features-inventory, CHANGELOG) updated.
+
 - **Web: neighbourhood, price-forecast, legal-checker (2026-03-17)** — (1) **Neighbourhood:** Replaced hardcoded scores with real API: client component `NeighbourhoodExplorerClient` fetches GET /api/v1/neighbourhood?locality=...&city=... via NEXT_PUBLIC_API_URL; loading and error states; when API unavailable shows "Connect API" (no mock numbers). (2) **Price-forecast:** Removed hardcoded price table; single "Coming soon" message that forecast will use real data when API is ready. (3) **Legal-checker:** Kept UI; added prominent "Coming soon — RERA verification will be available soon"; search input/button disabled and read-only; no fake results. File headers, design tokens, data-testid and accessibility preserved.
 - **MVP readiness audit (2026-03-17)** — Subagent-driven audit; mock data audit report; API–web sync report; AI features inventory; neighbourhood API wired from web; price-forecast and legal-checker show Coming soon (no mock data); MVP checklist and test report. Platform positioned for AI-powered search and ease with AI; deploy checklist in DEPLOYMENT.md.
 

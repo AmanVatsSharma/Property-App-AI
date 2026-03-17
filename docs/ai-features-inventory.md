@@ -42,6 +42,7 @@ Defined in `apps/api/src/modules/agent/services/agent-tools.service.ts`.
 | AI score on cards | Search, detail, AI Fab results | aiScore, "✦ AI Pick" when ≥90, sort by AI Score. |
 | Post-with-AI CTA | PostPropertyAICta.tsx | "Describe & post with AI →" opens Fab. |
 | Landing | LandingPage.tsx | Hero + "Try AI", featured with AI score. |
+| Neighbourhood | NeighbourhoodExplorerClient.tsx | Calls `GET /api/v1/neighbourhood` for locality scores; backend area assessment (LLM when configured); loading/error/connect-API states; no mock data. |
 
 ---
 

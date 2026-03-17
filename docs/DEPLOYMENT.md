@@ -80,9 +80,9 @@ Before going live, ensure:
 
 - [ ] **API:** `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, `DB_NAME` and `JWT_SECRET` are set; run **migrations** (`nx run api:migration:run` from repo root).
 - [ ] **API (production OTP):** `SMS_PROVIDER=twilio` or `SMS_PROVIDER=msg91` with the corresponding credentials (Twilio: `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_FROM`; MSG91: `MSG91_AUTH_KEY`) so OTP is sent in production—not stub or log-only.
-- [ ] **Web:** `NEXT_PUBLIC_GRAPHQL_HTTP` or `NEXT_PUBLIC_API_URL` set so search, property detail, and landing featured/links use the real API (no mock).
+- [ ] **Web:** `NEXT_PUBLIC_GRAPHQL_HTTP` or `NEXT_PUBLIC_API_URL` set so search, property detail, landing featured/links, and **neighbourhood** use the real API (no mock). The neighbourhood page calls `GET /api/v1/neighbourhood` via `NeighbourhoodExplorerClient` when the API URL is set.
 - [ ] **Admin:** `NEXT_PUBLIC_GRAPHQL_HTTP` or `NEXT_PUBLIC_API_URL` set so the admin dashboard uses the API.
 - [ ] **Mobile:** `EXPO_PUBLIC_GRAPHQL_HTTP` or `EXPO_PUBLIC_API_URL` set so the app uses the API.
-- [ ] **No mock listing or featured data:** No mock or placeholder listing/featured data in any app; property list and detail from API only; landing featured and links API-sourced or fixed; empty state when API is unavailable or returns empty.
-- [ ] Post listing requires backend URL; agent placeholder tools return "Coming soon".
+- [ ] **No mock data:** No mock or placeholder listing, featured, or neighbourhood data in any app; property list, detail, and neighbourhood from API only; landing featured and links API-sourced or fixed; empty/connect-API state when API is unavailable or returns empty. (Landing hero stats and city card counts are illustrative marketing copy, not from the API.)
+- [ ] Post listing requires backend URL; agent placeholder tools (e.g. get_price_forecast, check_rera) return "Coming soon".
 - [ ] (Optional) Image upload: When `JWT_SECRET` is set, upload endpoints require `Authorization: Bearer <token>`. The web app sends the signed-in user's token when uploading images in post-property; no extra config needed.
