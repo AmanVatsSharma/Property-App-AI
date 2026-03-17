@@ -1,12 +1,13 @@
 /**
  * @file page.tsx
  * @module app/legal-checker
- * @description Legal Checker & RERA page
+ * @description Legal Checker & RERA page — coming soon; no mock data; CTA opens AI Fab with prefill.
  * @author BharatERP
  * @created 2025-03-10
  */
 
 import type { Metadata } from "next";
+import AskAICta from "@/components/layout/AskAICta";
 
 export const metadata: Metadata = {
   title: "Legal Checker & RERA — UrbanNest.ai",
@@ -22,24 +23,32 @@ export default function LegalCheckerPage() {
         <p className="sub">Verify project RERA status, run document checks, and get a clear legal risk score before you buy.</p>
       </div>
       <div style={{ padding: "40px 52px" }} data-testid="legal-checker-page">
+        {/* Prominent coming-soon banner — no mock data or fake results */}
         <div
           role="status"
+          aria-live="polite"
           className="card"
           style={{
-            padding: 20,
-            marginBottom: 24,
+            padding: "28px 32px",
+            marginBottom: 28,
             background: "var(--teal-dim)",
-            border: "1px solid rgba(0,212,170,0.2)",
+            border: "1px solid rgba(0,212,170,0.3)",
             borderRadius: "var(--radius-sm)",
           }}
           data-testid="legal-checker-coming-soon"
         >
-          <p style={{ fontSize: 15, fontWeight: 600, color: "var(--teal)", marginBottom: 4 }}>
+          <p style={{ fontSize: 20, fontWeight: 700, color: "var(--teal)", marginBottom: 8 }}>
             Coming soon
           </p>
-          <p style={{ fontSize: 13, color: "var(--text-muted)" }}>
-            RERA verification will be available soon. The tools below are not live yet.
+          <p style={{ fontSize: 14, color: "var(--text-muted)", marginBottom: 16 }}>
+            RERA verification will be available soon. The tools below are not live yet. No mock data or fake results are shown.
           </p>
+          <AskAICta
+            prompt="Ask about RERA or legal verification for properties"
+            label="Ask AI about this"
+            data-testid="legal-checker-ask-ai-cta"
+            className="btn-outline"
+          />
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 380px", gap: 32 }}>
         <div>
@@ -53,11 +62,12 @@ export default function LegalCheckerPage() {
                 placeholder="e.g. Sobha City Vista or HRERA-PKL-..."
                 style={{ flex: 1 }}
                 aria-label="RERA project name or registration number"
+                aria-disabled="true"
                 data-testid="legal-checker-search-input"
                 disabled
                 readOnly
               />
-              <button type="button" className="btn-primary" disabled aria-disabled data-testid="legal-checker-search-btn">
+              <button type="button" className="btn-primary" disabled aria-disabled="true" data-testid="legal-checker-search-btn">
                 Search
               </button>
             </div>
@@ -65,10 +75,26 @@ export default function LegalCheckerPage() {
           <div className="card" style={{ padding: 24 }}>
             <h4 style={{ fontSize: 14, fontWeight: 700, color: "var(--white)", marginBottom: 16 }}>Document Checklist</h4>
             <p style={{ fontSize: 13, color: "var(--text-muted)" }}>Upload sale deed, title report, or NOC to get an AI-powered legal risk score.</p>
-            <div style={{ border: "2px dashed var(--border)", borderRadius: 16, padding: 40, textAlign: "center", marginTop: 16, cursor: "pointer", background: "var(--glass)" }}>
+            <div
+              role="button"
+              aria-disabled="true"
+              aria-label="Upload disabled — coming soon"
+              data-testid="legal-checker-upload-zone"
+              style={{
+                border: "2px dashed var(--border)",
+                borderRadius: 16,
+                padding: 40,
+                textAlign: "center",
+                marginTop: 16,
+                background: "var(--glass)",
+                opacity: 0.7,
+                pointerEvents: "none",
+                cursor: "not-allowed",
+              }}
+            >
               <div style={{ fontSize: 40, marginBottom: 12 }}>📄</div>
-              <div style={{ fontSize: 15, fontWeight: 600, color: "var(--white)", marginBottom: 6 }}>Drop files or click to upload</div>
-              <div style={{ fontSize: 13, color: "var(--text-muted)" }}>PDF, JPG up to 10MB</div>
+              <div style={{ fontSize: 15, fontWeight: 600, color: "var(--text-muted)", marginBottom: 6 }}>Drop files or click to upload</div>
+              <div style={{ fontSize: 13, color: "var(--text-muted)" }}>PDF, JPG up to 10MB — coming soon</div>
             </div>
           </div>
         </div>

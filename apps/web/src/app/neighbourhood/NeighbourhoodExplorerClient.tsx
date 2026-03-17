@@ -10,6 +10,7 @@
 
 import { useState, useCallback, useEffect } from "react";
 import { apiGet, ApiError } from "@/lib/api-client";
+import { NEIGHBOURHOOD_COPY } from "@/lib/copy";
 
 const CITIES = ["Mumbai", "Bangalore", "Delhi NCR", "Hyderabad", "Pune", "Chennai"] as const;
 const LOCALITIES_BY_CITY: Record<string, string[]> = {
@@ -91,7 +92,7 @@ function ScoreCard({
       </h3>
       <div className="form-field" style={{ marginBottom: 12 }}>
         <label htmlFor={`neighbourhood-city-${cardKey}`} className="label">
-          City
+          {NEIGHBOURHOOD_COPY.city}
         </label>
         <select
           id={`neighbourhood-city-${cardKey}`}
@@ -112,7 +113,7 @@ function ScoreCard({
       </div>
       <div className="form-field" style={{ marginBottom: 16 }}>
         <label htmlFor={`neighbourhood-locality-${cardKey}`} className="label">
-          Locality
+          {NEIGHBOURHOOD_COPY.locality}
         </label>
         <select
           id={`neighbourhood-locality-${cardKey}`}
