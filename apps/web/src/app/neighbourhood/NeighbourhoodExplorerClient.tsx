@@ -261,7 +261,7 @@ export function NeighbourhoodExplorerClient() {
             : `${e.status} ${e.statusText}`
           : e instanceof Error
             ? e.message
-            : "Request failed";
+            : NEIGHBOURHOOD_COPY.requestFailed;
       if (key === "A") {
         setCardA((prev) => ({ ...prev, data: null, loading: false, error: message }));
       } else {

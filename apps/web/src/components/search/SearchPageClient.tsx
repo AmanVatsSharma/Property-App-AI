@@ -209,10 +209,10 @@ export default function SearchPageClient() {
     <>
       <div className="search-top-bar">
         <div className="search-query-box">
-          <span style={{ color: "var(--teal)", fontSize: 16 }}>✦</span>
+          <span className="search-query-ai-icon" aria-hidden>✦</span>
           <input
             className="search-q-input"
-            placeholder="AI Search: 3BHK near metro under ₹1Cr in Gurgaon..."
+            placeholder="AI Search... Describe what you want in plain language — e.g. 3BHK near metro under ₹1Cr in Gurgaon"
             value={aiQuery}
             onChange={(e) => setAiQuery(e.target.value)}
             onKeyDown={(e) => {
@@ -220,17 +220,17 @@ export default function SearchPageClient() {
                 openPanelWithPrompt(aiQuery.trim() || "Find properties matching my criteria");
               }
             }}
-            aria-label="AI search query"
+            aria-label="AI search — describe what you want in plain language (opens AI assistant on Enter)"
             data-testid="ai-search-input"
           />
           <button
             type="button"
-            style={{ background: "var(--teal)", border: "none", color: "var(--night)", padding: "6px 14px", borderRadius: 8, fontFamily: "inherit", fontSize: 12, fontWeight: 700, cursor: "pointer" }}
+            className="search-query-ai-btn"
             onClick={() => openPanelWithPrompt(aiQuery.trim() || "Find properties matching my criteria")}
-            aria-label="Open AI search"
+            aria-label="Run AI search — open AI assistant"
             data-testid="ai-search-submit"
           >
-            Search
+            ✦ AI Search
           </button>
         </div>
         <span className="results-meta" style={{ marginLeft: 20 }}>
@@ -247,10 +247,10 @@ export default function SearchPageClient() {
               <option key={o.value} value={o.value}>{o.label}</option>
             ))}
           </select>
-          <div className="view-toggle">
-            <button type="button" className={`vt-btn ${viewMode === "grid" ? "active" : ""}`} title="Grid view" onClick={() => setViewMode("grid")} aria-pressed={viewMode === "grid"}>⊞</button>
-            <button type="button" className={`vt-btn ${viewMode === "list" ? "active" : ""}`} title="List view" onClick={() => setViewMode("list")} aria-pressed={viewMode === "list"}>☰</button>
-            <button type="button" className={`vt-btn ${viewMode === "map" ? "active" : ""}`} title="Map view" onClick={() => setViewMode("map")} aria-pressed={viewMode === "map"}>🗺️</button>
+          <div className="view-toggle" role="group" aria-label="View mode">
+            <button type="button" className={`vt-btn ${viewMode === "grid" ? "active" : ""}`} title="Grid view" onClick={() => setViewMode("grid")} aria-pressed={viewMode === "grid"} aria-label="Grid view">⊞</button>
+            <button type="button" className={`vt-btn ${viewMode === "list" ? "active" : ""}`} title="List view" onClick={() => setViewMode("list")} aria-pressed={viewMode === "list"} aria-label="List view">☰</button>
+            <button type="button" className={`vt-btn ${viewMode === "map" ? "active" : ""}`} title="Map view" onClick={() => setViewMode("map")} aria-pressed={viewMode === "map"} aria-label="Map view">🗺️</button>
           </div>
         </div>
       </div>
