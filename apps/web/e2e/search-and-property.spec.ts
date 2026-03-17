@@ -47,21 +47,47 @@ test.describe("Search and property detail", () => {
 });
 
 test.describe("AI Fab", () => {
+  // Target the floating FAB only (exact label); landing page has other "open AI assistant" buttons.
   test("opens AI panel and shows prompt input", async ({ page }) => {
     await page.goto("/");
-    await page.getByRole("button", { name: /open AI assistant|Ask UrbanNest AI/i }).click();
+    await page.getByRole("button", { name: "Open AI assistant", exact: true }).click();
     const dialog = page.getByRole("dialog", { name: /UrbanNest AI/i });
     await expect(dialog).toBeVisible({ timeout: 5000 });
     await expect(dialog.getByPlaceholder(/3 BHK|Describe your home|e\.g\. 3 BHK under/i)).toBeVisible();
   });
 
+  test("AI panel has send button", async ({ page }) => {
+    await page.goto("/");
+    await page.getByRole("button", { name: "Open AI assistant", exact: true }).click();
+    const dialog = page.getByRole("dialog", { name: /UrbanNest AI/i });
+    await expect(dialog).toBeVisible({ timeout: 5000 });
+    await expect(dialog.getByRole("button", { name: /^Send$/ })).toBeVisible();
+  });
+
   test("submit prompt shows result or error", async ({ page }) => {
     await page.goto("/");
-    await page.getByRole("button", { name: /open AI assistant|Ask UrbanNest AI/i }).click();
+    await page.getByRole("button", { name: "Open AI assistant", exact: true }).click();
     const dialog = page.getByRole("dialog", { name: /UrbanNest AI/i });
     await expect(dialog).toBeVisible({ timeout: 5000 });
     await dialog.getByPlaceholder(/3 BHK|Describe your home|e\.g\. 3 BHK under/i).fill("2 BHK in Bangalore under 80 lakh");
     await dialog.getByRole("button", { name: /^Send$/ }).click();
     await expect(dialog.getByText(/Sources:|Sorry|error|Failed|GraphQL|not configured|Try again/i).first()).toBeVisible({ timeout: 20000 });
+  });
+});
+
+test.describe("Neighbourhood explorer", () => {
+  test("neighbourhood page loads and shows explorer", async ({ page }) => {
+    await page.goto("/neighbourhood");
+    await expect(page.getByTestId("neighbourhood-explorer")).toBeVisible({ timeout: 10000 });
+  });
+
+  test("shows Connect API when API URL is missing or content when configured", async ({ page }) => {
+    await page.goto("/neighbourhood");
+    await expect(page.getByTestId("neighbourhood-explorer")).toBeVisible({ timeout: 10000 });
+    // When NEXT_PUBLIC_API_URL is unset, Connect API message is shown; otherwise cards/loading/score/error.
+    const connectOrContent = page.locator(
+      '[data-testid="neighbourhood-connect-api"], [data-testid^="neighbourhood-loading"], [data-testid^="neighbourhood-card-"], [data-testid^="neighbourhood-score-"], [data-testid^="neighbourhood-empty-"], [data-testid^="neighbourhood-error"]'
+    );
+    await expect(connectOrContent.first()).toBeVisible({ timeout: 8000 });
   });
 });

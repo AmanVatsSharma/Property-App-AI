@@ -16,4 +16,6 @@
 
 **Change-log:**
 
+- 2026-03-17: API client headers; neighbourhood copy and loading/error states; legal and forecast CTA; landing and search AI positioning (hero, search bar, AI Fab).
+
 - 2026-03-14: Documentation consistency pass (canonical template and code alignment).
