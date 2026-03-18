@@ -37,6 +37,6 @@ import { AgentRateLimitStore } from '@api/common/guards/agent-rate-limit.store';
     RedisThrottleShutdown,
     AgentRateLimitStore,
   ],
-  exports: [RedisThrottlerStorage, AgentRateLimitStore],
+  exports: [REDIS_THROTTLE_TOKEN, RedisThrottlerStorage, AgentRateLimitStore],
 })
 export class RateLimitModule {}

@@ -12,11 +12,12 @@ import { UserModule } from '@api/modules/user/user.module';
 import { AuthResolver } from './resolvers/auth.resolver';
 import { AuthService } from './services/auth.service';
 import { OtpService } from './services/otp.service';
+import { OtpStoreService } from './services/otp-store.service';
 import { SmsService } from './services/sms.service';
 
 @Module({
   imports: [LoggerModule, UserModule],
-  providers: [SmsService, OtpService, AuthService, AuthResolver],
+  providers: [SmsService, OtpStoreService, OtpService, AuthService, AuthResolver],
   exports: [AuthService],
 })
 export class AuthModule {}
