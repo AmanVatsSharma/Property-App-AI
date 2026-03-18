@@ -110,6 +110,10 @@ export class Property {
   @Column({ type: 'boolean', default: true })
   isFreeListing: boolean;
 
+  @Field(() => Int)
+  @Column({ type: 'int', default: 0 })
+  viewCount: number;
+
   @Field()
   @CreateDateColumn()
   createdAt: Date;
