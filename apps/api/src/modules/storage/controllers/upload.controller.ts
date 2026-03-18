@@ -15,6 +15,7 @@ import {
   BadRequestException,
   Req,
 } from '@nestjs/common';
+import { ApiResponse } from '@nestjs/swagger';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { Request } from 'express';
 import { StorageService } from '../storage.service';
@@ -29,6 +30,8 @@ export class UploadController {
 
   @Post('upload')
   @UseInterceptors(FileInterceptor(FIELD_SINGLE))
+  @ApiResponse({ status: 200, description: 'File uploaded; returns public URL.' })
+  @ApiResponse({ status: 400, description: 'Missing or invalid file.' })
   async uploadOne(
     @UploadedFile() file: Express.Multer.File | undefined,
     @Req() req: Request & { requestId?: string },
@@ -47,6 +50,8 @@ export class UploadController {
 
   @Post('upload-multiple')
   @UseInterceptors(FilesInterceptor(FIELD_MULTIPLE, MAX_FILES))
+  @ApiResponse({ status: 200, description: 'Files uploaded; returns array of public URLs.' })
+  @ApiResponse({ status: 400, description: 'Missing or empty files.' })
   async uploadMultiple(
     @UploadedFiles() files: (Express.Multer.File | undefined)[] | undefined,
     @Req() req: Request & { requestId?: string },
