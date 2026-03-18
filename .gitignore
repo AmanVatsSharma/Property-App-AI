@@ -23,6 +23,7 @@ build/
 dist/
 tmp/
 temp/
+scripts/ai-bundle/
 **/app-debug.apk
 *.tsbuildinfo
 next-env.d.ts

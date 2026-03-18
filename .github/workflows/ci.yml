@@ -25,6 +25,8 @@ jobs:
 
       - name: Build API
         run: npx nx run api:build
+        env:
+          NODE_OPTIONS: '--max-old-space-size=8192'
 
       - name: Build web
         run: npx nx run web:build

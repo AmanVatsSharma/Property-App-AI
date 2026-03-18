@@ -7,7 +7,7 @@
     "build": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "webpack-cli build",
+        "command": "NODE_OPTIONS='--max-old-space-size=8192' webpack-cli build",
         "args": ["--node-env=production"],
         "cwd": "apps/api"
       },
