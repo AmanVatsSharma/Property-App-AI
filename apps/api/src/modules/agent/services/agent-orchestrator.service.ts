@@ -14,6 +14,7 @@ import { HumanMessage, AIMessage, SystemMessage, ToolMessage } from '@langchain/
 import type { BaseMessage } from '@langchain/core/messages';
 import type { BaseChatModel } from '@langchain/core/language_models/chat_models';
 import { LoggerService } from '@api/shared/logger';
+import { MetricsService } from '@api/modules/metrics/services/metrics.service';
 import { AgentToolsService } from './agent-tools.service';
 import type { AskAgentResult } from '../dtos/ask-agent-result.dto';
 import type { AskAgentInput } from '../dtos/ask-agent-input.dto';
@@ -26,6 +27,7 @@ export class AgentOrchestratorService {
     private readonly tools: AgentToolsService,
     private readonly logger: LoggerService,
     private readonly config: ConfigService,
+    private readonly metrics: MetricsService,
   ) {}
 
   async ask(
@@ -60,6 +62,7 @@ export class AgentOrchestratorService {
       const anthropicKey = this.config.get<string>(AGENT_CONFIG_KEYS.ANTHROPIC_API_KEY);
       if (!anthropicKey || anthropicKey.trim() === '') {
         this.logger.debug('ask exit (no Anthropic key)', { method: 'ask', requestId });
+        this.metrics.recordAgentCall(provider, 'stub', (Date.now() - startMs) / 1000);
         return {
           answer:
             'AI agent is not configured (missing ANTHROPIC_API_KEY). Set it in the environment to use Claude.',
@@ -71,6 +74,7 @@ export class AgentOrchestratorService {
       const openaiKey = this.config.get<string>(AGENT_CONFIG_KEYS.OPENAI_API_KEY);
       if (!openaiKey || openaiKey.trim() === '') {
         this.logger.debug('ask exit (no API key)', { method: 'ask', requestId });
+        this.metrics.recordAgentCall(provider, 'stub', (Date.now() - startMs) / 1000);
         return {
           answer:
             'AI agent is not configured (missing OPENAI_API_KEY). Set it in the environment to use the assistant.',
@@ -128,6 +132,7 @@ export class AgentOrchestratorService {
         if (toolCalls.length === 0) {
           const text = typeof response.content === 'string' ? response.content : (response.content as unknown[])?.[0]?.text ?? '';
           const durationMs = Date.now() - startMs;
+          this.metrics.recordAgentCall(provider, 'success', durationMs / 1000);
           this.logger.info('ask completed', {
             method: 'ask',
             requestId,
@@ -182,6 +187,7 @@ export class AgentOrchestratorService {
           ? lastResponse.content
           : 'I reached the step limit. Please try a shorter or more specific question.';
       const durationMs = Date.now() - startMs;
+      this.metrics.recordAgentCall(provider, 'success', durationMs / 1000);
       this.logger.info('ask completed (max steps)', {
         method: 'ask',
         requestId,
@@ -199,6 +205,7 @@ export class AgentOrchestratorService {
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       const durationMs = Date.now() - startMs;
+      this.metrics.recordAgentCall(provider, 'error', durationMs / 1000);
       this.logger.warn(
         { method: 'ask', requestId, error: message, durationMs, provider, model: model ?? 'n/a' },
         'Agent ask failed',

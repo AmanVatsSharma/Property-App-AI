@@ -21,12 +21,14 @@ import { AgentConversation } from './conversation/entities/agent-conversation.en
 import { AgentConversationRepository } from './conversation/repository/agent-conversation.repository';
 import { ConversationService } from './conversation/services/conversation.service';
 import { JsonScalar } from '@api/shared/scalars/json.scalar';
+import { MetricsModule } from '@api/modules/metrics/metrics.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([AgentConversation]),
     PropertyModule,
     AreaModule,
+    MetricsModule,
     BullModule.registerQueue({ name: AgentQueueService.AGENT_QUEUE_NAME }),
   ],
   providers: [
