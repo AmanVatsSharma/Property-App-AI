@@ -31,7 +31,7 @@ describe('AuthService', () => {
   };
 
   beforeEach(() => {
-    otpService = { verify: jest.fn().mockReturnValue(true), validatePhone: jest.fn().mockReturnValue(true) };
+    otpService = { verify: jest.fn().mockResolvedValue(true), validatePhone: jest.fn().mockReturnValue(true) };
     userService = {
       getOrCreateByPhone: jest.fn().mockResolvedValue(mockUser),
       setRole: jest.fn().mockImplementation((_id, role) => Promise.resolve({ ...mockUser, role })),
