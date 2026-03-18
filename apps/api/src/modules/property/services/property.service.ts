@@ -12,12 +12,17 @@ import { UserRole } from '@api/modules/user/entities/user.entity';
 import { CreatePropertyDto } from '../dtos/create-property.dto';
 import { UpdatePropertyDto } from '../dtos/update-property.dto';
 import { PropertyFilterDto } from '../dtos/property-filter.dto';
+import { PropertiesPage } from '../dtos/properties-page.dto';
 import { PropertyNotFoundError, ValidationError } from '@api/common/errors';
 import { PropertyRepository } from '../repository/property.repository';
 import { GeocodingService } from './geocoding.service';
 import { NearbyService } from './nearby.service';
 import { AreaService } from '@api/modules/area/services/area.service';
 import { LoggerService } from '@api/shared/logger';
+import { CacheService } from '@api/shared/cache/cache.service';
+import { MetricsService } from '@api/modules/metrics/services/metrics.service';
+
+const PROPERTY_CACHE_TTL_SECONDS = 300;
 
 @Injectable()
 export class PropertyService {
@@ -27,6 +32,8 @@ export class PropertyService {
     private readonly nearbyService: NearbyService,
     private readonly areaService: AreaService,
     private readonly logger: LoggerService,
+    private readonly cache: CacheService,
+    private readonly metrics: MetricsService,
   ) {}
 
   async findAll(filter: PropertyFilterDto): Promise<Property[]> {
@@ -36,12 +43,27 @@ export class PropertyService {
     return result;
   }
 
+  async findAllPage(filter: PropertyFilterDto): Promise<PropertiesPage> {
+    this.logger.debug('findAllPage entry', { method: 'findAllPage' });
+    const { items, nextCursor, total } = await this.propertyRepo.findPageWithFilters(filter);
+    this.logger.debug('findAllPage exit', { method: 'findAllPage', count: items.length, total });
+    return { items, nextCursor, total };
+  }
+
   async findOne(id: string): Promise<Property> {
     this.logger.debug('findOne entry', { method: 'findOne', id });
+    const cacheKey = `property:${id}`;
+    const cached = await this.cache.get<Property>(cacheKey);
+    if (cached) {
+      this.logger.debug('findOne exit (cache hit)', { method: 'findOne', id });
+      return cached;
+    }
     const property = await this.propertyRepo.findById(id);
     if (!property) {
       throw new PropertyNotFoundError(id);
     }
+    await this.cache.set(cacheKey, property, PROPERTY_CACHE_TTL_SECONDS);
+    this.propertyRepo.incrementViewCount(id).catch(() => {});
     this.logger.debug('findOne exit', { method: 'findOne', id });
     return property;
   }
@@ -109,6 +131,7 @@ export class PropertyService {
       createdByUserId,
       isFreeListing,
     );
+    this.metrics.recordPropertyCreated();
     this.logger.debug('create exit', { method: 'create', id: result.id, isFreeListing });
     return result;
   }
@@ -179,6 +202,7 @@ export class PropertyService {
       }
     }
     const result = await this.propertyRepo.update(property, dto);
+    await this.cache.del(`property:${id}`);
     this.logger.debug('update exit', { method: 'update', id });
     return result;
   }
@@ -192,6 +216,7 @@ export class PropertyService {
     const property = await this.findOne(id);
     this.assertOwnerOrAdmin(property, requestingUserId, requestingUserRole);
     const result = await this.propertyRepo.delete(id);
+    await this.cache.del(`property:${id}`);
     this.logger.debug('remove exit', { method: 'remove', id, deleted: result });
     return result;
   }

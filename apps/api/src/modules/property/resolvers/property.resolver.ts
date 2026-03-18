@@ -14,6 +14,7 @@ import { SearchParserService } from '@api/modules/search/services/search-parser.
 import { CreatePropertyDto } from '../dtos/create-property.dto';
 import { UpdatePropertyDto } from '../dtos/update-property.dto';
 import { PropertyFilterDto } from '../dtos/property-filter.dto';
+import { PropertiesPage } from '../dtos/properties-page.dto';
 import { LoggerService } from '@api/shared/logger';
 
 interface GqlContext {
@@ -34,6 +35,11 @@ export class PropertyResolver {
     const result = await this.propertyService.findAll(filter);
     this.logger.debug('properties query exit', { method: 'properties' });
     return result;
+  }
+
+  @Query(() => PropertiesPage, { name: 'propertiesPage' })
+  async propertiesPage(@Args() filter: PropertyFilterDto): Promise<PropertiesPage> {
+    return this.propertyService.findAllPage(filter);
   }
 
   @Query(() => [Property], { name: 'searchPropertiesByQuery' })
