@@ -10,11 +10,8 @@ import { Controller, Post, Body } from '@nestjs/common';
 import { Public } from '@api/common/decorators/public.decorator';
 import { PropertyService } from '../services/property.service';
 import { SearchParserService } from '@api/modules/search/services/search-parser.service';
+import { SearchRequestBody } from '../dtos/search-request.dto';
 import type { Property } from '../entities/property.entity';
-
-export interface SearchRequestBody {
-  query: string;
-}
 
 @Controller('api/v1')
 export class SearchController {

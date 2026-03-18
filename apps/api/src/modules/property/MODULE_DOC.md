@@ -13,16 +13,19 @@
 - `repository/property.repository.ts` — TypeORM data access; **findAllWithFilters** (bounds, **sortBy**/ **sortOrder**), create ( **createdByUserId**, **isFreeListing**), update, delete, **countByUserId**.
 - `dtos/create-property.dto.ts` — Create input (title, location, lat/lng optional, price, type, bedrooms, bathrooms, areaSqft, status, listingFor, specs, aiTip, aiScore, **coverImageUrl**, **imageUrls**).
 - `dtos/update-property.dto.ts` — Update input (all fields optional, same shape as create).
-- `dtos/property-filter.dto.ts` — List filter: type, location, **minLat**, **maxLat**, **minLng**, **maxLng**, minPrice, maxPrice, bedrooms, **schoolsScoreMin**, **connectivityScoreMin** (area-based; for "near school"/"near metro"), **sortBy** (createdAt | price | aiScore), **sortOrder** (asc | desc), limit, offset.
-- `controllers/search.controller.ts` — REST **POST /api/v1/search** (body: `{ query: string }`); parses NL via SearchParserService, returns properties.
-- `entities/property.entity.ts` — Property entity (id, title, location, **areaId**, **locality**, **city**, latitude, longitude, price, type, bedrooms, bathrooms, areaSqft, status, listingFor, specs, aiTip, aiScore, **coverImageUrl**, **imageUrls**, **createdByUserId**, **isFreeListing**, createdAt, updatedAt).
+- `dtos/property-filter.dto.ts` — List filter: type, location, **minLat**, **maxLat**, **minLng**, **maxLng**, minPrice, maxPrice, bedrooms, **schoolsScoreMin**, **connectivityScoreMin**, **sortBy**, **sortOrder**, limit, offset, **after** (cursor for pagination).
+- `dtos/properties-page.dto.ts` — **PropertiesPage** (items, nextCursor, total) for cursor-paginated list.
+- `dtos/search-request.dto.ts` — **SearchRequestBody** (query) for REST POST /api/v1/search; @ApiProperty for Swagger.
+- `controllers/search.controller.ts` — REST **POST /api/v1/search** (body: SearchRequestBody); parses NL via SearchParserService, returns properties.
+- `entities/property.entity.ts` — Property entity (…, **viewCount**, createdAt, updatedAt).
 - `__tests__/property.service.spec.ts` — Unit tests.
 - `MODULE_DOC.md` — this file.
 
 **Dependencies:** TypeORM (Postgres), GraphQL (Apollo code-first), **LoggerService** (shared), **ConfigService** (Nest) for Mapbox token.
 
 **APIs (GraphQL):**
-- **Query `properties(filter?)`** — List properties. Filter: type, location, price range, bedrooms, **schoolsScoreMin**, **connectivityScoreMin** (area scores), map viewport bounds, **sortBy**, **sortOrder**, limit, offset.
+- **Query `properties(filter?)`** — List properties. Filter: type, location, price range, bedrooms, area scores, bounds, **sortBy**, **sortOrder**, limit, offset.
+- **Query `propertiesPage(filter)`** — Cursor-paginated list; returns **PropertiesPage** (items, nextCursor, total). Use **after** (ISO date of last item's createdAt) for next page.
 - **Query `searchPropertiesByQuery(query: string)`** — One-shot NL search: parses query (e.g. "3 BHK near school near metro in Bangalore") via SearchParserService, returns properties.
 - **Query `property(id)`** — Get one by id.
 - **Mutation `createProperty(input)`** — Create listing; requires authenticated user; sets **createdByUserId** from JWT and **isFreeListing** (true for owner’s first listing, false otherwise); geocodes when lat/lng omitted.
@@ -41,6 +44,7 @@
 **Error codes:** **PROPERTY_NOT_FOUND** (404), **VALIDATION_ERROR** (400). Unauthenticated create → **UnauthorizedException**. See `common/errors`; GraphQL errors may include `extensions.code` and `extensions.statusCode`.
 
 **Change-log:**
+- 2026-03-18: **View count:** viewCount column (migration AddPropertyViewCount); incrementViewCount in findOne (fire-and-forget, only when loaded from DB). **Redis cache:** findOne read-through cache (300s), invalidate on update/remove. **Cursor pagination:** after in filter, PropertiesPage, findPageWithFilters, propertiesPage query. **Metrics:** property_created_total incremented in create(). **Swagger:** SearchRequestBody DTO with @ApiProperty.
 - 2026-03-18: **Property status workflow:** PropertyService.changeStatus(id, status, requestingUserId, requestingUserRole); allowed statuses draft, active, sold, rented; resolver changePropertyStatus(id, status). Migration AddPropertyStatus sets default status 'active'. **Free listing gate:** create() blocks second and subsequent listings with ForbiddenException until payment stub is replaced.
 - 2026-03-18: **Property ownership:** update and delete restricted to owner or admin; PropertyService.update/remove take requestingUserId and requestingUserRole; assertOwnerOrAdmin enforces; resolver passes ctx.req.user (sub, role); ForbiddenException when non-owner. Repository: area score filters use IS NOT NULL on schoolsScore/connectivityScore when filtering.
 - 2026-03-17: Search by area: **PropertyFilterDto** extended with **schoolsScoreMin**, **connectivityScoreMin**; repository inner-joins Area when these filters set. Agent **search_properties** tool and domain prompt: pass schools_score_min/connectivity_score_min for "near school"/"near metro". **NL search:** SearchModule (SearchParserService + prompt), **POST /api/v1/search** (SearchController), **GraphQL searchPropertiesByQuery(query)**. PropertyModule imports SearchModule.
