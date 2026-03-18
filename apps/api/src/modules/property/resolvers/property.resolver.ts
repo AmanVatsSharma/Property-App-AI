@@ -7,6 +7,7 @@
  */
 
 import { Resolver, Query, Mutation, Args, Context } from '@nestjs/graphql';
+import { UnauthorizedException } from '@nestjs/common';
 import { Property } from '../entities/property.entity';
 import { PropertyService } from '../services/property.service';
 import { SearchParserService } from '@api/modules/search/services/search-parser.service';
@@ -16,7 +17,7 @@ import { PropertyFilterDto } from '../dtos/property-filter.dto';
 import { LoggerService } from '@api/shared/logger';
 
 interface GqlContext {
-  req?: { user?: { sub: string } };
+  req?: { user?: { sub: string; role: string } };
 }
 
 @Resolver(() => Property)
@@ -81,17 +82,27 @@ export class PropertyResolver {
   async updateProperty(
     @Args('id') id: string,
     @Args('input') input: UpdatePropertyDto,
+    @Context() ctx: GqlContext,
   ): Promise<Property> {
+    const userId = ctx.req?.user?.sub;
+    const role = ctx.req?.user?.role;
+    if (!userId) throw new UnauthorizedException('Sign in required');
     this.logger.debug('updateProperty mutation entry', { method: 'updateProperty', id });
-    const result = await this.propertyService.update(id, input);
+    const result = await this.propertyService.update(id, input, userId, role);
     this.logger.debug('updateProperty mutation exit', { method: 'updateProperty', id });
     return result;
   }
 
   @Mutation(() => Boolean)
-  async deleteProperty(@Args('id') id: string): Promise<boolean> {
+  async deleteProperty(
+    @Args('id') id: string,
+    @Context() ctx: GqlContext,
+  ): Promise<boolean> {
+    const userId = ctx.req?.user?.sub;
+    const role = ctx.req?.user?.role;
+    if (!userId) throw new UnauthorizedException('Sign in required');
     this.logger.debug('deleteProperty mutation entry', { method: 'deleteProperty', id });
-    const result = await this.propertyService.remove(id);
+    const result = await this.propertyService.remove(id, userId, role);
     this.logger.debug('deleteProperty mutation exit', { method: 'deleteProperty', id });
     return result;
   }

@@ -1,7 +1,7 @@
 /**
  * @file otp.service.ts
  * @module auth
- * @description OTP storage and validation (in-memory with TTL); sends via SmsService (Twilio/MSG91 in prod).
+ * @description OTP storage and validation (Redis or in-memory via OtpStoreService); sends via SmsService (Twilio/MSG91 in prod).
  * @author BharatERP
  * @created 2025-03-12
  */
@@ -9,22 +9,16 @@
 import { Injectable } from '@nestjs/common';
 import { LoggerService } from '@api/shared/logger';
 import { SmsService } from './sms.service';
+import { OtpStoreService } from './otp-store.service';
 
-const OTP_TTL_MS = 5 * 60 * 1000; // 5 minutes
 const OTP_LENGTH = 6;
-
-interface StoredOtp {
-  code: string;
-  expiresAt: number;
-}
 
 @Injectable()
 export class OtpService {
-  private store = new Map<string, StoredOtp>();
-
   constructor(
     private readonly logger: LoggerService,
     private readonly sms: SmsService,
+    private readonly otpStore: OtpStoreService,
   ) {}
 
   generateCode(): string {
@@ -32,26 +26,16 @@ export class OtpService {
     return digits.join('');
   }
 
-  set(phone: string, code: string): void {
-    this.store.set(this.normalizePhone(phone), {
-      code,
-      expiresAt: Date.now() + OTP_TTL_MS,
-    });
+  async set(phone: string, code: string): Promise<void> {
+    await this.otpStore.set(this.normalizePhone(phone), code);
   }
 
-  verify(phone: string, code: string): boolean {
-    const key = this.normalizePhone(phone);
-    const entry = this.store.get(key);
-    if (!entry || Date.now() > entry.expiresAt) return false;
-    const ok = entry.code === code;
-    if (ok) this.store.delete(key);
-    return ok;
+  async verify(phone: string, code: string): Promise<boolean> {
+    return this.otpStore.verify(this.normalizePhone(phone), code);
   }
 
-  get(phone: string): string | null {
-    const entry = this.store.get(this.normalizePhone(phone));
-    if (!entry || Date.now() > entry.expiresAt) return null;
-    return entry.code;
+  async get(phone: string): Promise<string | null> {
+    return this.otpStore.get(this.normalizePhone(phone));
   }
 
   private normalizePhone(phone: string): string {

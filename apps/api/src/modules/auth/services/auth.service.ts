@@ -30,7 +30,7 @@ export class AuthService {
     }
     const code = this.otp.generateCode();
     const normalized = phone.replace(/\D/g, '').slice(-10);
-    this.otp.set(normalized, code);
+    await this.otp.set(normalized, code);
     await this.otp.sendOtpToProvider(normalized, code);
     this.logger.debug('sendOtp', { phone: normalized });
     return { success: true, message: 'OTP sent' };
@@ -38,7 +38,7 @@ export class AuthService {
 
   async verifyOtp(phone: string, code: string): Promise<{ token: string; user: { id: string; phone: string; displayName: string | null; role: UserRole } }> {
     const normalized = phone.replace(/\D/g, '').slice(-10);
-    if (!this.otp.verify(normalized, code)) {
+    if (!(await this.otp.verify(normalized, code))) {
       throw new BadRequestException('Invalid or expired OTP');
     }
     let user = await this.userService.getOrCreateByPhone(normalized);
