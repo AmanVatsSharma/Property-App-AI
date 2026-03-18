@@ -13,6 +13,7 @@ import { OtpService } from './otp.service';
 import { UserService } from '@api/modules/user/services/user.service';
 import { LoggerService } from '@api/shared/logger';
 import { UserRole } from '@api/modules/user/entities/user.entity';
+import { MetricsService } from '@api/modules/metrics/services/metrics.service';
 
 @Injectable()
 export class AuthService {
@@ -22,6 +23,7 @@ export class AuthService {
     private readonly config: ConfigService,
     private readonly userService: UserService,
     private readonly logger: LoggerService,
+    private readonly metrics: MetricsService,
   ) {}
 
   async sendOtp(phone: string): Promise<{ success: boolean; message: string }> {
@@ -32,6 +34,8 @@ export class AuthService {
     const normalized = phone.replace(/\D/g, '').slice(-10);
     await this.otp.set(normalized, code);
     await this.otp.sendOtpToProvider(normalized, code);
+    const provider = this.config.get<string>('SMS_PROVIDER') ?? 'stub';
+    this.metrics.recordOtpSent(provider);
     this.logger.debug('sendOtp', { phone: normalized });
     return { success: true, message: 'OTP sent' };
   }

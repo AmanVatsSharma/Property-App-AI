@@ -14,9 +14,10 @@ import { AuthService } from './services/auth.service';
 import { OtpService } from './services/otp.service';
 import { OtpStoreService } from './services/otp-store.service';
 import { SmsService } from './services/sms.service';
+import { MetricsModule } from '@api/modules/metrics/metrics.module';
 
 @Module({
-  imports: [LoggerModule, UserModule],
+  imports: [LoggerModule, UserModule, MetricsModule],
   providers: [SmsService, OtpStoreService, OtpService, AuthService, AuthResolver],
   exports: [AuthService],
 })
