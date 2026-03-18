@@ -31,6 +31,8 @@ import { StorageModule } from '@api/modules/storage/storage.module';
 import { AdminModule } from '@api/modules/admin/admin.module';
 import { FavoriteModule } from '@api/modules/favorite/favorite.module';
 import { EnquiryModule } from '@api/modules/enquiry/enquiry.module';
+import { BrokerModule } from '@api/modules/broker/broker.module';
+import { NotificationModule } from '@api/modules/notification/notification.module';
 import { AppError } from '@api/common/errors';
 import { RequestIdMiddleware } from '@api/common/middleware/request-id.middleware';
 import { HttpExceptionFilter } from '@api/common/filters/http-exception.filter';
@@ -39,12 +41,14 @@ import { TimeoutInterceptor } from '@api/common/interceptors/timeout.interceptor
 import { AuthGuard } from '@api/common/guards/auth.guard';
 import { RedisThrottlerStorage } from '@api/common/throttler/redis-throttler.storage';
 import { RateLimitModule } from '@api/app/rate-limit.module';
+import { CacheModule } from '@api/shared/cache/cache.module';
 
 @Module({
   imports: [
     AppConfigModule,
     LoggerModule,
     RateLimitModule,
+    CacheModule,
     JwtModule.registerAsync({
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
@@ -133,6 +137,8 @@ import { RateLimitModule } from '@api/app/rate-limit.module';
     AdminModule,
     FavoriteModule,
     EnquiryModule,
+    BrokerModule,
+    NotificationModule,
   ],
   controllers: [AppController],
   providers: [

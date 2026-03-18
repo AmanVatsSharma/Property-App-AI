@@ -11,12 +11,21 @@ import { NestFactory } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
 import { VersioningType } from '@nestjs/common';
 import helmet from 'helmet';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from '@api/app/app.module';
 import { logger } from '@api/shared/logger';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const config = app.get(ConfigService);
+  const swaggerConfig = new DocumentBuilder()
+    .setTitle('BharatERP Property API')
+    .setDescription('AI-powered real estate API for Indian markets')
+    .setVersion('1.0')
+    .addBearerAuth()
+    .build();
+  const document = SwaggerModule.createDocument(app, swaggerConfig);
+  SwaggerModule.setup('api/docs', app, document);
   app.enableShutdownHooks();
   app.enableVersioning({
     type: VersioningType.HEADER,
