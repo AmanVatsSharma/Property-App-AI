@@ -26,8 +26,8 @@
 - **Query `searchPropertiesByQuery(query: string)`** — One-shot NL search: parses query (e.g. "3 BHK near school near metro in Bangalore") via SearchParserService, returns properties.
 - **Query `property(id)`** — Get one by id.
 - **Mutation `createProperty(input)`** — Create listing; requires authenticated user; sets **createdByUserId** from JWT and **isFreeListing** (true for owner’s first listing, false otherwise); geocodes when lat/lng omitted.
-- **Mutation `updateProperty(id, input)`** — Update listing; geocodes when location changed and lat/lng omitted.
-- **Mutation `deleteProperty(id)`** — Delete by id.
+- **Mutation `updateProperty(id, input)`** — Update listing; requires authenticated user; only owner or admin may update; geocodes when location changed and lat/lng omitted.
+- **Mutation `deleteProperty(id)`** — Delete by id; requires authenticated user; only owner or admin may delete.
 
 **Env vars:** Root **DB_*** (DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME). Optional **MAPBOX_ACCESS_TOKEN** for server-side geocoding on create/update when client does not send coordinates.
 
@@ -38,6 +38,7 @@
 **Error codes:** **PROPERTY_NOT_FOUND** (404), **VALIDATION_ERROR** (400). Unauthenticated create → **UnauthorizedException**. See `common/errors`; GraphQL errors may include `extensions.code` and `extensions.statusCode`.
 
 **Change-log:**
+- 2026-03-18: **Property ownership:** update and delete restricted to owner or admin; PropertyService.update/remove take requestingUserId and requestingUserRole; assertOwnerOrAdmin enforces; resolver passes ctx.req.user (sub, role); ForbiddenException when non-owner. Repository: area score filters use IS NOT NULL on schoolsScore/connectivityScore when filtering.
 - 2026-03-17: Search by area: **PropertyFilterDto** extended with **schoolsScoreMin**, **connectivityScoreMin**; repository inner-joins Area when these filters set. Agent **search_properties** tool and domain prompt: pass schools_score_min/connectivity_score_min for "near school"/"near metro". **NL search:** SearchModule (SearchParserService + prompt), **POST /api/v1/search** (SearchController), **GraphQL searchPropertiesByQuery(query)**. PropertyModule imports SearchModule.
 - 2026-03-17: Listing enrichment: **nearbyAmenities** (JSONB) and migration AddPropertyNearbyAmenities; **NearbyService** (Mapbox proximity search for metro, school, hospital) populates on create/update when lat/lng present. Optional AI text/image analysis documented as future work.
 - 2026-03-17: Property–area link: added **areaId**, **locality**, **city** to entity and DTOs; migration AddPropertyAreaLink. PropertyService resolves area on create/update (GeocodingService reverseGeocode or geocode context → AreaService.getOrCreate). GeocodingService: **reverseGeocode(lat, lng)** and locality/city in **GeocodeResult** for area resolution.

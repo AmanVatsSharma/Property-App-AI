@@ -143,25 +143,30 @@ describe('PropertyService', () => {
   describe('update', () => {
     it('should throw when property not found', async () => {
       repo.findById.mockResolvedValue(null);
-      await expect(service.update('missing', { title: 'Updated' } as any)).rejects.toMatchObject({
+      await expect(
+        service.update('missing', { title: 'Updated' } as any, 'user-1', 'user'),
+      ).rejects.toMatchObject({
         name: 'PropertyNotFoundError',
         message: expect.stringContaining('not found'),
       });
     });
 
-    it('should delegate to repository update when found', async () => {
-      repo.findById.mockResolvedValue(mockProperty);
-      repo.update.mockResolvedValue({ ...mockProperty, title: 'Updated' });
-      const result = await service.update('uuid-1', { title: 'Updated' } as any);
+    it('should delegate to repository update when found and user is owner', async () => {
+      const owned = { ...mockProperty, createdByUserId: 'user-1' };
+      repo.findById.mockResolvedValue(owned);
+      repo.update.mockResolvedValue({ ...owned, title: 'Updated' });
+      const result = await service.update('uuid-1', { title: 'Updated' } as any, 'user-1', 'user');
       expect(result.title).toBe('Updated');
-      expect(repo.update).toHaveBeenCalledWith(mockProperty, { title: 'Updated' });
+      expect(repo.update).toHaveBeenCalledWith(owned, { title: 'Updated' });
     });
   });
 
   describe('remove', () => {
-    it('should delegate to repository delete', async () => {
+    it('should delegate to repository delete when user is owner', async () => {
+      const owned = { ...mockProperty, createdByUserId: 'user-1' };
+      repo.findById.mockResolvedValue(owned);
       repo.delete.mockResolvedValue(true);
-      const result = await service.remove('uuid-1');
+      const result = await service.remove('uuid-1', 'user-1', 'user');
       expect(result).toBe(true);
       expect(repo.delete).toHaveBeenCalledWith('uuid-1');
     });

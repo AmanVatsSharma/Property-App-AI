@@ -10,7 +10,8 @@
 - `index.ts` — Re-exports AuthModule and AuthService.
 - `resolvers/auth.resolver.ts` — GraphQL resolver for sendOtp and verifyOtp mutations (both `@Public()`).
 - `services/auth.service.ts` — Orchestrates send OTP, verify OTP, JWT issuance; get-or-create user by phone; sets admin/broker from ADMIN_PHONES/BROKER_PHONES.
-- `services/otp.service.ts` — In-memory OTP storage with TTL; generates and validates 6-digit code; delegates sending to SmsService.
+- `services/otp.service.ts` — OTP generation and validation; delegates storage to OtpStoreService; delegates sending to SmsService.
+- `services/otp-store.service.ts` — OTP storage: Redis-backed when REDIS_URL set (same Redis as throttler), in-memory fallback otherwise; 5-min TTL.
 - `services/sms.service.ts` — Sends SMS via stub (log only), Twilio, or MSG91 based on SMS_PROVIDER and credentials.
 - `services/sms-provider.interface.ts` — Interface for SMS sending (implementations: stub, Twilio, MSG91).
 - `dtos/send-otp.dto.ts` — SendOtpInput (phone).
@@ -52,12 +53,13 @@
 
 **Data**
 
-- **OTP store:** In-memory `Map<phone, { code, expiresAt }>` (5-min TTL); no Redis required for minimal setup.
+- **OTP store:** OtpStoreService uses Redis (when REDIS_URL set, via REDIS_THROTTLE_TOKEN) or in-memory Map (5-min TTL); survives restarts and works across instances when Redis is configured.
 - **JWT:** Signed with **JWT_SECRET**, payload includes `sub` (user.id), `phone`, `role`; expiry from **JWT_EXPIRES_IN**.
 - **User:** Created on first login by phone via UserModule; see User module.
 
 **Change-log**
 
+- 2026-03-18: **Redis-backed OTP store:** OtpStoreService added; Redis when REDIS_URL set (REDIS_THROTTLE_TOKEN), in-memory fallback; OtpService.set/verify/get now async; AuthService awaits OTP storage calls.
 - 2026-03-17: MVP task 4 — SMS stub vs prod verified: main.ts enforces SMS_PROVIDER=twilio|msg91 in production; SmsService uses config only, no hardcoded mock OTP; env schema includes SMS_PROVIDER and Twilio/MSG91 vars.
 - 2026-03-15: MVP readiness: added production checklist for SMS_PROVIDER (twilio/msg91 required for real OTP).
 - 2026-03-14: Documentation consistency pass (canonical template and code alignment).
