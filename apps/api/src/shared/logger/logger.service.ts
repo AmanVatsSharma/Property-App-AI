@@ -31,6 +31,14 @@ export class LoggerService {
     logger.info({ ...meta, context: this.context }, message);
   }
 
+  info(message: string, meta?: LogContext): void {
+    logger.info({ ...meta, context: this.context }, message);
+  }
+
+  trace(message: string, meta?: LogContext): void {
+    logger.trace({ ...meta, context: this.context }, message);
+  }
+
   error(message: string, trace?: string, meta?: LogContext): void {
     logger.error({ ...meta, context: this.context, stack: trace }, message);
   }

@@ -6,8 +6,9 @@
  * @created 2025-03-10
  */
 
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, ForbiddenException } from '@nestjs/common';
 import { Property } from '../entities/property.entity';
+import { UserRole } from '@api/modules/user/entities/user.entity';
 import { CreatePropertyDto } from '../dtos/create-property.dto';
 import { UpdatePropertyDto } from '../dtos/update-property.dto';
 import { PropertyFilterDto } from '../dtos/property-filter.dto';
@@ -43,6 +44,17 @@ export class PropertyService {
     }
     this.logger.debug('findOne exit', { method: 'findOne', id });
     return property;
+  }
+
+  private assertOwnerOrAdmin(
+    property: Property,
+    requestingUserId: string,
+    requestingUserRole: string,
+  ): void {
+    if (requestingUserRole === UserRole.ADMIN) return;
+    if (property.createdByUserId !== requestingUserId) {
+      throw new ForbiddenException('You do not own this listing');
+    }
   }
 
   async create(dto: CreatePropertyDto, createdByUserId?: string | null): Promise<Property> {
@@ -96,9 +108,15 @@ export class PropertyService {
     return result;
   }
 
-  async update(id: string, dto: UpdatePropertyDto): Promise<Property> {
+  async update(
+    id: string,
+    dto: UpdatePropertyDto,
+    requestingUserId: string,
+    requestingUserRole: string,
+  ): Promise<Property> {
     this.logger.debug('update entry', { method: 'update', id });
     const property = await this.findOne(id);
+    this.assertOwnerOrAdmin(property, requestingUserId, requestingUserRole);
     const locationToGeocode = dto.location ?? property.location;
     if (
       locationToGeocode &&
@@ -160,8 +178,14 @@ export class PropertyService {
     return result;
   }
 
-  async remove(id: string): Promise<boolean> {
+  async remove(
+    id: string,
+    requestingUserId: string,
+    requestingUserRole: string,
+  ): Promise<boolean> {
     this.logger.debug('remove entry', { method: 'remove', id });
+    const property = await this.findOne(id);
+    this.assertOwnerOrAdmin(property, requestingUserId, requestingUserRole);
     const result = await this.propertyRepo.delete(id);
     this.logger.debug('remove exit', { method: 'remove', id, deleted: result });
     return result;

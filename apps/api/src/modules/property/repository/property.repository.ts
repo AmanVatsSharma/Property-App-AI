@@ -28,14 +28,16 @@ export class PropertyRepository {
     if (hasAreaScoreFilter) {
       qb.innerJoin('area', 'a', 'a.id = p."areaId"');
       if (filter.schoolsScoreMin != null) {
-        qb.andWhere('a."schoolsScore" >= :schoolsScoreMin', {
-          schoolsScoreMin: filter.schoolsScoreMin,
-        });
+        qb.andWhere(
+          'a."schoolsScore" IS NOT NULL AND a."schoolsScore" >= :schoolsScoreMin',
+          { schoolsScoreMin: filter.schoolsScoreMin },
+        );
       }
       if (filter.connectivityScoreMin != null) {
-        qb.andWhere('a."connectivityScore" >= :connectivityScoreMin', {
-          connectivityScoreMin: filter.connectivityScoreMin,
-        });
+        qb.andWhere(
+          'a."connectivityScore" IS NOT NULL AND a."connectivityScore" >= :connectivityScoreMin',
+          { connectivityScoreMin: filter.connectivityScoreMin },
+        );
       }
     }
     if (filter.type) {
