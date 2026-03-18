@@ -7,6 +7,7 @@
  */
 
 import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { BullModule } from '@nestjs/bullmq';
 import { AgentResolver } from './resolvers/agent.resolver';
 import { AgentOrchestratorService } from './services/agent-orchestrator.service';
@@ -16,14 +17,29 @@ import { AgentProcessor } from './processors/agent.processor';
 import { AgentRateLimitGuard } from '@api/common/guards/agent-rate-limit.guard';
 import { PropertyModule } from '@api/modules/property/property.module';
 import { AreaModule } from '@api/modules/area/area.module';
+import { AgentConversation } from './conversation/entities/agent-conversation.entity';
+import { AgentConversationRepository } from './conversation/repository/agent-conversation.repository';
+import { ConversationService } from './conversation/services/conversation.service';
+import { JsonScalar } from '@api/shared/scalars/json.scalar';
 
 @Module({
   imports: [
+    TypeOrmModule.forFeature([AgentConversation]),
     PropertyModule,
     AreaModule,
     BullModule.registerQueue({ name: AgentQueueService.AGENT_QUEUE_NAME }),
   ],
-  providers: [AgentToolsService, AgentOrchestratorService, AgentQueueService, AgentProcessor, AgentRateLimitGuard, AgentResolver],
+  providers: [
+    JsonScalar,
+    AgentConversationRepository,
+    ConversationService,
+    AgentToolsService,
+    AgentOrchestratorService,
+    AgentQueueService,
+    AgentProcessor,
+    AgentRateLimitGuard,
+    AgentResolver,
+  ],
   exports: [AgentOrchestratorService, AgentQueueService],
 })
 export class AgentModule {}
