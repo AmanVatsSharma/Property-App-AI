@@ -118,4 +118,9 @@ export class PropertyFilterDto {
   @IsNumber()
   @Min(0)
   offset?: number = 0;
+
+  @Field({ nullable: true, description: 'Cursor for pagination; ISO date string of last item\'s createdAt' })
+  @IsOptional()
+  @IsString()
+  after?: string;
 }
