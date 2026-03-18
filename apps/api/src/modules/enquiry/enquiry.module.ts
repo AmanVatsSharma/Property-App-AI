@@ -14,9 +14,10 @@ import { EnquiryService } from './services/enquiry.service';
 import { EnquiryResolver } from './resolvers/enquiry.resolver';
 import { PropertyModule } from '@api/modules/property/property.module';
 import { UserModule } from '@api/modules/user/user.module';
+import { NotificationModule } from '@api/modules/notification/notification.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Enquiry]), PropertyModule, UserModule],
+  imports: [TypeOrmModule.forFeature([Enquiry]), PropertyModule, UserModule, NotificationModule],
   providers: [EnquiryRepository, EnquiryService, EnquiryResolver],
 })
 export class EnquiryModule {}
