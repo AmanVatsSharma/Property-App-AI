@@ -55,6 +55,7 @@
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",
     "graphql": "^16.9.0",
+    "graphql-type-json": "^0.3.2",
     "joi": "^17.13.3",
     "@nestjs/config": "^3.3.0",
     "@nestjs/terminus": "^10.2.3",
