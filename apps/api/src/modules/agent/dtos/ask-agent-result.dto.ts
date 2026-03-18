@@ -34,6 +34,9 @@ export class AskAgentResult {
   @Field({ description: 'Final answer text from the agent' })
   answer: string;
 
+  @Field({ nullable: true, description: 'Persisted conversation ID when conversation persistence is used' })
+  conversationId?: string;
+
   @Field(() => [AgentSource], {
     defaultValue: [],
     description: 'Sources (tools used, property ids, etc.)',

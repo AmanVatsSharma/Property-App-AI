@@ -19,6 +19,8 @@ import { AgentJobStatusResult } from '../dtos/agent-job-status.dto';
 import { LoggerService } from '@api/shared/logger';
 import { Property } from '@api/modules/property/entities/property.entity';
 import { createUnionType } from '@nestjs/graphql';
+import { ConversationService } from '../conversation/services/conversation.service';
+import { AgentConversation } from '../conversation/entities/agent-conversation.entity';
 
 export const AgentAskResponseUnion = createUnionType({
   name: 'AgentAskResponse',
@@ -43,30 +45,58 @@ export class AgentResolver {
     private readonly queue: AgentQueueService,
     private readonly config: ConfigService,
     private readonly logger: LoggerService,
+    private readonly conversationService: ConversationService,
   ) {}
 
   @Mutation(() => AgentAskResponseUnion, { name: 'askAgent' })
   async askAgent(
     @Args('input') input: AskAgentInput,
+    @Args('conversationId', { nullable: true }) conversationId: string | undefined,
     @Context() ctx?: GraphQLContext,
   ): Promise<AskAgentResult | AskAgentAsyncResult> {
     const requestId = ctx?.requestId;
     const userId = ctx?.req?.user?.sub ?? null;
-    this.logger.debug('askAgent mutation entry', { method: 'askAgent', requestId, userId: userId ?? 'anonymous' });
+    this.logger.debug('askAgent mutation entry', { method: 'askAgent', requestId, userId: userId ?? 'anonymous', conversationId });
     const queueEnabled = this.config.get<boolean>('AGENT_QUEUE_ENABLED') === true && this.config.get<string>('REDIS_URL');
     if (queueEnabled) {
       const jobId = await this.queue.addJob({ input, requestId, userId });
       this.logger.debug('askAgent queued', { method: 'askAgent', requestId, jobId });
       return { jobId };
     }
-    const result = await this.orchestrator.ask(input, requestId, userId);
-    this.logger.debug('askAgent mutation exit', { method: 'askAgent', requestId });
-    return result;
+    let effectiveInput = input;
+    let convId: string | undefined = conversationId ?? undefined;
+    if (conversationId) {
+      const conv = await this.conversationService.getConversation(conversationId);
+      if (conv?.messages?.length) {
+        effectiveInput = {
+          ...input,
+          conversationHistory: conv.messages.map((m) => ({ role: m.role, content: m.content })),
+        };
+      }
+    }
+    const result = await this.orchestrator.ask(effectiveInput, requestId, userId);
+    if (!convId) {
+      const newConv = await this.conversationService.startConversation(userId);
+      convId = newConv.id;
+    }
+    await this.conversationService.appendMessages(convId, [
+      { role: 'user', content: input.prompt },
+      { role: 'assistant', content: result.answer },
+    ]);
+    this.logger.debug('askAgent mutation exit', { method: 'askAgent', requestId, conversationId: convId });
+    return { ...result, conversationId: convId };
   }
 
   @Query(() => AgentJobStatusResult, { name: 'agentJobStatus' })
   async agentJobStatus(@Args('jobId') jobId: string): Promise<AgentJobStatusResult> {
     return this.queue.getJobStatus(jobId);
+  }
+
+  @Query(() => [AgentConversation], { name: 'myAgentConversations' })
+  async myAgentConversations(@Context() ctx?: GraphQLContext): Promise<AgentConversation[]> {
+    const userId = ctx?.req?.user?.sub;
+    if (!userId) return [];
+    return this.conversationService.myConversations(userId);
   }
 
   @Mutation(() => Property, { name: 'scoreProperty', nullable: true })
