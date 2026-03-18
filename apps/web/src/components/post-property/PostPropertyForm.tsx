@@ -115,7 +115,14 @@ export default function PostPropertyForm() {
     } catch (e) {
       const raw = e instanceof Error ? e.message : "Something went wrong. Please try again.";
       const isAuthError = /Unauthorized|401|authorization|invalid.*token/i.test(raw);
-      setErrorMessage(isAuthError ? "Sign in to post a listing." : raw);
+      const isFreeLimit = /free listing limit|403/i.test(raw);
+      setErrorMessage(
+        isFreeLimit
+          ? "Free listing limit reached. Please upgrade to post more listings."
+          : isAuthError
+            ? "Sign in to post a listing."
+            : raw,
+      );
       if (isAuthError) setOpenLoginModal(true);
       setSubmitStatus("error");
       logger.error("PostPropertyForm:submit error", e);

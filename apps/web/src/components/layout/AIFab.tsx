@@ -29,6 +29,7 @@ export default function AIFab() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [conversationId, setConversationId] = useState<string | null>(null);
   const [typing, setTyping] = useState<{ index: number; full: string } | null>(null);
   const [typingDisplayLen, setTypingDisplayLen] = useState(0);
 
@@ -44,8 +45,12 @@ export default function AIFab() {
       const conversationHistory = messages.map((m) => ({ role: m.role, content: m.content }));
       const res = await gqlAskAgent(
         { prompt: trimmed, conversationHistory },
-        { headers: token ? { Authorization: `Bearer ${token}` } : undefined },
+        {
+          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+          conversationId: conversationId ?? undefined,
+        },
       );
+      if (res.conversationId) setConversationId(res.conversationId);
       const assistantMessage: ChatMessage = {
         role: "assistant",
         content: "",
@@ -61,7 +66,7 @@ export default function AIFab() {
     } finally {
       setLoading(false);
     }
-  }, [prompt, loading, messages, token]);
+  }, [prompt, loading, messages, token, conversationId]);
 
   useEffect(() => {
     if (!typing) return;
