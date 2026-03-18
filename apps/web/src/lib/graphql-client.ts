@@ -54,10 +54,11 @@ export const QUERY_PROPERTY = `
 `;
 
 export const MUTATION_ASK_AGENT = `
-  mutation AskAgent($input: AskAgentInput!) {
-    askAgent(input: $input) {
+  mutation AskAgent($input: AskAgentInput!, $conversationId: String) {
+    askAgent(input: $input, conversationId: $conversationId) {
       ... on AskAgentResult {
         answer
+        conversationId
         sources { type label id }
         suggestedActions { label target }
       }
@@ -112,6 +113,63 @@ export const MUTATION_UPDATE_PROFILE = `
   mutation UpdateMyProfile($input: UpdateProfileInput!) {
     updateMyProfile(input: $input) {
       id phone displayName
+    }
+  }
+`;
+
+export const MUTATION_TOGGLE_FAVORITE = `
+  mutation ToggleFavorite($propertyId: String!) {
+    toggleFavorite(propertyId: $propertyId) {
+      saved
+    }
+  }
+`;
+
+export const QUERY_MY_FAVORITES = `
+  query MyFavorites {
+    myFavorites {
+      id
+      userId
+      propertyId
+      createdAt
+      property { id title location price type coverImageUrl }
+    }
+  }
+`;
+
+export const MUTATION_SEND_ENQUIRY = `
+  mutation SendEnquiry($input: CreateEnquiryInput!) {
+    sendEnquiry(input: $input) {
+      id
+      propertyId
+      fromUserId
+      message
+      status
+      createdAt
+    }
+  }
+`;
+
+export const QUERY_MY_RECEIVED_ENQUIRIES = `
+  query MyReceivedEnquiries {
+    myReceivedEnquiries {
+      id propertyId fromUserId ownerUserId message phone status createdAt updatedAt
+    }
+  }
+`;
+
+export const QUERY_MY_SENT_ENQUIRIES = `
+  query MySentEnquiries {
+    mySentEnquiries {
+      id propertyId fromUserId ownerUserId message phone status createdAt updatedAt
+    }
+  }
+`;
+
+export const MUTATION_CHANGE_PROPERTY_STATUS = `
+  mutation ChangePropertyStatus($id: String!, $status: String!) {
+    changePropertyStatus(id: $id, status: $status) {
+      id status
     }
   }
 `;
@@ -210,8 +268,29 @@ export interface AgentSuggestedAction {
 
 export interface AskAgentResult {
   answer: string;
+  conversationId?: string;
   sources: AgentSource[];
   suggestedActions: AgentSuggestedAction[];
+}
+
+export interface FavoriteWithProperty {
+  id: string;
+  userId: string;
+  propertyId: string;
+  createdAt: string;
+  property: { id: string; title: string; location: string; price: number; type: string; coverImageUrl: string | null };
+}
+
+export interface EnquiryItem {
+  id: string;
+  propertyId: string;
+  fromUserId: string;
+  ownerUserId: string | null;
+  message: string;
+  phone: string | null;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export async function gqlProperties(filter?: PropertyFilter): Promise<ApiProperty[]> {
@@ -257,14 +336,14 @@ export async function gqlAgentJobStatus(jobId: string): Promise<{ status: string
 
 export async function gqlAskAgent(
   input: AskAgentInput,
-  options?: { requestId?: string; headers?: Record<string, string> } | string,
+  options?: { requestId?: string; headers?: Record<string, string>; conversationId?: string } | string,
 ): Promise<AskAgentResult> {
   const opts = typeof options === 'string' ? { requestId: options } : options;
   const url = getGraphQLUrl();
   if (!url) throw new Error('GraphQL URL not configured');
   const data = await runGraphQL<{ askAgent: AskAgentResult | { jobId: string } }>(url, {
     query: MUTATION_ASK_AGENT,
-    variables: { input },
+    variables: { input, conversationId: opts?.conversationId ?? undefined },
     requestId: opts?.requestId,
     headers: opts?.headers,
   });
@@ -355,4 +434,77 @@ export async function gqlUpdateProfile(
     headers,
   });
   return data.updateMyProfile;
+}
+
+export async function gqlToggleFavorite(
+  propertyId: string,
+  headers?: Record<string, string>,
+): Promise<{ saved: boolean }> {
+  const url = getGraphQLUrl();
+  if (!url) throw new Error('GraphQL URL not configured');
+  const data = await runGraphQL<{ toggleFavorite: { saved: boolean } }>(url, {
+    query: MUTATION_TOGGLE_FAVORITE,
+    variables: { propertyId },
+    headers,
+  });
+  return data.toggleFavorite;
+}
+
+export async function gqlMyFavorites(headers?: Record<string, string>): Promise<FavoriteWithProperty[]> {
+  const url = getGraphQLUrl();
+  if (!url) throw new Error('GraphQL URL not configured');
+  const data = await runGraphQL<{ myFavorites: FavoriteWithProperty[] }>(url, {
+    query: QUERY_MY_FAVORITES,
+    headers,
+  });
+  return data.myFavorites ?? [];
+}
+
+export async function gqlSendEnquiry(
+  input: { propertyId: string; message: string; phone?: string },
+  headers?: Record<string, string>,
+): Promise<EnquiryItem> {
+  const url = getGraphQLUrl();
+  if (!url) throw new Error('GraphQL URL not configured');
+  const data = await runGraphQL<{ sendEnquiry: EnquiryItem }>(url, {
+    query: MUTATION_SEND_ENQUIRY,
+    variables: { input },
+    headers,
+  });
+  return data.sendEnquiry;
+}
+
+export async function gqlMyReceivedEnquiries(headers?: Record<string, string>): Promise<EnquiryItem[]> {
+  const url = getGraphQLUrl();
+  if (!url) throw new Error('GraphQL URL not configured');
+  const data = await runGraphQL<{ myReceivedEnquiries: EnquiryItem[] }>(url, {
+    query: QUERY_MY_RECEIVED_ENQUIRIES,
+    headers,
+  });
+  return data.myReceivedEnquiries ?? [];
+}
+
+export async function gqlMySentEnquiries(headers?: Record<string, string>): Promise<EnquiryItem[]> {
+  const url = getGraphQLUrl();
+  if (!url) throw new Error('GraphQL URL not configured');
+  const data = await runGraphQL<{ mySentEnquiries: EnquiryItem[] }>(url, {
+    query: QUERY_MY_SENT_ENQUIRIES,
+    headers,
+  });
+  return data.mySentEnquiries ?? [];
+}
+
+export async function gqlChangePropertyStatus(
+  id: string,
+  status: string,
+  headers?: Record<string, string>,
+): Promise<{ id: string; status: string }> {
+  const url = getGraphQLUrl();
+  if (!url) throw new Error('GraphQL URL not configured');
+  const data = await runGraphQL<{ changePropertyStatus: { id: string; status: string } }>(url, {
+    query: MUTATION_CHANGE_PROPERTY_STATUS,
+    variables: { id, status },
+    headers,
+  });
+  return data.changePropertyStatus;
 }

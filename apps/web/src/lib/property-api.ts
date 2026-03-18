@@ -22,6 +22,8 @@ export interface PropertyDetail {
   aiScoreLabel: string;
   coverImage?: string;
   galleryImages?: string[];
+  createdByUserId?: string | null;
+  status?: string | null;
 }
 
 function apiPropertyToDetail(p: ApiProperty): PropertyDetail {
@@ -52,6 +54,8 @@ function apiPropertyToDetail(p: ApiProperty): PropertyDetail {
     aiScoreLabel: p.aiTip ?? "—",
     coverImage: p.coverImageUrl ?? undefined,
     galleryImages: p.imageUrls ?? undefined,
+    createdByUserId: p.createdByUserId ?? undefined,
+    status: p.status ?? undefined,
   };
 }
 
