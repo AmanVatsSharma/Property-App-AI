@@ -12,6 +12,7 @@ import { notFound } from "next/navigation";
 import { getPropertyById } from "@/lib/property-api";
 import { DEMO_IMAGES } from "@/lib/demo-images";
 import { PropertyImage } from "@/components/ui/PropertyImage";
+import { PropertyDetailActions } from "@/components/property/PropertyDetailActions";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -94,8 +95,11 @@ export default async function PropertyDetailPage({ params }: PageProps) {
                 <div className="prop-price-big">{property.price}</div>
                 <span className="prop-price-per">{property.pricePerSqft}</span>
                 <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
-                  <button type="button" className="btn-ghost-sm">♡ Save</button>
-                  <button type="button" className="btn-ghost-sm">⤴ Share</button>
+                  <PropertyDetailActions
+                    propertyId={property.id}
+                    createdByUserId={property.createdByUserId}
+                    currentStatus={property.status}
+                  />
                 </div>
               </div>
             </div>
