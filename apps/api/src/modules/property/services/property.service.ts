@@ -12,7 +12,7 @@ import { UserRole } from '@api/modules/user/entities/user.entity';
 import { CreatePropertyDto } from '../dtos/create-property.dto';
 import { UpdatePropertyDto } from '../dtos/update-property.dto';
 import { PropertyFilterDto } from '../dtos/property-filter.dto';
-import { PropertyNotFoundError } from '@api/common/errors';
+import { PropertyNotFoundError, ValidationError } from '@api/common/errors';
 import { PropertyRepository } from '../repository/property.repository';
 import { GeocodingService } from './geocoding.service';
 import { NearbyService } from './nearby.service';
@@ -64,6 +64,11 @@ export class PropertyService {
     }
     const existingListingCount = await this.propertyRepo.countByUserId(createdByUserId);
     const isFreeListing = existingListingCount === 0;
+    if (existingListingCount > 0 && !isFreeListing) {
+      throw new ForbiddenException(
+        'Free listing limit reached. Please upgrade to post more listings.',
+      );
+    }
     let latitude = dto.latitude;
     let longitude = dto.longitude;
     let locality = dto.locality;
@@ -189,6 +194,21 @@ export class PropertyService {
     const result = await this.propertyRepo.delete(id);
     this.logger.debug('remove exit', { method: 'remove', id, deleted: result });
     return result;
+  }
+
+  async changeStatus(
+    id: string,
+    status: 'draft' | 'active' | 'sold' | 'rented',
+    requestingUserId: string,
+    requestingUserRole: string,
+  ): Promise<Property> {
+    const property = await this.findOne(id);
+    this.assertOwnerOrAdmin(property, requestingUserId, requestingUserRole);
+    const allowed = ['draft', 'active', 'sold', 'rented'];
+    if (!allowed.includes(status)) {
+      throw new ValidationError(`Invalid status: ${status}`);
+    }
+    return this.propertyRepo.update(property, { status });
   }
 
   async getCount(): Promise<number> {

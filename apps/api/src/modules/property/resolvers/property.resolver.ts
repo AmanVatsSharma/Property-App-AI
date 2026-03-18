@@ -106,4 +106,16 @@ export class PropertyResolver {
     this.logger.debug('deleteProperty mutation exit', { method: 'deleteProperty', id });
     return result;
   }
+
+  @Mutation(() => Property, { name: 'changePropertyStatus' })
+  async changePropertyStatus(
+    @Args('id') id: string,
+    @Args('status') status: string,
+    @Context() ctx: GqlContext,
+  ): Promise<Property> {
+    const userId = ctx.req?.user?.sub;
+    const role = ctx.req?.user?.role;
+    if (!userId) throw new UnauthorizedException('Sign in required');
+    return this.propertyService.changeStatus(id, status as 'draft' | 'active' | 'sold' | 'rented', userId, role);
+  }
 }
