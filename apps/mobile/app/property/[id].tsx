@@ -9,9 +9,10 @@
 import { useTheme } from '@/components/providers/ThemeProvider';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { ScrollView, View, Text, Pressable, ActivityIndicator } from 'react-native';
+import { ScrollView, View, Text, Pressable, ActivityIndicator, Modal, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { fetchProperty, type ApiProperty } from '@/lib/graphql-client';
+import { fetchProperty, toggleFavorite, sendEnquiry, getMe, type ApiProperty } from '@/lib/graphql-client';
+import { getAuthHeaders } from '@/lib/auth-store';
 
 function formatPrice(price: number): string {
   return price >= 1_00_00_000 ? `₹${(price / 1_00_00_000).toFixed(2)} Cr` : `₹${(price / 1_00_000).toFixed(0)} L`;
@@ -22,6 +23,12 @@ export default function PropertyDetailScreen() {
   const router = useRouter();
   const { isDark } = useTheme();
   const [property, setProperty] = useState<ApiProperty | null | undefined>(undefined);
+  const [saved, setSaved] = useState(false);
+  const [enquireVisible, setEnquireVisible] = useState(false);
+  const [enquiryMessage, setEnquiryMessage] = useState('');
+  const [enquirySending, setEnquirySending] = useState(false);
+  const [enquirySent, setEnquirySent] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
 
   const bgMain = isDark ? 'bg-night' : 'bg-light-night';
   const bgCard = isDark ? 'bg-dark' : 'bg-light-dark';
@@ -31,6 +38,8 @@ export default function PropertyDetailScreen() {
   const textMuted = isDark ? 'text-text-muted' : 'text-light-text-muted';
   const tealCls = isDark ? 'text-teal' : 'text-light-teal';
   const greenCls = isDark ? 'text-green' : 'text-light-green';
+  const btnPrimaryText = isDark ? 'text-night' : 'text-light-btn-primary-text';
+  const placeholderColor = isDark ? 'rgba(255,255,255,0.45)' : '#5c6370';
   const indicatorColor = isDark ? '#00d4aa' : '#00b894';
 
   useEffect(() => {
@@ -42,6 +51,47 @@ export default function PropertyDetailScreen() {
     })();
     return () => { cancelled = true; };
   }, [id]);
+
+  useEffect(() => {
+    let cancelled = false;
+    getAuthHeaders().then((headers) => {
+      if (!headers) return;
+      getMe(headers).then((me) => {
+        if (!cancelled && me) setUserId(me.id);
+      });
+    });
+    return () => { cancelled = true; };
+  }, []);
+
+  const handleSave = async () => {
+    if (!id) return;
+    const headers = await getAuthHeaders();
+    if (!headers) return;
+    try {
+      const res = await toggleFavorite(id, headers);
+      setSaved(res.saved);
+    } catch {
+      // ignore
+    }
+  };
+
+  const handleSendEnquiry = async () => {
+    if (!id || !enquiryMessage.trim()) return;
+    const headers = await getAuthHeaders();
+    if (!headers) return;
+    setEnquirySending(true);
+    try {
+      await sendEnquiry({ propertyId: id, message: enquiryMessage.trim() }, headers);
+      setEnquirySent(true);
+      setEnquiryMessage('');
+    } catch {
+      // ignore
+    } finally {
+      setEnquirySending(false);
+    }
+  };
+
+  const isOwner = Boolean(property && userId && property.createdByUserId === userId);
 
   const loading = property === undefined && id != null;
   const notFound = id != null && property === null;
@@ -120,8 +170,11 @@ export default function PropertyDetailScreen() {
               {pricePerSqft != null && <Text className={`${textMuted} text-sm`}>{pricePerSqft}</Text>}
             </View>
             <View className="flex-row gap-2">
-              <Pressable className={`${bgCard2} px-3 py-2 rounded-lg border ${borderCls}`}>
-                <Text className={`${textCls} text-sm`}>♡ Save</Text>
+              <Pressable onPress={handleSave} className={`${bgCard2} px-3 py-2 rounded-lg border ${borderCls}`}>
+                <Text className={`${textCls} text-sm`}>{saved ? '❤️ Saved' : '♡ Save'}</Text>
+              </Pressable>
+              <Pressable onPress={() => setEnquireVisible(true)} className={`${bgCard2} px-3 py-2 rounded-lg border ${borderCls}`}>
+                <Text className={`${textCls} text-sm`}>Enquire</Text>
               </Pressable>
               <Pressable className={`${bgCard2} px-3 py-2 rounded-lg border ${borderCls}`}>
                 <Text className={`${textCls} text-sm`}>⤴ Share</Text>
@@ -177,6 +230,36 @@ export default function PropertyDetailScreen() {
           </View>
         </View>
       </ScrollView>
+
+      <Modal visible={enquireVisible} transparent animationType="fade">
+        <Pressable className="flex-1 bg-black/50 justify-center p-4" onPress={() => setEnquireVisible(false)}>
+          <Pressable className={`${bgCard} rounded-2xl p-4 border ${borderCls}`} onPress={(e) => e.stopPropagation()}>
+            <Text className={`${textCls} font-bold text-lg mb-2`}>Send enquiry</Text>
+            <TextInput
+              className={`${bgCard2} rounded-lg border ${borderCls} px-3 py-2 ${textCls} text-sm min-h-[80px]`}
+              placeholder="Your message..."
+              placeholderTextColor={placeholderColor}
+              value={enquiryMessage}
+              onChangeText={setEnquiryMessage}
+              multiline
+              maxLength={1000}
+            />
+            <View className="flex-row gap-2 mt-3">
+              <Pressable
+                onPress={handleSendEnquiry}
+                disabled={enquirySending || !enquiryMessage.trim()}
+                className={`flex-1 py-3 rounded-xl ${isDark ? 'bg-teal' : 'bg-light-teal'} items-center`}
+              >
+                <Text className={btnPrimaryText}>{enquirySending ? 'Sending…' : 'Send'}</Text>
+              </Pressable>
+              <Pressable onPress={() => { setEnquireVisible(false); setEnquirySent(false); }} className={`flex-1 py-3 rounded-xl border ${borderCls} items-center`}>
+                <Text className={textCls}>Cancel</Text>
+              </Pressable>
+            </View>
+            {enquirySent && <Text className={`${greenCls} text-sm mt-2`}>Enquiry sent.</Text>}
+          </Pressable>
+        </Pressable>
+      </Modal>
     </SafeAreaView>
   );
 }

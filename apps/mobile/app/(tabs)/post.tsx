@@ -87,9 +87,14 @@ export default function PostPropertyScreen() {
     } catch (e) {
       const raw = e instanceof Error ? e.message : 'Failed to create listing';
       const isAuthError = /Unauthorized|401|authorization|invalid.*token/i.test(raw);
-      const message = isAuthError ? 'Sign in to post a listing. Go to More → Sign in.' : raw;
+      const isFreeLimit = /free listing limit|403/i.test(raw);
+      const message = isFreeLimit
+        ? 'Free listing limit reached. Please upgrade to post more listings.'
+        : isAuthError
+          ? 'Sign in to post a listing. Go to More → Sign in.'
+          : raw;
       setError(message);
-      Alert.alert(isAuthError ? 'Sign in required' : 'Error', message);
+      Alert.alert(isAuthError ? 'Sign in required' : isFreeLimit ? 'Limit reached' : 'Error', message);
     } finally {
       setLoading(false);
     }
