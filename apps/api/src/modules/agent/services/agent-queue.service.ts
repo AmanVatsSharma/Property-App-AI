@@ -12,8 +12,6 @@ import { Queue, Job } from 'bullmq';
 import type { AskAgentInput } from '../dtos/ask-agent-input.dto';
 import type { AskAgentResult } from '../dtos/ask-agent-result.dto';
 
-export const AGENT_QUEUE_NAME = 'agent';
-
 export interface AgentJobData {
   input: AskAgentInput;
   requestId?: string;
@@ -24,8 +22,10 @@ export type AgentJobResult = AskAgentResult;
 
 @Injectable()
 export class AgentQueueService {
+  static readonly AGENT_QUEUE_NAME = 'agent';
+
   constructor(
-    @InjectQueue(AGENT_QUEUE_NAME) private readonly queue: Queue<AgentJobData, AgentJobResult>,
+    @InjectQueue(AgentQueueService.AGENT_QUEUE_NAME) private readonly queue: Queue<AgentJobData, AgentJobResult>,
   ) {}
 
   async addJob(data: AgentJobData): Promise<string> {

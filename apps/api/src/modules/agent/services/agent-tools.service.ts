@@ -269,7 +269,7 @@ export class AgentToolsService {
       return { content };
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
-      this.logger.warn({ method: 'invokeTool', name, error: message }, 'Tool invocation failed');
+      this.logger.warn('Tool invocation failed', { method: 'invokeTool', name, error: message });
       return { content: `Error: ${message}` };
     }
   }
@@ -309,7 +309,7 @@ export class AgentToolsService {
       };
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
-      this.logger.warn({ method: 'createListingImpl', error: message }, 'Create listing failed');
+      this.logger.warn('Create listing failed', { method: 'createListingImpl', error: message });
       return { content: `Could not create listing: ${message}` };
     }
   }
