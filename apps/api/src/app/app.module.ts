@@ -11,6 +11,7 @@ import { ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { BullModule } from '@nestjs/bullmq';
+import { ScheduleModule } from '@nestjs/schedule';
 import { APP_GUARD } from '@nestjs/core';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { GraphQLModule } from '@nestjs/graphql';
@@ -48,6 +49,7 @@ import { CacheModule } from '@api/shared/cache/cache.module';
   imports: [
     AppConfigModule,
     LoggerModule,
+    ScheduleModule.forRoot(),
     RateLimitModule,
     CacheModule,
     JwtModule.registerAsync({

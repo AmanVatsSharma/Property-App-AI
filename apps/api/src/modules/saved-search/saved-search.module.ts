@@ -17,14 +17,17 @@ import {
   SavedSearchAlertProcessor,
   SAVED_SEARCH_QUEUE,
 } from './processors/saved-search-alert.processor';
+import { SavedSearchAlertScheduler } from './schedulers/saved-search-alert.scheduler';
 import { NotificationModule } from '@api/modules/notification/notification.module';
 import { PropertyModule } from '@api/modules/property/property.module';
 import { JsonScalar } from '@api/shared/scalars/json.scalar';
+import { LoggerModule } from '@api/shared/logger';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([SavedSearch]),
     BullModule.registerQueue({ name: SAVED_SEARCH_QUEUE }),
+    LoggerModule,
     NotificationModule,
     PropertyModule,
   ],
@@ -34,6 +37,7 @@ import { JsonScalar } from '@api/shared/scalars/json.scalar';
     SavedSearchService,
     SavedSearchResolver,
     SavedSearchAlertProcessor,
+    SavedSearchAlertScheduler,
   ],
   exports: [SavedSearchService],
 })
