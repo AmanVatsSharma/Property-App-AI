@@ -1,7 +1,7 @@
 /**
  * @file NotificationBell.tsx
  * @module layout
- * @description Notification bell with unread count badge and dropdown panel.
+ * @description Notification bell with unread count and dropdown.
  * @author BharatERP
  * @created 2026-03-19
  */
@@ -23,43 +23,33 @@ export default function NotificationBell() {
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [loading, setLoading] = useState(false);
 
+  const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
+
   useRealtimeNotifications(token);
 
-  const headers = token ? { Authorization: `Bearer ${token}` } : {};
   const unread = notifications.filter((n) => !n.readAt).length;
 
   const loadNotifications = useCallback(async () => {
     if (!token) return;
     setLoading(true);
     try {
-      const data = await gqlMyNotifications(
-        headers as Record<string, string>,
-        20,
-        0,
-      );
+      const data = await gqlMyNotifications(headers, 20, 0);
       setNotifications(data);
     } catch {
-      // ignore
+      // ignore — bell is non-critical
     } finally {
       setLoading(false);
     }
-  }, [token]);
+  }, [token]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (isAuthenticated) loadNotifications();
   }, [isAuthenticated, loadNotifications]);
 
-  const handleOpen = () => {
-    setOpen((o) => !o);
-    if (!open) loadNotifications();
-  };
-
   const handleMarkAllRead = async () => {
     if (!token) return;
-    await gqlMarkAllNotificationsRead(headers as Record<string, string>);
-    setNotifications((prev) =>
-      prev.map((n) => ({ ...n, readAt: new Date().toISOString() })),
-    );
+    await gqlMarkAllNotificationsRead(headers).catch(() => {});
+    setNotifications((prev) => prev.map((n) => ({ ...n, readAt: new Date().toISOString() })));
   };
 
   if (!isAuthenticated) return null;
@@ -69,33 +59,32 @@ export default function NotificationBell() {
       <button
         type="button"
         className="nbtn-ghost"
-        onClick={handleOpen}
-        aria-label={
-          unread > 0 ? `Notifications (${unread} unread)` : "Notifications"
-        }
+        onClick={() => {
+          setOpen((o) => !o);
+          if (!open) loadNotifications();
+        }}
+        aria-label={`Notifications${unread > 0 ? ` — ${unread} unread` : ""}`}
         style={{ position: "relative", padding: "8px 12px" }}
       >
         🔔
         {unread > 0 && (
           <span
+            className="notif-badge"
             style={{
               position: "absolute",
               top: 2,
               right: 2,
               minWidth: 16,
               height: 16,
-              paddingLeft: unread > 9 ? 4 : 0,
-              paddingRight: unread > 9 ? 4 : 0,
-              borderRadius: 999,
+              borderRadius: "50%",
               background: "var(--coral)",
               color: "#fff",
               fontSize: 10,
               fontWeight: 700,
-              display: "inline-flex",
+              display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              overflow: "visible",
-              lineHeight: 1,
+              padding: "0 3px",
             }}
             aria-hidden
           >
@@ -107,7 +96,7 @@ export default function NotificationBell() {
       {open && (
         <>
           <div
-            className="fixed inset-0 z-[89]"
+            style={{ position: "fixed", inset: 0, zIndex: 89 }}
             aria-hidden
             onClick={() => setOpen(false)}
           />
@@ -124,6 +113,8 @@ export default function NotificationBell() {
               zIndex: 90,
               overflow: "hidden",
             }}
+            role="dialog"
+            aria-label="Notifications panel"
           >
             <div
               style={{
@@ -134,18 +125,13 @@ export default function NotificationBell() {
                 alignItems: "center",
               }}
             >
-              <span
-                style={{
-                  fontWeight: 600,
-                  fontSize: 14,
-                  color: "var(--heading)",
-                }}
-              >
+              <span style={{ fontWeight: 600, fontSize: 14, color: "var(--heading)" }}>
                 Notifications
               </span>
               {unread > 0 && (
                 <button
                   type="button"
+                  onClick={handleMarkAllRead}
                   style={{
                     fontSize: 11,
                     color: "var(--teal)",
@@ -154,13 +140,12 @@ export default function NotificationBell() {
                     cursor: "pointer",
                     fontWeight: 600,
                   }}
-                  onClick={handleMarkAllRead}
                 >
                   Mark all read
                 </button>
               )}
             </div>
-            <div style={{ maxHeight: 360, overflowY: "auto" }}>
+            <div style={{ maxHeight: 380, overflowY: "auto" }}>
               {loading ? (
                 <div
                   style={{
@@ -173,15 +158,11 @@ export default function NotificationBell() {
                   Loading…
                 </div>
               ) : notifications.length === 0 ? (
-                <div
-                  style={{
-                    padding: 32,
-                    textAlign: "center",
-                    color: "var(--text-muted)",
-                    fontSize: 13,
-                  }}
-                >
-                  No notifications yet
+                <div style={{ padding: 40, textAlign: "center" }}>
+                  <div style={{ fontSize: 36, marginBottom: 8 }}>🔕</div>
+                  <p style={{ color: "var(--text-muted)", fontSize: 13 }}>
+                    No notifications yet
+                  </p>
                 </div>
               ) : (
                 notifications.map((n) => (
@@ -190,10 +171,7 @@ export default function NotificationBell() {
                     style={{
                       padding: "12px 16px",
                       borderBottom: "1px solid var(--border)",
-                      background: n.readAt
-                        ? "transparent"
-                        : "rgba(0,212,170,0.04)",
-                      cursor: "default",
+                      background: n.readAt ? "transparent" : "rgba(0,212,170,0.04)",
                     }}
                   >
                     <div
@@ -201,27 +179,15 @@ export default function NotificationBell() {
                         fontSize: 13,
                         fontWeight: n.readAt ? 400 : 600,
                         color: "var(--heading)",
-                        marginBottom: 2,
+                        marginBottom: 3,
                       }}
                     >
                       {n.title}
                     </div>
-                    <div
-                      style={{
-                        fontSize: 12,
-                        color: "var(--text-muted)",
-                        lineHeight: 1.5,
-                      }}
-                    >
+                    <div style={{ fontSize: 12, color: "var(--text-muted)", lineHeight: 1.5 }}>
                       {n.body}
                     </div>
-                    <div
-                      style={{
-                        fontSize: 11,
-                        color: "var(--text-dim)",
-                        marginTop: 4,
-                      }}
-                    >
+                    <div style={{ fontSize: 11, color: "var(--text-dim)", marginTop: 4 }}>
                       {new Date(n.createdAt).toLocaleDateString("en-IN")}
                     </div>
                   </div>

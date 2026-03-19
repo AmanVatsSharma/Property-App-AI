@@ -9,15 +9,23 @@
 
 "use client";
 
+import Link from "next/link";
 import dynamic from "next/dynamic";
 import { useCallback, useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { PropertyCard } from "./PropertyCard";
-import { SkeletonGrid } from "@/components/ui/Skeleton";
-import { useToast } from "@/components/ui/Toast";
-import { gqlProperties, gqlSearchPropertiesByQuery, gqlToggleFavorite, type ApiProperty } from "@/lib/graphql-client";
+import { PropertyImage } from "@/components/ui/PropertyImage";
+import { DEMO_IMAGES } from "@/lib/demo-images";
+import {
+  gqlProperties,
+  gqlSearchPropertiesByQuery,
+  gqlToggleFavorite,
+  type ApiProperty,
+} from "@/lib/graphql-client";
 import { useAIFab } from "@/components/providers/AIFabProvider";
 import { useAuth } from "@/components/providers/AuthProvider";
+import { useToast } from "@/components/ui/Toast";
+import { PropertyCard } from "./PropertyCard";
+import { SkeletonGrid } from "@/components/ui/Skeleton";
 import { SaveSearchButton } from "./SaveSearchButton";
 import type { PropertyMapItem } from "./PropertyMap";
 
