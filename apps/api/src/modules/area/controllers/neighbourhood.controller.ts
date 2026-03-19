@@ -1,7 +1,7 @@
 /**
  * @file neighbourhood.controller.ts
  * @module area
- * @description REST controller for neighbourhood/area score; GET /api/v1/neighbourhood.
+ * @description REST controller for neighbourhood/area score and price forecast; GET /api/v1/neighbourhood, GET /api/v1/price-forecast.
  * @author BharatERP
  * @created 2026-03-15
  */
@@ -11,6 +11,10 @@ import { Public } from '@api/common/decorators/public.decorator';
 import { AreaService } from '../services/area.service';
 import { NeighbourhoodQueryDto } from '../dtos/neighbourhood-query.dto';
 import { Area } from '../entities/area.entity';
+import {
+  PriceForecastService,
+  PriceForecastResult,
+} from '@api/modules/agent/services/price-forecast.service';
 
 /** Response shape for GET /api/v1/neighbourhood. */
 export interface NeighbourhoodScoreResponse {
@@ -43,7 +47,10 @@ function toResponse(area: Area): NeighbourhoodScoreResponse {
 
 @Controller('api/v1')
 export class NeighbourhoodController {
-  constructor(private readonly areaService: AreaService) {}
+  constructor(
+    private readonly areaService: AreaService,
+    private readonly priceForecastService: PriceForecastService,
+  ) {}
 
   /**
    * GET /api/v1/neighbourhood?locality=Whitefield&city=Bangalore
@@ -53,7 +60,7 @@ export class NeighbourhoodController {
   @Get('neighbourhood')
   @Public()
   async getNeighbourhoodScore(
-    @Query() query: NeighbourhoodQueryDto
+    @Query() query: NeighbourhoodQueryDto,
   ): Promise<NeighbourhoodScoreResponse> {
     const locality = query.locality.trim();
     const city = (query.city ?? '').trim();
@@ -61,5 +68,20 @@ export class NeighbourhoodController {
       assessIfMissing: true,
     });
     return toResponse(area);
+  }
+
+  /**
+   * GET /api/v1/price-forecast?locality=...&city=...&horizon=24
+   */
+  @Get('price-forecast')
+  @Public()
+  async getPriceForecast(
+    @Query() query: NeighbourhoodQueryDto,
+    @Query('horizon') horizon?: string,
+  ): Promise<PriceForecastResult> {
+    const locality = query.locality.trim();
+    const city = (query.city ?? '').trim();
+    const horizonMonths = parseInt(horizon ?? '24', 10) || 24;
+    return this.priceForecastService.getForecast(locality, city, horizonMonths);
   }
 }

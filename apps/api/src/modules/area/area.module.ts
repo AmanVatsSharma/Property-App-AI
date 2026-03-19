@@ -1,7 +1,7 @@
 /**
  * @file area.module.ts
  * @module area
- * @description Area/locality module for region assessment; entity, repository, service.
+ * @description Area/locality module for region assessment; entity, repository, service; price forecast.
  * @author BharatERP
  * @created 2025-03-13
  */
@@ -14,11 +14,12 @@ import { AreaRepository } from './repository/area.repository';
 import { AreaService } from './services/area.service';
 import { AreaAssessorService } from './services/area-assessor.service';
 import { NeighbourhoodController } from './controllers/neighbourhood.controller';
+import { PriceForecastService } from '@api/modules/agent/services/price-forecast.service';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Area]), LoggerModule],
   controllers: [NeighbourhoodController],
-  providers: [AreaRepository, AreaService, AreaAssessorService],
-  exports: [AreaService],
+  providers: [AreaRepository, AreaService, AreaAssessorService, PriceForecastService],
+  exports: [AreaService, PriceForecastService],
 })
 export class AreaModule {}
