@@ -1,97 +1,57 @@
-const CACHE_NAME = "urbannest-v1";
+/**
+ * @file sw.js
+ * @description Stale-while-revalidate PWA service worker; offline fallback for UrbanNest.ai.
+ * @author BharatERP
+ * @created 2026-03-19
+ */
+
+const CACHE = "urbannest-v1";
+const PRECACHE = ["/", "/search", "/offline.html"];
 
 self.addEventListener("install", (e) => {
-  self.skipWaiting();
+  e.waitUntil(
+    caches
+      .open(CACHE)
+      .then((c) => c.addAll(PRECACHE))
+      .then(() => self.skipWaiting())
+  );
 });
 
 self.addEventListener("activate", (e) => {
   e.waitUntil(
     caches
       .keys()
-      .then((keys) =>
-        Promise.all(
-          keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k))
-        )
-      )
+      .then((keys) => Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k))))
       .then(() => self.clients.claim())
   );
 });
 
 self.addEventListener("fetch", (e) => {
   const { request } = e;
-  const url = new URL(request.url);
-
-  if (request.method !== "GET") return;
-  if (url.pathname.startsWith("/_next/webpack-hmr")) return;
-  if (url.pathname.startsWith("/__nextjs")) return;
-
-  if (
-    url.pathname.startsWith("/api/") ||
-    url.pathname.startsWith("/graphql") ||
-    url.pathname.startsWith("/notifications")
-  ) {
+  if (request.url.includes("/graphql") || request.url.includes("/api/")) return;
+  if (request.mode === "navigate") {
     e.respondWith(
-      fetch(request).catch(
-        () =>
-          new Response(JSON.stringify({ error: "offline" }), {
-            status: 503,
-            headers: { "Content-Type": "application/json" },
-          })
-      )
+      fetch(request)
+        .then((res) => {
+          const c = res.clone();
+          caches.open(CACHE).then((cache) => cache.put(request, c));
+          return res;
+        })
+        .catch(() => caches.match(request).then((r) => r ?? caches.match("/offline.html")))
     );
     return;
   }
-
-  if (url.pathname.startsWith("/_next/static/")) {
+  if (request.destination === "image" || request.url.includes("/_next/static/")) {
     e.respondWith(
       caches.match(request).then(
-        (cached) =>
-          cached ??
+        (r) =>
+          r ??
           fetch(request).then((res) => {
-            if (res.ok) {
-              caches.open(CACHE_NAME).then((c) => c.put(request, res.clone()));
-            }
+            const c = res.clone();
+            caches.open(CACHE).then((cache) => cache.put(request, c));
             return res;
           })
       )
     );
-    return;
   }
-
-  if (request.destination === "image") {
-    e.respondWith(
-      caches.match(request).then(
-        (cached) =>
-          cached ??
-          fetch(request)
-            .then((res) => {
-              if (res.ok) {
-                caches.open(CACHE_NAME).then((c) => c.put(request, res.clone()));
-              }
-              return res;
-            })
-            .catch(() => new Response("", { status: 408 }))
-      )
-    );
-    return;
-  }
-
-  e.respondWith(
-    fetch(request)
-      .then((res) => {
-        if (res.ok && request.destination === "document") {
-          caches.open(CACHE_NAME).then((c) => c.put(request, res.clone()));
-        }
-        return res;
-      })
-      .catch(async () => {
-        const cached = await caches.match(request);
-        if (cached) return cached;
-        if (request.destination === "document") {
-          const offlinePage = await caches.match("/offline.html");
-          if (offlinePage) return offlinePage;
-        }
-        return new Response("Offline", { status: 503 });
-      })
-  );
 });
