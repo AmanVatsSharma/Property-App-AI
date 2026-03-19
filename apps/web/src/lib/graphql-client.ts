@@ -26,7 +26,7 @@ function getGraphQLUrl(): string {
 }
 
 const PROPERTY_FIELDS = `
-  id title location areaId locality city latitude longitude price type bedrooms bathrooms areaSqft status listingFor specs aiTip aiScore coverImageUrl imageUrls nearbyAmenities createdByUserId isFreeListing createdAt updatedAt
+  id title location areaId locality city latitude longitude price type bedrooms bathrooms areaSqft status listingFor specs aiTip aiScore coverImageUrl imageUrls nearbyAmenities createdByUserId isFreeListing viewCount createdAt updatedAt
 `;
 
 export const QUERY_PROPERTIES = `
@@ -105,7 +105,7 @@ export const MUTATION_VERIFY_OTP = `
 
 export const QUERY_ME = `
   query Me {
-    me { id phone displayName createdAt updatedAt }
+    me { id phone displayName role createdAt updatedAt }
   }
 `;
 
@@ -174,6 +174,70 @@ export const MUTATION_CHANGE_PROPERTY_STATUS = `
   }
 `;
 
+export const QUERY_MY_SAVED_SEARCHES = `
+  query MySavedSearches {
+    mySavedSearches {
+      id name filters alertEnabled lastAlertSentAt createdAt updatedAt
+    }
+  }
+`;
+
+export const MUTATION_CREATE_SAVED_SEARCH = `
+  mutation CreateSavedSearch($input: CreateSavedSearchInput!) {
+    createSavedSearch(input: $input) {
+      id name filters alertEnabled createdAt
+    }
+  }
+`;
+
+export const MUTATION_UPDATE_SAVED_SEARCH = `
+  mutation UpdateSavedSearch($id: String!, $input: UpdateSavedSearchInput!) {
+    updateSavedSearch(id: $id, input: $input) {
+      id name filters alertEnabled updatedAt
+    }
+  }
+`;
+
+export const MUTATION_DELETE_SAVED_SEARCH = `
+  mutation DeleteSavedSearch($id: String!) {
+    deleteSavedSearch(id: $id)
+  }
+`;
+
+export interface SavedSearchItem {
+  id: string;
+  name: string;
+  filters: Record<string, unknown>;
+  alertEnabled: boolean;
+  lastAlertSentAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export const QUERY_MY_NOTIFICATIONS = `
+  query MyNotifications($limit: Int, $offset: Int) {
+    myNotifications(limit: $limit, offset: $offset) {
+      id type title body data readAt createdAt
+    }
+  }
+`;
+
+export const MUTATION_MARK_ALL_NOTIFICATIONS_READ = `
+  mutation MarkAllNotificationsRead {
+    markAllNotificationsRead
+  }
+`;
+
+export interface NotificationItem {
+  id: string;
+  type: string;
+  title: string;
+  body: string;
+  data?: Record<string, unknown> | null;
+  readAt: string | null;
+  createdAt: string;
+}
+
 export interface CreatePropertyInput {
   title: string;
   location: string;
@@ -240,6 +304,7 @@ export interface ApiProperty {
   nearbyAmenities?: string[] | null;
   createdByUserId: string | null;
   isFreeListing: boolean;
+  viewCount?: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -400,6 +465,7 @@ export interface AuthUser {
   id: string;
   phone: string;
   displayName: string | null;
+  role?: string;
 }
 
 export async function gqlVerifyOtp(phone: string, code: string): Promise<{ token: string; user: AuthUser }> {
@@ -507,4 +573,109 @@ export async function gqlChangePropertyStatus(
     headers,
   });
   return data.changePropertyStatus;
+}
+
+export async function gqlMySavedSearches(
+  headers?: Record<string, string>,
+): Promise<SavedSearchItem[]> {
+  const url = getGraphQLUrl();
+  if (!url) throw new Error('GraphQL URL not configured');
+  const data = await runGraphQL<{ mySavedSearches: SavedSearchItem[] }>(url, {
+    query: QUERY_MY_SAVED_SEARCHES,
+    headers,
+  });
+  return data.mySavedSearches ?? [];
+}
+
+export async function gqlCreateSavedSearch(
+  input: { name: string; filters: Record<string, unknown>; alertEnabled?: boolean },
+  headers?: Record<string, string>,
+): Promise<SavedSearchItem> {
+  const url = getGraphQLUrl();
+  if (!url) throw new Error('GraphQL URL not configured');
+  const data = await runGraphQL<{ createSavedSearch: SavedSearchItem }>(url, {
+    query: MUTATION_CREATE_SAVED_SEARCH,
+    variables: { input },
+    headers,
+  });
+  return data.createSavedSearch;
+}
+
+export async function gqlUpdateSavedSearch(
+  id: string,
+  input: { name?: string; filters?: Record<string, unknown>; alertEnabled?: boolean },
+  headers?: Record<string, string>,
+): Promise<SavedSearchItem> {
+  const url = getGraphQLUrl();
+  if (!url) throw new Error('GraphQL URL not configured');
+  const data = await runGraphQL<{ updateSavedSearch: SavedSearchItem }>(url, {
+    query: MUTATION_UPDATE_SAVED_SEARCH,
+    variables: { id, input },
+    headers,
+  });
+  return data.updateSavedSearch;
+}
+
+export async function gqlDeleteSavedSearch(
+  id: string,
+  headers?: Record<string, string>,
+): Promise<boolean> {
+  const url = getGraphQLUrl();
+  if (!url) throw new Error('GraphQL URL not configured');
+  const data = await runGraphQL<{ deleteSavedSearch: boolean }>(url, {
+    query: MUTATION_DELETE_SAVED_SEARCH,
+    variables: { id },
+    headers,
+  });
+  return data.deleteSavedSearch;
+}
+
+export async function gqlMyNotifications(
+  headers?: Record<string, string>,
+  limit = 20,
+  offset = 0,
+): Promise<NotificationItem[]> {
+  const url = getGraphQLUrl();
+  if (!url) throw new Error('GraphQL URL not configured');
+  const data = await runGraphQL<{ myNotifications: NotificationItem[] }>(url, {
+    query: QUERY_MY_NOTIFICATIONS,
+    variables: { limit, offset },
+    headers,
+  });
+  return data.myNotifications ?? [];
+}
+
+export async function gqlMarkAllNotificationsRead(
+  headers?: Record<string, string>,
+): Promise<boolean> {
+  const url = getGraphQLUrl();
+  if (!url) throw new Error('GraphQL URL not configured');
+  const data = await runGraphQL<{ markAllNotificationsRead: boolean }>(url, {
+    query: MUTATION_MARK_ALL_NOTIFICATIONS_READ,
+    headers,
+  });
+  return data.markAllNotificationsRead ?? false;
+}
+
+export const QUERY_MY_LISTINGS = `
+  query MyListings($limit: Int, $offset: Int) {
+    myListings(limit: $limit, offset: $offset) {
+      ${PROPERTY_FIELDS}
+    }
+  }
+`;
+
+export async function gqlMyListings(
+  headers?: Record<string, string>,
+  limit = 50,
+  offset = 0,
+): Promise<ApiProperty[]> {
+  const url = getGraphQLUrl();
+  if (!url) throw new Error('GraphQL URL not configured');
+  const data = await runGraphQL<{ myListings: ApiProperty[] }>(url, {
+    query: QUERY_MY_LISTINGS,
+    variables: { limit, offset },
+    headers,
+  });
+  return data.myListings ?? [];
 }
