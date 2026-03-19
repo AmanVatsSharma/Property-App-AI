@@ -151,10 +151,10 @@ export class PropertyService {
     ) {
       const geo = await this.geocodingService.geocode(locationToGeocode);
       if (geo) {
-        (dto as { latitude?: number; longitude?: number }).latitude = geo.lat;
-        (dto as { latitude?: number; longitude?: number }).longitude = geo.lng;
-        if (geo.locality && dto.locality === undefined) (dto as { locality?: string }).locality = geo.locality;
-        if (geo.city && dto.city === undefined) (dto as { city?: string }).city = geo.city;
+        dto.latitude = geo.lat;
+        dto.longitude = geo.lng;
+        if (geo.locality && dto.locality === undefined) dto.locality = geo.locality;
+        if (geo.city && dto.city === undefined) dto.city = geo.city;
       }
     }
     const lat = dto.latitude ?? property.latitude;

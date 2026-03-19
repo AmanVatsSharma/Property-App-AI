@@ -636,7 +636,7 @@ export async function gqlMyNotifications(
   offset = 0,
 ): Promise<NotificationItem[]> {
   const url = getGraphQLUrl();
-  if (!url) throw new Error('GraphQL URL not configured');
+  if (!url) return [];
   const data = await runGraphQL<{ myNotifications: NotificationItem[] }>(url, {
     query: QUERY_MY_NOTIFICATIONS,
     variables: { limit, offset },
@@ -649,7 +649,7 @@ export async function gqlMarkAllNotificationsRead(
   headers?: Record<string, string>,
 ): Promise<boolean> {
   const url = getGraphQLUrl();
-  if (!url) throw new Error('GraphQL URL not configured');
+  if (!url) return false;
   const data = await runGraphQL<{ markAllNotificationsRead: boolean }>(url, {
     query: MUTATION_MARK_ALL_NOTIFICATIONS_READ,
     headers,
