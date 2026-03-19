@@ -862,6 +862,8 @@ footer {
    PHASE 2 — Premium design system additions
    ============================================================ */
 
+/* Framer Motion install: npm install framer-motion in apps/web */
+
 /* ── SKELETON LOADER ── */
 @keyframes shimmer {
   0% { background-position: -600px 0; }
