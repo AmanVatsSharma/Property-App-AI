@@ -10,6 +10,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
 import { VersioningType } from '@nestjs/common';
+import { IoAdapter } from '@nestjs/platform-socket.io';
 import helmet from 'helmet';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from '@api/app/app.module';
@@ -17,6 +18,7 @@ import { logger } from '@api/shared/logger';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  app.useWebSocketAdapter(new IoAdapter(app));
   const config = app.get(ConfigService);
   const swaggerConfig = new DocumentBuilder()
     .setTitle('BharatERP Property API')

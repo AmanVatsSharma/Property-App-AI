@@ -33,6 +33,7 @@ import { FavoriteModule } from '@api/modules/favorite/favorite.module';
 import { EnquiryModule } from '@api/modules/enquiry/enquiry.module';
 import { BrokerModule } from '@api/modules/broker/broker.module';
 import { NotificationModule } from '@api/modules/notification/notification.module';
+import { SavedSearchModule } from '@api/modules/saved-search/saved-search.module';
 import { AppError } from '@api/common/errors';
 import { RequestIdMiddleware } from '@api/common/middleware/request-id.middleware';
 import { HttpExceptionFilter } from '@api/common/filters/http-exception.filter';
@@ -139,6 +140,7 @@ import { CacheModule } from '@api/shared/cache/cache.module';
     EnquiryModule,
     BrokerModule,
     NotificationModule,
+    SavedSearchModule,
   ],
   controllers: [AppController],
   providers: [
