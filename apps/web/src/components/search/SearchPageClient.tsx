@@ -9,14 +9,15 @@
 
 "use client";
 
-import Link from "next/link";
 import dynamic from "next/dynamic";
 import { useCallback, useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { PropertyImage } from "@/components/ui/PropertyImage";
-import { DEMO_IMAGES } from "@/lib/demo-images";
-import { gqlProperties, gqlSearchPropertiesByQuery, type ApiProperty } from "@/lib/graphql-client";
+import { PropertyCard } from "./PropertyCard";
+import { SkeletonGrid } from "@/components/ui/Skeleton";
+import { useToast } from "@/components/ui/Toast";
+import { gqlProperties, gqlSearchPropertiesByQuery, gqlToggleFavorite, type ApiProperty } from "@/lib/graphql-client";
 import { useAIFab } from "@/components/providers/AIFabProvider";
+import { useAuth } from "@/components/providers/AuthProvider";
 import type { PropertyMapItem } from "./PropertyMap";
 
 const PropertyMap = dynamic(() => import("./PropertyMap").then((m) => m.PropertyMap), {
@@ -79,33 +80,12 @@ function apiToMapItems(list: ApiProperty[]): PropertyMapItem[] {
     }));
 }
 
-function apiToCardItem(p: ApiProperty) {
-  const priceStr = p.price >= 1_00_00_000 ? `₹${(p.price / 1_00_00_000).toFixed(2)} Cr` : `₹${(p.price / 1_00_000).toFixed(0)} L`;
-  const sqft = p.areaSqft ? ` · ${p.areaSqft.toLocaleString()} sqft` : "";
-  return {
-    id: p.id,
-    price: priceStr,
-    name: p.title,
-    loc: `${p.location}${sqft}`,
-    specs: [
-      `${p.bedrooms} BHK`,
-      `${p.bathrooms} Bath`,
-      ...(p.areaSqft ? [p.areaSqft.toLocaleString()] : []),
-      ...(p.specs ?? []),
-    ].slice(0, 4),
-    tip: p.aiTip ?? "—",
-    badges: p.aiScore && p.aiScore >= 90 ? ["badge-teal"] : ["badge-green"],
-    badgeLabels: p.aiScore && p.aiScore >= 90 ? ["✦ AI Pick"] : ["✓ Verified"],
-    score: p.aiScore ?? 0,
-    bg: "linear-gradient(135deg,#132238,#1e3a5f)",
-    imageUrl: p.coverImageUrl ?? DEMO_IMAGES.defaultPropertyCover,
-  };
-}
-
 export default function SearchPageClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { openPanelWithPrompt } = useAIFab();
+  const { token } = useAuth();
+  const { showToast } = useToast();
   const [viewMode, setViewMode] = useState<"grid" | "list" | "map">("grid");
   const [apiProperties, setApiProperties] = useState<ApiProperty[] | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -222,6 +202,25 @@ export default function SearchPageClient() {
     const i = BHK_OPTIONS.indexOf(params.bhk);
     if (i >= 0) queueMicrotask(() => setBhkIndex(i));
   }, [params.bhk]);
+
+  const handleHeartClick = useCallback(
+    async (id: string, saved: boolean) => {
+      if (!token) {
+        showToast("Sign in to save properties", "info");
+        return;
+      }
+      try {
+        await gqlToggleFavorite(id, { Authorization: `Bearer ${token}` });
+        showToast(
+          saved ? "Saved to favourites" : "Removed from favourites",
+          "success",
+        );
+      } catch {
+        showToast("Could not update saved status", "error");
+      }
+    },
+    [token, showToast],
+  );
 
   return (
     <>
@@ -395,9 +394,7 @@ export default function SearchPageClient() {
         <div className="search-main">
           <div className="listings-wrap">
             {apiProperties === null && nlSearchResults === null && !nlSearchLoading ? (
-              <div style={{ padding: 48, textAlign: "center", color: "var(--text-muted)" }}>
-                Loading properties…
-              </div>
+              <SkeletonGrid count={6} />
             ) : viewMode === "map" ? (
               <PropertyMap
                 properties={apiToMapItems(nlSearchResults ?? apiProperties ?? [])}
@@ -405,55 +402,48 @@ export default function SearchPageClient() {
               />
             ) : (
               <>
-            {nlSearchLoading && (
-              <div style={{ padding: 48, textAlign: "center", color: "var(--text-muted)" }}>
-                Understanding your query and searching…
-              </div>
-            )}
-            {!nlSearchLoading && loadError && (
-              <div style={{ padding: 12, marginBottom: 16, background: "var(--coral)", color: "var(--night)", borderRadius: 8 }}>
-                {loadError}
-              </div>
-            )}
-            {!nlSearchLoading && (nlSearchResults ?? apiProperties ?? []).length === 0 ? (
-              <div style={{ padding: 48, textAlign: "center", color: "var(--text-muted)" }}>
-                No properties found. Try adjusting your filters or ensure the backend is connected.
-              </div>
-            ) : !nlSearchLoading ? (
-            <div className="prop-grid">
-              {(nlSearchResults ?? apiProperties ?? []).map((p) => {
-                const card = apiToCardItem(p);
-                return (
-                <Link key={p.id} href={`/property/${p.id}`} className="prop-card reveal">
-                  <div className="prop-img">
-                    <PropertyImage
-                      src={card.imageUrl}
-                      alt={card.name}
-                      className="prop-img-bg"
-                      sizes="(max-width: 768px) 100vw, 33vw"
-                      placeholderGradient={card.bg}
-                    />
-                    <div className="prop-img-grad" />
-                    <div className="prop-badges">
-                      {card.badgeLabels.map((l, j) => (
-                        <span key={j} className={`badge ${card.badges[j]}`}>{l}</span>
+                {nlSearchLoading && <SkeletonGrid count={6} />}
+                {!nlSearchLoading && loadError && (
+                  <div
+                    style={{
+                      padding: 12,
+                      marginBottom: 16,
+                      background: "var(--coral-dim)",
+                      border: "1px solid rgba(255,107,74,0.2)",
+                      borderRadius: 8,
+                      color: "var(--coral)",
+                      fontSize: 13,
+                    }}
+                  >
+                    {loadError}
+                  </div>
+                )}
+                {!nlSearchLoading &&
+                  (nlSearchResults ?? apiProperties ?? []).length === 0 &&
+                  !loadError && (
+                    <div
+                      style={{
+                        padding: 48,
+                        textAlign: "center",
+                        color: "var(--text-muted)",
+                      }}
+                    >
+                      No properties found. Try adjusting your filters or
+                      connecting the backend.
+                    </div>
+                  )}
+                {!nlSearchLoading &&
+                  (nlSearchResults ?? apiProperties ?? []).length > 0 && (
+                    <div className="prop-grid">
+                      {(nlSearchResults ?? apiProperties ?? []).map((p) => (
+                        <PropertyCard
+                          key={p.id}
+                          property={p}
+                          onHeartClick={handleHeartClick}
+                        />
                       ))}
                     </div>
-                    <button type="button" className="prop-heart" onClick={(e) => e.stopPropagation()} aria-label="Save">♡</button>
-                    <div className="prop-ai-score"><div className="score-n">{card.score}</div><div className="score-l">AI Score</div></div>
-                  </div>
-                  <div className="prop-body">
-                    <div className="prop-price">{card.price} <span>onwards</span></div>
-                    <div className="prop-name">{card.name}</div>
-                    <div className="prop-loc">📍 {card.loc}</div>
-                    <div className="prop-specs">{card.specs.map((s, j) => <span key={j} className="prop-spec">{s}</span>)}</div>
-                    <div className="prop-ai-tip"><strong>✦ AI:</strong> {card.tip}</div>
-                  </div>
-                </Link>
-                );
-              })}
-            </div>
-            ) : null}
+                  )}
                 <div className="pagination">
                   <button type="button" className="page-btn" onClick={() => setParams({ page: params.page - 1 })} disabled={params.page <= 1}>‹</button>
                   {[1, 2, 3].map((n) => (
