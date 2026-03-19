@@ -168,12 +168,12 @@ export class PropertyService {
     ) {
       const rev = await this.geocodingService.reverseGeocode(Number(lat), Number(lng));
       if (rev) {
-        (dto as { locality?: string }).locality = rev.locality;
-        (dto as { city?: string }).city = rev.city;
+        dto.locality = rev.locality;
+        dto.city = rev.city;
         const area = await this.areaService.getOrCreate(rev.locality, rev.city, {
           assessIfMissing: true,
         });
-        (dto as { areaId?: string }).areaId = area.id;
+        dto.areaId = area.id;
       }
     } else if (
       (dto.locality != null || dto.city != null) &&
@@ -184,19 +184,19 @@ export class PropertyService {
         dto.city ?? '',
         { assessIfMissing: true },
       );
-      (dto as { areaId?: string }).areaId = area.id;
-      if (dto.locality == null) (dto as { locality?: string }).locality = area.locality;
-      if (dto.city == null) (dto as { city?: string }).city = area.city;
+      dto.areaId = area.id;
+      if (dto.locality == null) dto.locality = area.locality;
+      if (dto.city == null) dto.city = area.city;
     }
     if (
       (dto.latitude != null || dto.longitude != null || property.latitude != null) &&
-      (dto.nearbyAmenities === undefined && (property as { nearbyAmenities?: string[] }).nearbyAmenities == null)
+      (dto.nearbyAmenities === undefined && property.nearbyAmenities == null)
     ) {
       const lat = dto.latitude ?? property.latitude;
       const lng = dto.longitude ?? property.longitude;
       if (lat != null && lng != null) {
         const nearby = await this.nearbyService.getNearby(Number(lat), Number(lng));
-        if (nearby.length > 0) (dto as { nearbyAmenities?: string[] }).nearbyAmenities = nearby;
+        if (nearby.length > 0) dto.nearbyAmenities = nearby;
       }
     }
     const result = await this.propertyRepo.update(property, dto);

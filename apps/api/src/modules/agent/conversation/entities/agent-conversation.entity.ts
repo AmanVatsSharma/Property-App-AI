@@ -31,7 +31,7 @@ export class AgentConversation {
   title: string | null;
 
   @Field(() => JsonScalar)
-  @Column({ type: 'jsonb', default: () => "'[]'" })
+  @Column({ type: 'jsonb', default: [] })
   messages: ConversationMessage[];
 
   @Field()
