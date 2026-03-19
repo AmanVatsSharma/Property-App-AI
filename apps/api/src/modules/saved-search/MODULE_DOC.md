@@ -12,6 +12,7 @@
 - `services/saved-search.service.ts` — CRUD; runAlerts() (loads alert-enabled searches, 24h cooldown, propertyService.findAll + notification create + markAlertSent).
 - `resolvers/saved-search.resolver.ts` — mySavedSearches, createSavedSearch, updateSavedSearch, deleteSavedSearch (all auth-required).
 - `processors/saved-search-alert.processor.ts` — BullMQ @Processor(SAVED_SEARCH_QUEUE); process(job) calls savedSearchService.runAlerts().
+- `schedulers/saved-search-alert.scheduler.ts` — @Cron(EVERY_DAY_AT_6AM) adds a 'run-alerts' job to SAVED_SEARCH_QUEUE.
 
 **APIs (GraphQL):**
 - **Query `mySavedSearches`** — List current user's saved searches. Auth required.
@@ -19,7 +20,8 @@
 - **Mutation `updateSavedSearch(id, input)`** — Update name, filters, or alertEnabled. Auth required; must own the search.
 - **Mutation `deleteSavedSearch(id)`** — Delete a saved search. Auth required; must own the search.
 
-**Scheduling:** The processor runs when a job is added to the queue. A cron or external scheduler should add a job to `saved-search-alerts` periodically (e.g. daily) to trigger alert checks. No in-repo scheduler by default.
+**Scheduling:** SavedSearchAlertScheduler adds a job to `saved-search-alerts` daily at 06:00 (server time) via @nestjs/schedule. The processor runs when a job is added and calls SavedSearchService.runAlerts().
 
 **Change-log:**
+- 2026-03-19: Added SavedSearchAlertScheduler (daily 06:00 cron) to add job to saved-search-alerts queue; ScheduleModule in AppModule.
 - 2026-03-19: Initial module (migration CreateSavedSearch, entity, DTOs, repository, service, resolver, BullMQ processor). Alert cooldown 24h; runAlerts uses PropertyService.findAll and NotificationService.create.

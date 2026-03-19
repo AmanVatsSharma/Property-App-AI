@@ -82,17 +82,22 @@ export default function NotificationBell() {
               position: "absolute",
               top: 2,
               right: 2,
-              width: 16,
+              minWidth: 16,
               height: 16,
-              borderRadius: "50%",
+              paddingLeft: unread > 9 ? 4 : 0,
+              paddingRight: unread > 9 ? 4 : 0,
+              borderRadius: 999,
               background: "var(--coral)",
               color: "#fff",
               fontSize: 10,
               fontWeight: 700,
-              display: "flex",
+              display: "inline-flex",
               alignItems: "center",
               justifyContent: "center",
+              overflow: "visible",
+              lineHeight: 1,
             }}
+            aria-hidden
           >
             {unread > 9 ? "9+" : unread}
           </span>
