@@ -29,6 +29,7 @@ export interface AgentContext {
 @Injectable()
 export class AgentToolsService {
   private agentContext: AgentContext = {};
+  private cachedTools: StructuredToolInterface[] | null = null;
 
   constructor(
     private readonly propertyService: PropertyService,
@@ -42,12 +43,14 @@ export class AgentToolsService {
 
   clearAgentContext(): void {
     this.agentContext = {};
+    this.cachedTools = null;
   }
 
   /**
    * Returns LangChain tool definitions for the orchestrator to bind to the LLM.
    */
   getTools(): StructuredToolInterface[] {
+    if (this.cachedTools) return this.cachedTools;
     this.logger.debug('getTools entry', { method: 'getTools' });
     const self = this;
     const tools: StructuredToolInterface[] = [
@@ -245,6 +248,7 @@ export class AgentToolsService {
       ),
     ];
     this.logger.debug('getTools exit', { method: 'getTools', count: tools.length });
+    this.cachedTools = tools;
     return tools;
   }
 

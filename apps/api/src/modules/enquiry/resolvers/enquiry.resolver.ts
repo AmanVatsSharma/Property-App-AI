@@ -43,4 +43,15 @@ export class EnquiryResolver {
     if (!userId) throw new UnauthorizedException('Sign in required');
     return this.enquiryService.mySent(userId);
   }
+
+  @Mutation(() => Enquiry, { name: 'updateEnquiryStatus', nullable: true })
+  async updateEnquiryStatus(
+    @Args('id') id: string,
+    @Args('status') status: string,
+    @Context() ctx: GqlContext,
+  ): Promise<Enquiry | null> {
+    const userId = ctx.req?.user?.sub;
+    if (!userId) throw new UnauthorizedException('Sign in required');
+    return this.enquiryService.updateStatus(id, status, userId);
+  }
 }
