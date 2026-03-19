@@ -89,12 +89,22 @@ export default function Nav() {
             UrbanNest<span className="ai">.ai</span>
           </span>
         </Link>
-        <div className="nav-pills">
+        <div
+          className="nav-pills"
+          style={{
+            background: "rgba(255,255,255,0.04)",
+            backdropFilter: "blur(12px)",
+            border: "1px solid rgba(255,255,255,0.07)",
+          }}
+        >
           {NAV_LINKS.map(({ href, label }) => (
             <Link
               key={label}
               href={href}
               className={activeLabel === label ? "npill active" : "npill"}
+              style={{
+                transition: "all 0.18s cubic-bezier(0.25,0.1,0.25,1)",
+              }}
             >
               {label}
             </Link>
