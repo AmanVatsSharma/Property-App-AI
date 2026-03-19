@@ -16,6 +16,7 @@ import {
   gqlMe,
 } from "@/lib/graphql-client";
 import { useAuth } from "@/components/providers/AuthProvider";
+import { useToast } from "@/components/ui/Toast";
 
 interface PropertyDetailActionsProps {
   propertyId: string;
@@ -36,6 +37,7 @@ export function PropertyDetailActions({
   currentStatus,
 }: PropertyDetailActionsProps) {
   const { token } = useAuth();
+  const { showToast } = useToast();
   const [userId, setUserId] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
   const [enquireOpen, setEnquireOpen] = useState(false);
@@ -62,12 +64,19 @@ export function PropertyDetailActions({
   const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
 
   const handleFavorite = async () => {
-    if (!token) return;
+    if (!token) {
+      showToast("Sign in to save properties", "info");
+      return;
+    }
     try {
       const res = await gqlToggleFavorite(propertyId, headers);
       setSaved(res.saved);
+      showToast(
+        res.saved ? "Saved to favourites ❤️" : "Removed from favourites",
+        res.saved ? "success" : "info",
+      );
     } catch {
-      // ignore
+      showToast("Could not update saved status", "error");
     }
   };
 
@@ -83,6 +92,10 @@ export function PropertyDetailActions({
       setEnquiryMessage("");
       setEnquiryPhone("");
       setEnquireOpen(false);
+      showToast(
+        "Enquiry sent! The owner will contact you soon.",
+        "success",
+      );
     } catch {
       // ignore
     } finally {
