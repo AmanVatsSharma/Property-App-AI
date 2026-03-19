@@ -22,6 +22,11 @@ export class PropertyFilterDto {
   @IsString()
   location?: string;
 
+  @Field({ nullable: true, description: 'Filter by owner (UUID); server may set from auth for myListings)' })
+  @IsOptional()
+  @IsString()
+  createdByUserId?: string;
+
   @Field(() => Float, { nullable: true, description: 'Map viewport south bound' })
   @IsOptional()
   @Type(() => Number)

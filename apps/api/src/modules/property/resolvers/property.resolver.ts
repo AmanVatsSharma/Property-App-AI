@@ -7,6 +7,7 @@
  */
 
 import { Resolver, Query, Mutation, Args, Context } from '@nestjs/graphql';
+import { Int } from '@nestjs/graphql';
 import { UnauthorizedException } from '@nestjs/common';
 import { Property } from '../entities/property.entity';
 import { PropertyService } from '../services/property.service';
@@ -34,6 +35,26 @@ export class PropertyResolver {
     this.logger.debug('properties query entry', { method: 'properties' });
     const result = await this.propertyService.findAll(filter);
     this.logger.debug('properties query exit', { method: 'properties' });
+    return result;
+  }
+
+  @Query(() => [Property], { name: 'myListings' })
+  async myListings(
+    @Args('limit', { type: () => Int, nullable: true }) limit?: number,
+    @Args('offset', { type: () => Int, nullable: true }) offset?: number,
+    @Context() ctx?: GqlContext,
+  ): Promise<Property[]> {
+    const userId = ctx?.req?.user?.sub;
+    if (!userId) throw new UnauthorizedException('Sign in required');
+    this.logger.debug('myListings query entry', { method: 'myListings', userId });
+    const result = await this.propertyService.findAll({
+      createdByUserId: userId,
+      limit: limit ?? 50,
+      offset: offset ?? 0,
+      sortBy: 'createdAt',
+      sortOrder: 'desc',
+    });
+    this.logger.debug('myListings query exit', { method: 'myListings', count: result.length });
     return result;
   }
 

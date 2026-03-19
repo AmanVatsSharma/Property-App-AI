@@ -48,6 +48,11 @@ export class PropertyRepository {
         location: `%${filter.location}%`,
       });
     }
+    if (filter.createdByUserId) {
+      qb.andWhere('p."createdByUserId" = :createdByUserId', {
+        createdByUserId: filter.createdByUserId,
+      });
+    }
     const hasBounds =
       filter.minLat != null &&
       filter.maxLat != null &&
@@ -166,6 +171,11 @@ export class PropertyRepository {
         location: `%${filter.location}%`,
       });
     }
+    if (filter.createdByUserId) {
+      qb.andWhere('p."createdByUserId" = :createdByUserId', {
+        createdByUserId: filter.createdByUserId,
+      });
+    }
     const hasBounds =
       filter.minLat != null &&
       filter.maxLat != null &&
@@ -216,6 +226,11 @@ export class PropertyRepository {
     if (filter.location) {
       countQb.andWhere('p.location ILIKE :location', {
         location: `%${filter.location}%`,
+      });
+    }
+    if (filter.createdByUserId) {
+      countQb.andWhere('p."createdByUserId" = :createdByUserId', {
+        createdByUserId: filter.createdByUserId,
       });
     }
     if (hasBounds) {
