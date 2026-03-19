@@ -7,11 +7,10 @@ const nextConfig: NextConfig = {
 
   images: {
     remotePatterns: [
-      { protocol: "https", hostname: "images.unsplash.com", pathname: "/**" },
-      { protocol: "https", hostname: "images.pexels.com", pathname: "/**" },
-      { protocol: "https", hostname: "*.s3.*.amazonaws.com", pathname: "/**" },
-      { protocol: "https", hostname: "*.s3.amazonaws.com", pathname: "/**" },
-      { protocol: "https", hostname: "*.cloudfront.net", pathname: "/**" },
+      { protocol: "https", hostname: "images.unsplash.com" },
+      { protocol: "https", hostname: "*.s3.amazonaws.com" },
+      { protocol: "https", hostname: "*.s3.*.amazonaws.com" },
+      { protocol: "https", hostname: "*.cloudfront.net" },
     ],
     formats: ["image/avif", "image/webp"],
     minimumCacheTTL: 86400,
@@ -19,8 +18,7 @@ const nextConfig: NextConfig = {
   },
 
   experimental: {
-    optimizeCss: true,
-    optimizePackageImports: ["@langchain/core", "lucide-react", "framer-motion"],
+    optimizePackageImports: ["framer-motion"],
   },
 
   async headers() {
@@ -30,7 +28,6 @@ const nextConfig: NextConfig = {
         headers: [
           { key: "X-Content-Type-Options", value: "nosniff" },
           { key: "X-Frame-Options", value: "DENY" },
-          { key: "X-XSS-Protection", value: "1; mode=block" },
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
           {
             key: "Permissions-Policy",
@@ -41,26 +38,37 @@ const nextConfig: NextConfig = {
       {
         source: "/sw.js",
         headers: [
-          { key: "Cache-Control", value: "no-cache, no-store, must-revalidate" },
+          {
+            key: "Cache-Control",
+            value: "no-cache, no-store, must-revalidate",
+          },
           { key: "Content-Type", value: "application/javascript" },
         ],
       },
       {
         source: "/_next/static/(.*)",
-        headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }],
-      },
-      {
-        source: "/icons/(.*)",
-        headers: [{ key: "Cache-Control", value: "public, max-age=86400" }],
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=31536000, immutable",
+          },
+        ],
       },
     ];
   },
 
   async redirects() {
     return [
-      { source: "/buy", destination: "/search?type=sell", permanent: true },
-      { source: "/rent", destination: "/search?type=rent", permanent: true },
-      { source: "/new-projects", destination: "/search?type=apartment", permanent: true },
+      {
+        source: "/buy",
+        destination: "/search?type=apartment",
+        permanent: true,
+      },
+      {
+        source: "/rent",
+        destination: "/search?listingFor=rent",
+        permanent: true,
+      },
     ];
   },
 };

@@ -13,11 +13,7 @@ import { SavedSearch } from './entities/saved-search.entity';
 import { SavedSearchRepository } from './repository/saved-search.repository';
 import { SavedSearchService } from './services/saved-search.service';
 import { SavedSearchResolver } from './resolvers/saved-search.resolver';
-import {
-  SavedSearchAlertProcessor,
-  SAVED_SEARCH_QUEUE,
-} from './processors/saved-search-alert.processor';
-import { SavedSearchAlertScheduler } from './schedulers/saved-search-alert.scheduler';
+import { SavedSearchAlertProcessor, SAVED_SEARCH_QUEUE } from './processors/saved-search-alert.processor';
 import { NotificationModule } from '@api/modules/notification/notification.module';
 import { PropertyModule } from '@api/modules/property/property.module';
 import { JsonScalar } from '@api/shared/scalars/json.scalar';
@@ -37,7 +33,6 @@ import { LoggerModule } from '@api/shared/logger';
     SavedSearchService,
     SavedSearchResolver,
     SavedSearchAlertProcessor,
-    SavedSearchAlertScheduler,
   ],
   exports: [SavedSearchService],
 })

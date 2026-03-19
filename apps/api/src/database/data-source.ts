@@ -12,6 +12,7 @@ import { join } from 'path';
 const isCompiled = __filename.endsWith('.js');
 const ext = isCompiled ? '.js' : '.ts';
 const migrationsGlob = join(__dirname, 'migrations', `*${ext}`);
+const entitiesGlob = join(__dirname, '..', 'modules', '**', 'entities', `*${ext}`);
 
 export const AppDataSource = new DataSource({
   type: 'postgres',
@@ -20,6 +21,7 @@ export const AppDataSource = new DataSource({
   username: process.env.DB_USER ?? 'postgres',
   password: process.env.DB_PASSWORD ?? 'postgres',
   database: process.env.DB_NAME ?? 'property_app',
+  entities: [entitiesGlob],
   migrations: [migrationsGlob],
   migrationsTableName: 'typeorm_migrations',
   migrationsRun: false,
