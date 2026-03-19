@@ -195,54 +195,55 @@ export default function LandingPage() {
               </div>
             </div>
           </div>
-          <div className="hero-stats">
-            <div className="stat-item">
-              <div className="stat-num">
-                <LiveCounter
-                  target={2.4}
-                  decimals={1}
-                  suffix="M+"
-                  className="stat-animated"
-                />
+          <div
+            className="hero-stats"
+            style={{ marginTop: 44, animation: "fadeUp 0.7s 0.4s ease both" }}
+          >
+            {[
+              {
+                num: 2.4,
+                decimals: 1,
+                suffix: "M+",
+                label: "Active Listings",
+                sub: "↑ 12% this month",
+              },
+              {
+                num: 1.2,
+                decimals: 1,
+                suffix: "L+",
+                label: "Families Helped",
+                sub: "↑ 8% this month",
+              },
+              {
+                num: 340,
+                decimals: 0,
+                suffix: "+",
+                label: "Indian Cities",
+                sub: "Tier 1, 2 & 3",
+              },
+              {
+                num: 18,
+                decimals: 0,
+                prefix: "₹",
+                suffix: "K",
+                label: "Avg. Savings",
+                sub: "Per transaction",
+              },
+            ].map((s, i) => (
+              <div key={i} className="stat-item">
+                <div className="stat-num">
+                  <LiveCounter
+                    target={s.num}
+                    decimals={s.decimals}
+                    suffix={s.suffix}
+                    prefix={s.prefix ?? ""}
+                    className="stat-animated"
+                  />
+                </div>
+                <div className="stat-label">{s.label}</div>
+                <div className="stat-delta">{s.sub}</div>
               </div>
-              <div className="stat-label">Active Listings</div>
-              <div className="stat-delta">↑ 12% this month</div>
-            </div>
-            <div className="stat-item">
-              <div className="stat-num">
-                <LiveCounter
-                  target={1.2}
-                  decimals={1}
-                  suffix="L+"
-                  className="stat-animated"
-                />
-              </div>
-              <div className="stat-label">Happy Families</div>
-              <div className="stat-delta">↑ 8% this month</div>
-            </div>
-            <div className="stat-item">
-              <div className="stat-num">
-                <LiveCounter
-                  target={340}
-                  suffix="+"
-                  className="stat-animated"
-                />
-              </div>
-              <div className="stat-label">Indian Cities</div>
-              <div className="stat-delta">Tier 1, 2 & 3</div>
-            </div>
-            <div className="stat-item">
-              <div className="stat-num">
-                ₹
-                <LiveCounter
-                  target={18}
-                  suffix="K"
-                  className="stat-animated"
-                />
-              </div>
-              <div className="stat-label">Avg. Savings</div>
-              <div className="stat-delta">Per transaction</div>
-            </div>
+            ))}
           </div>
         </div>
       </section>

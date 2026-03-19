@@ -16,6 +16,8 @@
 
 **Change-log:**
 
+- 2025-03-19: Phase 2 premium design: `globals.css` Phase 2 block (ease/shadow/radius tokens, pc-* Property Card system, button/nav/card/search/sidebar/hero micro-interactions, light overrides); PropertyCard rewritten with Next/Image, glass price tag, heart, badges, AI score; new FilterSidebar (type, BHK, budget presets, status/quality, AI Smart Match); SearchPageClient uses FilterSidebar and auto-fill prop grid; Landing hero-stats data-driven with LiveCounter prefix; Nav pills frosted glass.
+
 - 2026-03-19: Footer credit line: "Powered by Vedpragya" (vedpragya.com) · "Thoughtfully built for modern real estate"; FOOTER_COPY in copy.ts; footer-credits styles.
 
 - 2026-03-17: API client headers; neighbourhood copy and loading/error states; legal and forecast CTA; landing and search AI positioning (hero, search bar, AI Fab).
