@@ -10,9 +10,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getPropertyById } from "@/lib/property-api";
-import { DEMO_IMAGES } from "@/lib/demo-images";
-import { PropertyImage } from "@/components/ui/PropertyImage";
 import { PropertyDetailActions } from "@/components/property/PropertyDetailActions";
+import { PropertyGallery } from "@/components/property/PropertyGallery";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -33,50 +32,19 @@ export default async function PropertyDetailPage({ params }: PageProps) {
   const property = await getPropertyById(id);
   if (!property) notFound();
 
-  const locality = property.address.split(",")[0]?.trim() ?? "Search";
-
   return (
     <div className="page-wrap">
       <div className="detail-top-wrap" style={{ padding: "20px 52px 0", background: "var(--dark)", borderBottom: "1px solid var(--border)" }}>
         <div className="breadcrumb">
           <Link href="/">Home</Link><span>/</span>
           <Link href="/search">Buy in Gurgaon</Link><span>/</span>
-          <Link href="/search">{locality}</Link><span>/</span>
           <span style={{ color: "var(--text-muted)" }}>{property.title.split("—")[0]?.trim() ?? property.title}</span>
         </div>
-        <div className="gallery">
-          <div className="gallery-main">
-            <PropertyImage
-              src={property.coverImage ?? DEMO_IMAGES.defaultPropertyCover}
-              alt={property.title}
-              className="gallery-main-img"
-              sizes="(max-width: 768px) 100vw, 66vw"
-              placeholderGradient="linear-gradient(135deg,#132238,#1e3a5f,#0d1e3a)"
-            />
-            <div className="gallery-actions">
-              <button type="button" className="gal-btn">📸 All Photos (24)</button>
-              <button type="button" className="gal-btn">🎬 Video Tour</button>
-            </div>
-          </div>
-          <div className="gallery-sub">
-            <PropertyImage
-              src={property.galleryImages?.[0] ?? DEMO_IMAGES.defaultPropertyCover}
-              alt={`${property.title} — view 2`}
-              className="gallery-sub-img"
-              sizes="(max-width: 768px) 50vw, 33vw"
-              placeholderGradient="linear-gradient(135deg,#1a3020,#243a2a)"
-            />
-          </div>
-          <div className="gallery-sub">
-            <PropertyImage
-              src={property.galleryImages?.[1] ?? DEMO_IMAGES.defaultPropertyCover}
-              alt={`${property.title} — view 3`}
-              className="gallery-sub-img"
-              sizes="(max-width: 768px) 50vw, 33vw"
-              placeholderGradient="linear-gradient(135deg,#1a2030,#242a40)"
-            />
-          </div>
-        </div>
+        <PropertyGallery
+          coverImage={property.coverImage}
+          galleryImages={property.galleryImages}
+          title={property.title}
+        />
       </div>
       <div className="detail-layout">
         <div>

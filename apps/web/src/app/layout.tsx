@@ -19,6 +19,8 @@ import { SkipToContent, MAIN_CONTENT_ID } from "@/components/ui/SkipToContent";
 import ThemeProvider from "@/components/providers/ThemeProvider";
 import { AuthProvider } from "@/components/providers/AuthProvider";
 import { AIFabProvider } from "@/components/providers/AIFabProvider";
+import { ToastProvider } from "@/components/ui/Toast";
+import MobileBottomNav from "@/components/layout/MobileBottomNav";
 
 const playfair = Playfair_Display({
   variable: "--font-playfair",
@@ -56,6 +58,7 @@ export default function RootLayout({
         <ThemeProvider>
           <AuthProvider>
           <AIFabProvider>
+          <ToastProvider>
           <SkipToContent />
           <AnnouncementBar />
           <Nav />
@@ -64,8 +67,10 @@ export default function RootLayout({
             {children}
           </main>
           <Footer />
+          <MobileBottomNav />
           <AIFab />
           <RevealObserver />
+          </ToastProvider>
           </AIFabProvider>
           </AuthProvider>
         </ThemeProvider>

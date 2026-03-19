@@ -13,6 +13,9 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import { DEMO_IMAGES } from "@/lib/demo-images";
 import { PropertyImage } from "@/components/ui/PropertyImage";
+import { PropertyCard } from "@/components/search/PropertyCard";
+import { LiveCounter } from "@/components/ui/LiveCounter";
+import { SkeletonCard } from "@/components/ui/Skeleton";
 import { SEARCH_TABS } from "@property-app-ai/shared";
 import { useAIFab } from "@/components/providers/AIFabProvider";
 import { gqlProperties, type ApiProperty } from "@/lib/graphql-client";
@@ -35,12 +38,6 @@ const CITIES = [
   { name: "Chennai", count: "1.4L+ listings", trend: "↑ 15% YoY growth", emoji: "🏛️", bg: "linear-gradient(135deg,#121a26,#060d1a)" },
 ];
 
-function formatPrice(price: number): string {
-  return price >= 1_00_00_000
-    ? `₹${(price / 1_00_00_000).toFixed(2)} Cr`
-    : `₹${(price / 1_00_000).toFixed(0)} L`;
-}
-
 export default function LandingPage() {
   const { setOpen: openAIPanel, openPanelWithPrompt } = useAIFab();
   const [activeTab, setActiveTab] = useState("buy");
@@ -49,7 +46,6 @@ export default function LandingPage() {
   const [featuredProperties, setFeaturedProperties] = useState<ApiProperty[] | null>(null);
   const [featuredLoading, setFeaturedLoading] = useState(true);
   const [featuredError, setFeaturedError] = useState<string | null>(null);
-  const [hearts, setHearts] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     const t = setInterval(() => {
@@ -84,10 +80,6 @@ export default function LandingPage() {
     })();
     return () => { cancelled = true; };
   }, []);
-
-  const toggleHeart = (id: string) => {
-    setHearts((prev) => ({ ...prev, [id]: !prev[id] }));
-  };
 
   return (
     <>
@@ -205,22 +197,49 @@ export default function LandingPage() {
           </div>
           <div className="hero-stats">
             <div className="stat-item">
-              <div className="stat-num">2.4<span className="unit">M+</span></div>
+              <div className="stat-num">
+                <LiveCounter
+                  target={2.4}
+                  decimals={1}
+                  suffix="M+"
+                  className="stat-animated"
+                />
+              </div>
               <div className="stat-label">Active Listings</div>
               <div className="stat-delta">↑ 12% this month</div>
             </div>
             <div className="stat-item">
-              <div className="stat-num">1.2<span className="unit">L+</span></div>
+              <div className="stat-num">
+                <LiveCounter
+                  target={1.2}
+                  decimals={1}
+                  suffix="L+"
+                  className="stat-animated"
+                />
+              </div>
               <div className="stat-label">Happy Families</div>
               <div className="stat-delta">↑ 8% this month</div>
             </div>
             <div className="stat-item">
-              <div className="stat-num">340<span className="unit">+</span></div>
+              <div className="stat-num">
+                <LiveCounter
+                  target={340}
+                  suffix="+"
+                  className="stat-animated"
+                />
+              </div>
               <div className="stat-label">Indian Cities</div>
               <div className="stat-delta">Tier 1, 2 & 3</div>
             </div>
             <div className="stat-item">
-              <div className="stat-num">₹18<span className="unit">K</span></div>
+              <div className="stat-num">
+                ₹
+                <LiveCounter
+                  target={18}
+                  suffix="K"
+                  className="stat-animated"
+                />
+              </div>
               <div className="stat-label">Avg. Savings</div>
               <div className="stat-delta">Per transaction</div>
             </div>
@@ -284,64 +303,38 @@ export default function LandingPage() {
         <div className="listings-grid">
           {featuredLoading ? (
             <>
-              <div className="l-card featured reveal" aria-hidden>
-                <div className="l-img"><div className="l-img-bg" style={{ background: "var(--bg-subtle)" }} /><div className="l-img-gradient" /></div>
-                <div className="l-body"><div className="l-price" style={{ opacity: 0.5 }}>—</div><div className="l-name" style={{ opacity: 0.5 }}>Loading…</div></div>
-              </div>
-              <div className="l-card reveal" aria-hidden><div className="l-img"><div className="l-img-bg" style={{ background: "var(--bg-subtle)" }} /><div className="l-img-gradient" /></div><div className="l-body"><div className="l-name" style={{ opacity: 0.5 }}>Loading…</div></div></div>
-              <div className="l-card reveal" aria-hidden><div className="l-img"><div className="l-img-bg" style={{ background: "var(--bg-subtle)" }} /><div className="l-img-gradient" /></div><div className="l-body"><div className="l-name" style={{ opacity: 0.5 }}>Loading…</div></div></div>
+              <SkeletonCard />
+              <SkeletonCard />
+              <SkeletonCard />
             </>
           ) : featuredError || !featuredProperties?.length ? (
-            <div className="l-card featured reveal" style={{ gridColumn: "1 / -1", textAlign: "center", padding: "48px 24px" }}>
+            <div
+              className="l-card featured reveal"
+              style={{
+                gridColumn: "1 / -1",
+                textAlign: "center",
+                padding: "48px 24px",
+              }}
+            >
               <p style={{ marginBottom: 16, color: "var(--text-muted)" }}>
                 {featuredError ?? "No featured properties right now."}
               </p>
-              <Link href="/search" className="btn-nav-primary" style={{ padding: "12px 24px", borderRadius: 12 }}>
+              <Link
+                href="/search"
+                className="btn-primary"
+                style={{
+                  padding: "12px 24px",
+                  borderRadius: 12,
+                  textDecoration: "none",
+                }}
+              >
                 Explore all properties →
               </Link>
             </div>
           ) : (
-            featuredProperties.map((p, idx) => {
-              const coverUrl = p.coverImageUrl ?? DEMO_IMAGES.defaultPropertyCover;
-              const isFeatured = idx === 0;
-              const score = p.aiScore ?? 0;
-              const sqft = p.areaSqft ? ` · ${p.areaSqft.toLocaleString()} sq.ft` : "";
-              return (
-                <Link key={p.id} href={`/property/${p.id}`} className={`l-card reveal${isFeatured ? " featured" : ""}`}>
-                  <div className="l-img">
-                    <PropertyImage
-                      src={coverUrl}
-                      alt={p.title}
-                      className="l-img-bg"
-                      sizes={isFeatured ? "(max-width: 768px) 100vw, 50vw" : "(max-width: 768px) 100vw, 33vw"}
-                    />
-                    <div className="l-img-gradient" />
-                    <div className="l-badges">
-                      {score >= 90 && <span className="lb lb-ai">✦ AI PICK</span>}
-                      {score >= 90 ? <span className="lb lb-premium">⭐ PREMIUM</span> : <span className="lb lb-verified">✓ Verified</span>}
-                    </div>
-                    <button type="button" className="l-heart" onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleHeart(p.id); }} aria-label="Save">{hearts[p.id] ? "❤️" : "♡"}</button>
-                    {score > 0 && (
-                      <div className="l-score" style={isFeatured ? { bottom: 72 } : undefined}>
-                        <div className="l-score-num">{score}</div>
-                        <div className="l-score-label">AI Score</div>
-                      </div>
-                    )}
-                  </div>
-                  <div className="l-body">
-                    <div className="l-price">{formatPrice(p.price)} <span className="l-unit">onwards</span></div>
-                    <div className="l-name">{p.title}</div>
-                    <div className="l-loc">📍 {p.location}{sqft}</div>
-                    <div className="l-specs">
-                      <span className="l-spec">🛏 {p.bedrooms} BHK</span>
-                      <span className="l-spec">🚿 {p.bathrooms} Bath</span>
-                      {p.areaSqft != null && <span className="l-spec">📐 {p.areaSqft.toLocaleString()} sqft</span>}
-                    </div>
-                    {p.aiTip && <div className="l-ai-box"><strong>✦ AI:</strong> {p.aiTip}</div>}
-                  </div>
-                </Link>
-              );
-            })
+            featuredProperties.map((p) => (
+              <PropertyCard key={p.id} property={p} />
+            ))
           )}
         </div>
       </section>
