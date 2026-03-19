@@ -1,47 +1,55 @@
 const CACHE_NAME = "urbannest-v1";
-const STATIC_ASSETS = ["/", "/search", "/offline.html"];
 
 self.addEventListener("install", (e) => {
-  e.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(STATIC_ASSETS))
-  );
   self.skipWaiting();
 });
 
 self.addEventListener("activate", (e) => {
   e.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k)))
-    )
+    caches
+      .keys()
+      .then((keys) =>
+        Promise.all(
+          keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k))
+        )
+      )
+      .then(() => self.clients.claim())
   );
-  self.clients.claim();
 });
 
 self.addEventListener("fetch", (e) => {
   const { request } = e;
   const url = new URL(request.url);
 
-  // Network-first for API/GraphQL
-  if (url.pathname.startsWith("/api/") || url.pathname.startsWith("/graphql")) {
+  if (request.method !== "GET") return;
+  if (url.pathname.startsWith("/_next/webpack-hmr")) return;
+  if (url.pathname.startsWith("/__nextjs")) return;
+
+  if (
+    url.pathname.startsWith("/api/") ||
+    url.pathname.startsWith("/graphql") ||
+    url.pathname.startsWith("/notifications")
+  ) {
     e.respondWith(
-      fetch(request).catch(() =>
-        new Response(JSON.stringify({ error: "offline" }), {
-          headers: { "Content-Type": "application/json" },
-        })
+      fetch(request).catch(
+        () =>
+          new Response(JSON.stringify({ error: "offline" }), {
+            status: 503,
+            headers: { "Content-Type": "application/json" },
+          })
       )
     );
     return;
   }
 
-  // Cache-first for static assets
-  if (request.destination === "image" || url.pathname.startsWith("/_next/static/")) {
+  if (url.pathname.startsWith("/_next/static/")) {
     e.respondWith(
-      caches.match(request).then((cached) =>
-        cached ??
+      caches.match(request).then(
+        (cached) =>
+          cached ??
           fetch(request).then((res) => {
             if (res.ok) {
-              const clone = res.clone();
-              caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
+              caches.open(CACHE_NAME).then((c) => c.put(request, res.clone()));
             }
             return res;
           })
@@ -50,10 +58,40 @@ self.addEventListener("fetch", (e) => {
     return;
   }
 
-  // Network-first for pages, fallback to offline
+  if (request.destination === "image") {
+    e.respondWith(
+      caches.match(request).then(
+        (cached) =>
+          cached ??
+          fetch(request)
+            .then((res) => {
+              if (res.ok) {
+                caches.open(CACHE_NAME).then((c) => c.put(request, res.clone()));
+              }
+              return res;
+            })
+            .catch(() => new Response("", { status: 408 }))
+      )
+    );
+    return;
+  }
+
   e.respondWith(
-    fetch(request).catch(() =>
-      caches.match(request).then((cached) => cached ?? caches.match("/offline.html"))
-    )
+    fetch(request)
+      .then((res) => {
+        if (res.ok && request.destination === "document") {
+          caches.open(CACHE_NAME).then((c) => c.put(request, res.clone()));
+        }
+        return res;
+      })
+      .catch(async () => {
+        const cached = await caches.match(request);
+        if (cached) return cached;
+        if (request.destination === "document") {
+          const offlinePage = await caches.match("/offline.html");
+          if (offlinePage) return offlinePage;
+        }
+        return new Response("Offline", { status: 503 });
+      })
   );
 });

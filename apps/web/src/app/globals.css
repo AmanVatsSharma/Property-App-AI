@@ -1118,13 +1118,10 @@ footer {
    ============================================================ */
 
 /* Content-visibility for off-screen heavy sections */
-.city-section,
-.testimonials-section,
-.app-section,
-.score-panel {
-  content-visibility: auto;
-  contain-intrinsic-size: 0 600px;
-}
+/* GPU compositing for animated sections only (content-visibility removed — layout issues in Safari) */
+.hero { will-change: auto; }
+.prop-card-v2 { will-change: transform; }
+.ai-fab-btn { will-change: transform; }
 
 /* Smooth scrolling only for users who haven't opted out */
 @media (prefers-reduced-motion: no-preference) {
