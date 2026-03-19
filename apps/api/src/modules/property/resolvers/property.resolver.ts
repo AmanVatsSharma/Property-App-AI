@@ -31,7 +31,9 @@ export class PropertyResolver {
   ) {}
 
   @Query(() => [Property], { name: 'properties' })
-  async properties(@Args() filter: PropertyFilterDto): Promise<Property[]> {
+  async properties(
+    @Args('filter', { nullable: true, defaultValue: {} }) filter: PropertyFilterDto,
+  ): Promise<Property[]> {
     this.logger.debug('properties query entry', { method: 'properties' });
     const result = await this.propertyService.findAll(filter);
     this.logger.debug('properties query exit', { method: 'properties' });
@@ -59,7 +61,9 @@ export class PropertyResolver {
   }
 
   @Query(() => PropertiesPage, { name: 'propertiesPage' })
-  async propertiesPage(@Args() filter: PropertyFilterDto): Promise<PropertiesPage> {
+  async propertiesPage(
+    @Args('filter', { nullable: true, defaultValue: {} }) filter: PropertyFilterDto,
+  ): Promise<PropertiesPage> {
     return this.propertyService.findAllPage(filter);
   }
 

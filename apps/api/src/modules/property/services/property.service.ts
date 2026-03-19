@@ -84,8 +84,11 @@ export class PropertyService {
     if (!createdByUserId) {
       throw new UnauthorizedException('Sign in is required to create a listing');
     }
+
+    // First listing is free; subsequent listings require a paid plan (enforced at billing layer later)
     const existingListingCount = await this.propertyRepo.countByUserId(createdByUserId);
     const isFreeListing = existingListingCount === 0;
+
     let latitude = dto.latitude;
     let longitude = dto.longitude;
     let locality = dto.locality;
