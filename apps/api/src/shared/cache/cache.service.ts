@@ -38,4 +38,38 @@ export class CacheService {
     if (!this.redis) return;
     await this.redis.del(key);
   }
+
+  /**
+   * Fetch from cache; on miss call loader(), cache the result, return it.
+   */
+  async getOrSet<T>(
+    key: string,
+    loader: () => Promise<T>,
+    ttlSeconds: number,
+  ): Promise<T> {
+    const hit = await this.get<T>(key);
+    if (hit !== null) return hit;
+    const value = await loader();
+    await this.set(key, value, ttlSeconds);
+    return value;
+  }
+
+  /**
+   * Delete all keys matching a prefix (Redis SCAN). No-op in memory mode.
+   */
+  async delByPrefix(prefix: string): Promise<void> {
+    if (!this.redis) return;
+    let cursor = '0';
+    do {
+      const [next, keys] = await this.redis.scan(
+        cursor,
+        'MATCH',
+        `${prefix}*`,
+        'COUNT',
+        100,
+      );
+      cursor = next;
+      if (keys.length) await this.redis.del(...keys);
+    } while (cursor !== '0');
+  }
 }

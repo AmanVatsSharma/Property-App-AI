@@ -38,6 +38,18 @@ export class PropertyService {
 
   async findAll(filter: PropertyFilterDto): Promise<Property[]> {
     this.logger.debug('findAll entry', { method: 'findAll' });
+    const canCache =
+      !filter.createdByUserId &&
+      filter.minLat == null &&
+      filter.maxLat == null;
+    if (canCache) {
+      const key = `props:list:${JSON.stringify(filter)}`;
+      return this.cache.getOrSet(
+        key,
+        () => this.propertyRepo.findAllWithFilters(filter),
+        60,
+      );
+    }
     const result = await this.propertyRepo.findAllWithFilters(filter);
     this.logger.debug('findAll exit', { method: 'findAll', count: result.length });
     return result;
@@ -130,6 +142,7 @@ export class PropertyService {
       isFreeListing,
     );
     this.metrics.recordPropertyCreated();
+    await this.cache.delByPrefix('props:list:');
     this.logger.debug('create exit', { method: 'create', id: result.id, isFreeListing });
     return result;
   }
@@ -215,6 +228,7 @@ export class PropertyService {
     this.assertOwnerOrAdmin(property, requestingUserId, requestingUserRole);
     const result = await this.propertyRepo.delete(id);
     await this.cache.del(`property:${id}`);
+    await this.cache.delByPrefix('props:list:');
     this.logger.debug('remove exit', { method: 'remove', id, deleted: result });
     return result;
   }
