@@ -29,6 +29,7 @@ import { PropertyModule } from '@api/modules/property/property.module';
 import { AgentModule } from '@api/modules/agent/agent.module';
 import { AreaModule } from '@api/modules/area/area.module';
 import { StorageModule } from '@api/modules/storage/storage.module';
+import { MailModule } from '@api/modules/mail/mail.module';
 import { AdminModule } from '@api/modules/admin/admin.module';
 import { FavoriteModule } from '@api/modules/favorite/favorite.module';
 import { EnquiryModule } from '@api/modules/enquiry/enquiry.module';
@@ -137,6 +138,7 @@ import { CacheModule } from '@api/shared/cache/cache.module';
     AgentModule,
     AreaModule,
     StorageModule,
+    MailModule,
     AdminModule,
     FavoriteModule,
     EnquiryModule,
