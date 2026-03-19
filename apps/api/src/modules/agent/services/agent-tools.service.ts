@@ -12,7 +12,7 @@ import { z } from 'zod';
 import { LoggerService } from '@api/shared/logger';
 import { PropertyService } from '@api/modules/property/services/property.service';
 import { AreaService } from '@api/modules/area/services/area.service';
-import { PriceForecastService } from '@api/modules/agent/services/price-forecast.service';
+import { PriceForecastService } from '@api/modules/area/services/price-forecast.service';
 import type { Area } from '@api/modules/area/entities/area.entity';
 import type { StructuredToolInterface } from '@langchain/core/tools';
 import type { Property } from '@api/modules/property/entities/property.entity';
@@ -30,7 +30,7 @@ export interface AgentContext {
 @Injectable()
 export class AgentToolsService {
   private agentContext: AgentContext = {};
-  private cachedTools: StructuredToolInterface[] | null = null;
+  private toolCache = new Map<string | null, StructuredToolInterface[]>();
 
   constructor(
     private readonly propertyService: PropertyService,
@@ -45,15 +45,16 @@ export class AgentToolsService {
 
   clearAgentContext(): void {
     this.agentContext = {};
-    this.cachedTools = null;
   }
 
   /**
    * Returns LangChain tool definitions for the orchestrator to bind to the LLM.
    */
   getTools(): StructuredToolInterface[] {
-    if (this.cachedTools) return this.cachedTools;
-    this.logger.debug('getTools entry', { method: 'getTools' });
+    if (this.toolCache.has('__static__')) {
+      return this.toolCache.get('__static__')!;
+    }
+    this.logger.debug('getTools build', { method: 'getTools' });
     const self = this;
     const tools: StructuredToolInterface[] = [
       tool(
@@ -249,8 +250,8 @@ export class AgentToolsService {
         },
       ),
     ];
-    this.logger.debug('getTools exit', { method: 'getTools', count: tools.length });
-    this.cachedTools = tools;
+    this.toolCache.set('__static__', tools);
+    this.logger.debug('getTools cached', { method: 'getTools', count: tools.length });
     return tools;
   }
 
