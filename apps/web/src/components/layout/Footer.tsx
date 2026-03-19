@@ -1,13 +1,14 @@
 /**
  * @file Footer.tsx
  * @module layout
- * @description Site footer with links
+ * @description Site footer with links and Vedpragya credit line
  * @author BharatERP
  * @created 2025-03-10
  */
 
 import Link from "next/link";
 import { FOOTER_LINKS } from "@property-app-ai/shared";
+import { FOOTER_COPY } from "@/lib/copy";
 
 export default function Footer() {
   return (
@@ -70,6 +71,25 @@ export default function Footer() {
         <span>© 2025 UrbanNest Technologies Pvt. Ltd. · DPIIT Recognised</span>
         <span>
           Built with <span className="teal">AI ✦</span> in India 🇮🇳
+        </span>
+      </div>
+      <div
+        className="footer-credits"
+        role="contentinfo"
+        aria-label="Platform credit"
+      >
+        <span>
+          {FOOTER_COPY.poweredBy}
+          <a
+            href={FOOTER_COPY.vedpragyaUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="footer-credits-link"
+            data-testid="footer-vedpragya-link"
+          >
+            {FOOTER_COPY.vedpragya}
+          </a>
+          {FOOTER_COPY.tagline}
         </span>
       </div>
     </footer>

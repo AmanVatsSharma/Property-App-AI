@@ -256,6 +256,9 @@ footer {
 .footer-col a:hover { color: var(--teal); }
 .footer-bottom { padding-top: 24px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: var(--text-dim); }
 .footer-bottom .teal { color: var(--teal); font-weight: 600; }
+.footer-credits { padding-top: 16px; text-align: center; font-size: 11px; color: var(--text-dim); }
+.footer-credits-link { color: var(--teal); text-decoration: none; font-weight: 600; transition: color 0.2s; }
+.footer-credits-link:hover { color: var(--teal); text-decoration: underline; }
 
 /* ── AI FAB ── */
 .ai-fab { position: fixed; bottom: 28px; right: 28px; z-index: 800; padding-bottom: env(safe-area-inset-bottom, 0); }
