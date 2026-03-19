@@ -1,7 +1,7 @@
 /**
  * @file layout.tsx
  * @module app
- * @description Root layout with fonts, nav, footer, AI FAB
+ * @description Root layout — fonts, providers, nav, footer, PWA.
  * @author BharatERP
  * @created 2025-03-10
  */
@@ -14,14 +14,14 @@ import Nav from "@/components/layout/Nav";
 import Footer from "@/components/layout/Footer";
 import AIFab from "@/components/layout/AIFab";
 import MobileAppPrompt from "@/components/layout/MobileAppPrompt";
+import MobileBottomNav from "@/components/layout/MobileBottomNav";
+import ServiceWorkerInit from "@/components/layout/ServiceWorkerInit";
 import RevealObserver from "@/components/ui/RevealObserver";
 import { SkipToContent, MAIN_CONTENT_ID } from "@/components/ui/SkipToContent";
 import ThemeProvider from "@/components/providers/ThemeProvider";
 import { AuthProvider } from "@/components/providers/AuthProvider";
 import { AIFabProvider } from "@/components/providers/AIFabProvider";
 import { ToastProvider } from "@/components/ui/Toast";
-import MobileBottomNav from "@/components/layout/MobileBottomNav";
-import ServiceWorkerInit from "@/components/layout/ServiceWorkerInit";
 import { organizationJsonLd, searchActionJsonLd } from "@/lib/seo";
 
 const playfair = Playfair_Display({
@@ -29,15 +29,15 @@ const playfair = Playfair_Display({
   subsets: ["latin"],
   weight: ["400", "600", "700"],
   style: ["normal", "italic"],
+  display: "swap",
 });
 
 const outfit = Outfit({
   variable: "--font-outfit",
   subsets: ["latin"],
   weight: ["300", "400", "500", "600", "700"],
+  display: "swap",
 });
-
-const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://urbannest.ai";
 
 export const metadata: Metadata = {
   title: {
@@ -47,25 +47,28 @@ export const metadata: Metadata = {
   description:
     "AI-powered property search, price intelligence and neighbourhood scoring across 340+ Indian cities. Buy, rent and invest smarter.",
   keywords:
-    "real estate India, property search, buy flat, rent apartment, AI property, RERA verified",
-  metadataBase: new URL(BASE_URL),
-  openGraph: {
-    type: "website",
-    locale: "en_IN",
-    siteName: "UrbanNest.ai",
-    images: [{ url: "/og-default.jpg", width: 1200, height: 630 }],
-  },
-  twitter: { card: "summary_large_image", site: "@urbannestai" },
-  robots: { index: true, follow: true },
-  verification: {
-    google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION ?? "",
-  },
+    "real estate India, property search, buy flat India, rent apartment India, AI property search, RERA verified",
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_SITE_URL ?? "https://urbannest.ai"
+  ),
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
     title: "UrbanNest.ai",
   },
+  openGraph: {
+    type: "website",
+    locale: "en_IN",
+    siteName: "UrbanNest.ai",
+    images: [{ url: "/og-default.jpg", width: 1200, height: 630 }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    site: "@urbannestai",
+    images: ["/og-default.jpg"],
+  },
+  robots: { index: true, follow: true },
   icons: {
     icon: [
       { url: "/icons/icon-32.png", sizes: "32x32", type: "image/png" },
@@ -90,39 +93,49 @@ export const viewport: Viewport = {
 
 export default function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+}: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${outfit.variable} ${playfair.variable} ${outfit.className} antialiased`}>
+      <body
+        className={`${outfit.variable} ${playfair.variable} ${outfit.className} antialiased`}
+      >
         <ThemeProvider>
           <AuthProvider>
-          <AIFabProvider>
-          <ToastProvider>
-          <SkipToContent />
-          <AnnouncementBar />
-          <Nav />
-          <main id={MAIN_CONTENT_ID} tabIndex={-1}>
-            <MobileAppPrompt />
-            {children}
-          </main>
-          <Footer />
-          <MobileBottomNav />
-          <AIFab />
-          <RevealObserver />
-          </ToastProvider>
-          </AIFabProvider>
+            <AIFabProvider>
+              <ToastProvider>
+                <SkipToContent />
+                <AnnouncementBar />
+                <Nav />
+                <main id={MAIN_CONTENT_ID} tabIndex={-1}>
+                  <MobileAppPrompt />
+                  {children}
+                </main>
+                <Footer />
+                <MobileBottomNav />
+                <AIFab />
+                <RevealObserver />
+              </ToastProvider>
+            </AIFabProvider>
           </AuthProvider>
         </ThemeProvider>
+
+        {/* JSON-LD structured data */}
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
+          // eslint-disable-next-line react/no-danger
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(organizationJsonLd),
+          }}
         />
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(searchActionJsonLd) }}
+          // eslint-disable-next-line react/no-danger
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(searchActionJsonLd),
+          }}
         />
+
+        {/* PWA service worker registration */}
         <ServiceWorkerInit />
       </body>
     </html>

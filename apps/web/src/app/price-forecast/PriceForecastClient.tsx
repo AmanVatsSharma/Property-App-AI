@@ -9,7 +9,6 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { apiGet, ApiError } from "@/lib/api-client";
 
 interface ForecastResult {
   locality: string;
@@ -99,42 +98,39 @@ export default function PriceForecastClient() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL ?? "";
-
-  const fetchForecast = useCallback(
-    async (loc: string, cit: string) => {
-      if (!loc.trim()) return;
+  const fetchForecast = useCallback(async (loc: string, cit: string) => {
+    if (!loc.trim()) return;
+    setLoading(true);
+    setError(null);
+    setResult(null);
+    try {
+      const baseUrl = (process.env.NEXT_PUBLIC_API_URL ?? "").replace(/\/$/, "");
       if (!baseUrl) {
-        setError("Backend not configured. Set NEXT_PUBLIC_API_URL.");
+        setError(
+          "Backend not configured. Set NEXT_PUBLIC_API_URL in apps/web/.env.local"
+        );
         return;
       }
-      setLoading(true);
-      setError(null);
-      setResult(null);
-      try {
-        const params = new URLSearchParams({
-          locality: loc.trim(),
-          city: cit.trim(),
-          horizon: "24",
-        });
-        const data = await apiGet<ForecastResult>(
-          `api/v1/price-forecast?${params}`,
-        );
-        setResult(data);
-      } catch (e) {
-        setError(
-          e instanceof ApiError
-            ? `Error ${e.status}: ${e.statusText}`
-            : e instanceof Error
-              ? e.message
-              : "Request failed",
-        );
-      } finally {
-        setLoading(false);
+      const params = new URLSearchParams({
+        locality: loc.trim(),
+        ...(cit.trim() && { city: cit.trim() }),
+        horizon: "24",
+      });
+      const res = await fetch(
+        `${baseUrl}/api/v1/price-forecast?${params.toString()}`
+      );
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(`${res.status}: ${text.slice(0, 120)}`);
       }
-    },
-    [baseUrl],
-  );
+      const data = (await res.json()) as ForecastResult;
+      setResult(data);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Request failed");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

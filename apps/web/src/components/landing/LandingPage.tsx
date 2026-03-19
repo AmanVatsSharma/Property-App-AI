@@ -300,20 +300,22 @@ export default function LandingPage() {
           </div>
           <Link href="/search" className="view-all-link">View all listings →</Link>
         </div>
-        <div className="listings-grid">
+        <div className="grid-3" style={{ gap: 20 }}>
           {featuredLoading ? (
             <>
-              <SkeletonCard />
-              <SkeletonCard />
-              <SkeletonCard />
+              <SkeletonCard key="sk1" />
+              <SkeletonCard key="sk2" />
+              <SkeletonCard key="sk3" />
             </>
           ) : featuredError || !featuredProperties?.length ? (
             <div
-              className="l-card featured reveal"
               style={{
                 gridColumn: "1 / -1",
                 textAlign: "center",
                 padding: "48px 24px",
+                background: "var(--dark-2)",
+                borderRadius: "var(--radius)",
+                border: "1px solid var(--border)",
               }}
             >
               <p style={{ marginBottom: 16, color: "var(--text-muted)" }}>
@@ -322,11 +324,7 @@ export default function LandingPage() {
               <Link
                 href="/search"
                 className="btn-primary"
-                style={{
-                  padding: "12px 24px",
-                  borderRadius: 12,
-                  textDecoration: "none",
-                }}
+                style={{ padding: "12px 24px", borderRadius: 12, textDecoration: "none" }}
               >
                 Explore all properties →
               </Link>
