@@ -10,8 +10,11 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getPropertyById } from "@/lib/property-api";
+import { buildMetadata, propertyJsonLd } from "@/lib/seo";
 import { PropertyDetailActions } from "@/components/property/PropertyDetailActions";
 import { PropertyGallery } from "@/components/property/PropertyGallery";
+
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://urbannest.ai";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -20,11 +23,15 @@ interface PageProps {
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { id } = await params;
   const property = await getPropertyById(id);
-  if (!property) return { title: "Property — UrbanNest.ai" };
-  return {
-    title: `${property.title} — UrbanNest.ai`,
-    description: `${property.address} · ${property.price}`,
-  };
+  if (!property) return { title: "Property Not Found — UrbanNest.ai" };
+  const description = `${property.title} in ${property.address}. ${property.price}. ${property.quickSpecs.map((s) => s.val).join(", ")}. View full details, AI score, and contact owner.`;
+  return buildMetadata({
+    title: property.title,
+    description,
+    path: `/property/${id}`,
+    image: property.coverImage,
+    keywords: [property.address, "property for sale India", "flat for rent India"],
+  });
 }
 
 export default async function PropertyDetailPage({ params }: PageProps) {
@@ -32,8 +39,31 @@ export default async function PropertyDetailPage({ params }: PageProps) {
   const property = await getPropertyById(id);
   if (!property) notFound();
 
+  const numericPrice = Number(property.price.replace(/[^0-9.]/g, "")) || 0;
+  const bedroomsSpec = property.quickSpecs.find((q) => q.label === "Bedrooms");
+  const bedrooms = bedroomsSpec ? parseInt(bedroomsSpec.val, 10) : undefined;
+  const areaSpec = property.quickSpecs.find((q) => q.label === "Sq.ft");
+  const areaSqft = areaSpec ? parseInt(areaSpec.val.replace(/,/g, ""), 10) : undefined;
+
+  const jsonLd = propertyJsonLd({
+    id: property.id,
+    title: property.title,
+    description: `${property.title} in ${property.address}`,
+    price: numericPrice,
+    location: property.address,
+    imageUrl: property.coverImage,
+    url: `${BASE_URL}/property/${property.id}`,
+    bedrooms: Number.isNaN(bedrooms) ? undefined : bedrooms,
+    areaSqft: Number.isNaN(areaSqft) ? undefined : areaSqft ?? undefined,
+  });
+
   return (
-    <div className="page-wrap">
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <div className="page-wrap">
       <div className="detail-top-wrap" style={{ padding: "20px 52px 0", background: "var(--dark)", borderBottom: "1px solid var(--border)" }}>
         <div className="breadcrumb">
           <Link href="/">Home</Link><span>/</span>
@@ -112,5 +142,6 @@ export default async function PropertyDetailPage({ params }: PageProps) {
         </div>
       </div>
     </div>
+    </>
   );
 }
