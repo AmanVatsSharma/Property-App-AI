@@ -1,0 +1,40 @@
+/**
+ * @file saved-search.module.ts
+ * @module saved-search
+ * @description Feature module: saved property searches with optional email/alert support.
+ * @author BharatERP
+ * @created 2026-03-19
+ */
+
+import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { BullModule } from '@nestjs/bullmq';
+import { SavedSearch } from './entities/saved-search.entity';
+import { SavedSearchRepository } from './repository/saved-search.repository';
+import { SavedSearchService } from './services/saved-search.service';
+import { SavedSearchResolver } from './resolvers/saved-search.resolver';
+import {
+  SavedSearchAlertProcessor,
+  SAVED_SEARCH_QUEUE,
+} from './processors/saved-search-alert.processor';
+import { NotificationModule } from '@api/modules/notification/notification.module';
+import { PropertyModule } from '@api/modules/property/property.module';
+import { JsonScalar } from '@api/shared/scalars/json.scalar';
+
+@Module({
+  imports: [
+    TypeOrmModule.forFeature([SavedSearch]),
+    BullModule.registerQueue({ name: SAVED_SEARCH_QUEUE }),
+    NotificationModule,
+    PropertyModule,
+  ],
+  providers: [
+    JsonScalar,
+    SavedSearchRepository,
+    SavedSearchService,
+    SavedSearchResolver,
+    SavedSearchAlertProcessor,
+  ],
+  exports: [SavedSearchService],
+})
+export class SavedSearchModule {}
