@@ -14,7 +14,9 @@ mkdir -p "$BUNDLE_DIR"
 should_exclude_api() {
   local path="$1"
   [[ "$path" == *"__tests__"* ]] && return 0
+  [[ "$path" == *"__mocks__"* ]] && return 0
   [[ "$path" == *".spec.ts" ]] && return 0
+  [[ "$path" == *".mock.ts" ]] && return 0
   [[ "$path" == *"MODULE_DOC.md" ]] && return 0
   [[ "$path" == *"README.md" ]] && return 0
   [[ "$path" == *".gitkeep" ]] && return 0
@@ -25,9 +27,12 @@ should_exclude_api() {
 should_exclude_web() {
   local path="$1"
   [[ "$path" == *"__tests__"* ]] && return 0
+  [[ "$path" == *"__mocks__"* ]] && return 0
   [[ "$path" == *"/test/"* ]] && return 0
   [[ "$path" == *".spec.ts" ]] && return 0
   [[ "$path" == *".spec.tsx" ]] && return 0
+  [[ "$path" == *".mock.ts" ]] && return 0
+  [[ "$path" == *".mock.tsx" ]] && return 0
   [[ "$path" == *"MODULE_DOC.md" ]] && return 0
   [[ "$path" == *"README.md" ]] && return 0
   return 1
