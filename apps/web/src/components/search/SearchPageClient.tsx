@@ -18,6 +18,7 @@ import { useToast } from "@/components/ui/Toast";
 import { gqlProperties, gqlSearchPropertiesByQuery, gqlToggleFavorite, type ApiProperty } from "@/lib/graphql-client";
 import { useAIFab } from "@/components/providers/AIFabProvider";
 import { useAuth } from "@/components/providers/AuthProvider";
+import { SaveSearchButton } from "./SaveSearchButton";
 import type { PropertyMapItem } from "./PropertyMap";
 
 const PropertyMap = dynamic(() => import("./PropertyMap").then((m) => m.PropertyMap), {
@@ -258,6 +259,15 @@ export default function SearchPageClient() {
                 ? "Loading…"
                 : `Showing ${apiProperties.length} propert${apiProperties.length === 1 ? "y" : "ies"}`}
         </span>
+        <SaveSearchButton
+          filters={{
+            ...(params.city && { location: params.city }),
+            ...(params.bhk && { bedrooms: parseInt(params.bhk, 10) }),
+            ...(params.type && { type: params.type }),
+            ...(params.minPrice && { minPrice: parseInt(params.minPrice, 10) }),
+            ...(params.maxPrice && { maxPrice: parseInt(params.maxPrice, 10) }),
+          }}
+        />
         {nlSearchResults !== null && (
           <button
             type="button"
