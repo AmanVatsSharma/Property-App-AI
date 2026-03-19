@@ -50,4 +50,15 @@ export class EnquiryService {
   async mySent(fromUserId: string): Promise<Enquiry[]> {
     return this.enquiryRepo.findByFromUserId(fromUserId);
   }
+
+  async updateStatus(
+    id: string,
+    status: string,
+    requestingUserId: string,
+  ): Promise<Enquiry | null> {
+    const enquiry = await this.enquiryRepo.findById(id);
+    if (!enquiry) return null;
+    if (enquiry.ownerUserId !== requestingUserId) return null;
+    return this.enquiryRepo.updateStatus(id, status);
+  }
 }

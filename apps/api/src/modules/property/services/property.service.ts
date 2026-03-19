@@ -86,11 +86,6 @@ export class PropertyService {
     }
     const existingListingCount = await this.propertyRepo.countByUserId(createdByUserId);
     const isFreeListing = existingListingCount === 0;
-    if (existingListingCount > 0 && !isFreeListing) {
-      throw new ForbiddenException(
-        'Free listing limit reached. Please upgrade to post more listings.',
-      );
-    }
     let latitude = dto.latitude;
     let longitude = dto.longitude;
     let locality = dto.locality;
