@@ -16,7 +16,7 @@ const NAV_ITEMS = [
   { href: "/", label: "Home", icon: "⌂" },
   { href: "/search", label: "Search", icon: "⌕" },
   { href: "/post-property", label: "Post", icon: "+" },
-  { href: "/favorites", label: "Saved", icon: "♡" },
+  { href: "/profile", label: "Profile", icon: "◉" },
 ];
 
 export default function MobileBottomNav() {
@@ -46,7 +46,7 @@ export default function MobileBottomNav() {
           aria-label="AI Assistant"
         >
           <span className="mbn-icon" aria-hidden>
-            🤖
+            ✦
           </span>
           <span>AI</span>
         </button>

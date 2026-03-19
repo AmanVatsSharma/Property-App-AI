@@ -130,23 +130,54 @@ export default function Nav() {
                 aria-expanded={profileOpen}
                 aria-haspopup="true"
               >
-                Profile
+                {profileUser?.displayName
+                  ? profileUser.displayName.split(" ")[0]
+                  : `+91 ****${profileUser?.phone?.slice(-4) ?? "…"}`}
               </button>
               {profileOpen && (
                 <>
-                  <div className="fixed inset-0 z-[90]" aria-hidden onClick={() => setProfileOpen(false)} />
-                  <div className="absolute right-0 top-full mt-1 py-2 min-w-[160px] rounded-lg bg-[var(--dark)] border border-[var(--border)] shadow-lg z-[91]">
-                    <p className="px-3 py-1 text-sm text-[var(--text-muted)]">
-                      {profileUser?.displayName
-                        ? `Signed in as ${profileUser.displayName}`
-                        : profileUser?.phone
-                          ? `Signed in as ******${profileUser.phone.slice(-4)}`
-                          : "Signed in"}
-                    </p>
+                  <div
+                    className="fixed inset-0 z-[90]"
+                    aria-hidden
+                    onClick={() => setProfileOpen(false)}
+                  />
+                  <div className="absolute right-0 top-full mt-1 py-2 min-w-[180px] rounded-xl bg-[var(--dark)] border border-[var(--border)] shadow-xl z-[91]">
+                    <Link
+                      href="/profile"
+                      className="block px-4 py-2 text-sm text-[var(--text-muted)] hover:text-[var(--teal)] hover:bg-[var(--teal-dim)] transition-colors"
+                      onClick={() => setProfileOpen(false)}
+                    >
+                      My Profile
+                    </Link>
+                    <Link
+                      href="/favorites"
+                      className="block px-4 py-2 text-sm text-[var(--text-muted)] hover:text-[var(--teal)] hover:bg-[var(--teal-dim)] transition-colors"
+                      onClick={() => setProfileOpen(false)}
+                    >
+                      Saved Properties
+                    </Link>
+                    <Link
+                      href="/saved-searches"
+                      className="block px-4 py-2 text-sm text-[var(--text-muted)] hover:text-[var(--teal)] hover:bg-[var(--teal-dim)] transition-colors"
+                      onClick={() => setProfileOpen(false)}
+                    >
+                      Saved Searches
+                    </Link>
+                    <Link
+                      href="/broker"
+                      className="block px-4 py-2 text-sm text-[var(--text-muted)] hover:text-[var(--teal)] hover:bg-[var(--teal-dim)] transition-colors"
+                      onClick={() => setProfileOpen(false)}
+                    >
+                      Broker Dashboard
+                    </Link>
+                    <div className="border-t border-[var(--border)] my-1" />
                     <button
                       type="button"
-                      className="w-full text-left px-3 py-2 text-sm hover:bg-[var(--hover-bg)]"
-                      onClick={() => { setProfileOpen(false); signOut(); }}
+                      className="w-full text-left px-4 py-2 text-sm text-[var(--coral)] hover:bg-[var(--coral-dim)] transition-colors"
+                      onClick={() => {
+                        setProfileOpen(false);
+                        signOut();
+                      }}
                     >
                       Sign out
                     </button>
