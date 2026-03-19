@@ -7,10 +7,13 @@
  */
 
 import { Injectable, ForbiddenException, NotFoundException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { SavedSearch } from '../entities/saved-search.entity';
 import { SavedSearchRepository } from '../repository/saved-search.repository';
 import { NotificationService } from '@api/modules/notification/services/notification.service';
 import { PropertyService } from '@api/modules/property/services/property.service';
+import { MailService } from '@api/modules/mail/mail.service';
+import { savedSearchAlertHtml, savedSearchAlertText } from '@api/modules/mail/templates/saved-search-alert.template';
 import { CreateSavedSearchInput, UpdateSavedSearchInput } from '../dtos/saved-search.dto';
 import { LoggerService } from '@api/shared/logger';
 import { PropertyFilterDto } from '@api/modules/property/dtos/property-filter.dto';
@@ -25,6 +28,8 @@ export class SavedSearchService {
     private readonly notificationService: NotificationService,
     private readonly propertyService: PropertyService,
     private readonly logger: LoggerService,
+    private readonly mail: MailService,
+    private readonly config: ConfigService,
   ) {}
 
   async findByUser(userId: string): Promise<SavedSearch[]> {
@@ -98,6 +103,22 @@ export class SavedSearchService {
           body,
           { savedSearchId: search.id, count: results.length },
         );
+
+        const siteUrl = this.config.get<string>('NEXT_PUBLIC_SITE_URL') ?? 'https://urbannest.ai';
+        const searchUrl = `${siteUrl}/search?savedSearch=${search.id}`;
+        this.mail
+          .send({
+            to: `user-${search.userId}@placeholder`,
+            subject: `${results.length} new matches for "${search.name}"`,
+            html: savedSearchAlertHtml({
+              name: search.name,
+              locality: typeof filters.location === 'string' ? filters.location : undefined,
+              count: results.length,
+              searchUrl,
+            }),
+            text: savedSearchAlertText({ name: search.name, count: results.length, searchUrl }),
+          })
+          .catch(() => {});
 
         await this.repo.markAlertSent(search.id);
         this.logger.debug('alert sent', {

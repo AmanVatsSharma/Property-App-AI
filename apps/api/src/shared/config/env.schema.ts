@@ -65,6 +65,12 @@ export const envSchema = Joi.object({
   COMPRESSION_ENABLED: Joi.boolean().default(true),
   WS_CORS_ORIGIN: Joi.string().optional().allow(''),
   GOOGLE_SITE_VERIFICATION: Joi.string().optional().allow(''),
+  SMTP_HOST: Joi.string().optional().allow(''),
+  SMTP_PORT: Joi.number().port().default(587),
+  SMTP_SECURE: Joi.boolean().default(false),
+  SMTP_USER: Joi.string().optional().allow(''),
+  SMTP_PASS: Joi.string().optional().allow(''),
+  SMTP_FROM: Joi.string().optional().allow(''),
 }).unknown(true);
 
 export type EnvSchema = {
