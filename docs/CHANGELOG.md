@@ -4,6 +4,8 @@
 
 ### Added
 
+- **Phase 2 — Premium design system (2025-03-19)** — (1) **globals.css:** Phase 2 block with ease/shadow/radius tokens, full pc-* Property Card system (image wrap, scrim, frosted price tag, heart, badges, AI score, body), button/nav/card/search/sidebar/hero/detail/pagination micro-interactions, responsive and light overrides. (2) **PropertyCard:** Rewritten with Next/Image, glass price tag, SVG heart, AI Pick/New badges, AI score circle with teal/gold/coral by score, location/title/specs/ai-tip body; listingFor and createdAt for /mo and New badge. (3) **FilterSidebar:** New component (type, BHK, budget presets + custom min/max, Ready to Move, Verified only, AI Smart Match CTA). (4) **SearchPageClient:** Uses FilterSidebar; prop grid with auto-fill minmax(280px, 1fr); removed inline sidebar state. (5) **Landing:** Hero stats data-driven with LiveCounter prefix for Avg. Savings; "Families Helped" label. (6) **Nav:** Frosted glass pill container. Web MODULE_DOC changelog updated.
+
 - **Saved search alert cron (2026-03-19)** — SavedSearchAlertScheduler added: @Cron(EVERY_DAY_AT_6AM) adds a job to saved-search-alerts queue so runAlerts() runs daily; ScheduleModule in AppModule; @nestjs/schedule dependency. MODULE_DOC (saved-search) updated.
 
 - **Web footer Vedpragya credit line (2026-03-19)** — Footer now includes a professional credit line below the main bottom row: "Powered by Vedpragya" (link to vedpragya.com) · "Thoughtfully built for modern real estate". Copy externalised in `FOOTER_COPY` (copy.ts); new `.footer-credits` and `.footer-credits-link` styles; accessible link with `rel="noopener noreferrer"` and `data-testid="footer-vedpragya-link"`.

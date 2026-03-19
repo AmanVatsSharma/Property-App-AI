@@ -13,8 +13,6 @@ import Link from "next/link";
 import dynamic from "next/dynamic";
 import { useCallback, useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { PropertyImage } from "@/components/ui/PropertyImage";
-import { DEMO_IMAGES } from "@/lib/demo-images";
 import {
   gqlProperties,
   gqlSearchPropertiesByQuery,
@@ -25,6 +23,7 @@ import { useAIFab } from "@/components/providers/AIFabProvider";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useToast } from "@/components/ui/Toast";
 import { PropertyCard } from "./PropertyCard";
+import { FilterSidebar } from "./FilterSidebar";
 import { SkeletonGrid } from "@/components/ui/Skeleton";
 import { SaveSearchButton } from "./SaveSearchButton";
 import type { PropertyMapItem } from "./PropertyMap";
@@ -46,8 +45,6 @@ const SORT_OPTIONS = [
   { value: "newest", label: "Newest First" },
   { value: "ai-score", label: "AI Score" },
 ];
-
-const PROPERTY_TYPE_FILTERS = ["apartment", "villa", "plot", "builder-floor", "office", "pg"];
 
 function parseSearchParams(searchParams: URLSearchParams) {
   return {
@@ -205,13 +202,6 @@ export default function SearchPageClient() {
     }
   }, [aiQuery]);
 
-  const [propertyTypeIndex, setPropertyTypeIndex] = useState(0);
-  const [bhkIndex, setBhkIndex] = useState(2);
-  useEffect(() => {
-    const i = BHK_OPTIONS.indexOf(params.bhk);
-    if (i >= 0) queueMicrotask(() => setBhkIndex(i));
-  }, [params.bhk]);
-
   const handleHeartClick = useCallback(
     async (id: string, saved: boolean) => {
       if (!token) {
@@ -324,90 +314,20 @@ export default function SearchPageClient() {
       </div>
 
       <div className="search-layout">
-        <aside className="sidebar">
-          <div style={{ marginBottom: 20 }}>
-            <button
-              type="button"
-              className="ai-match-btn"
-              onClick={() => openPanelWithPrompt(buildAIPromptFromFilters())}
-              aria-label="Open AI Smart Match with current filters"
-              data-testid="ai-smart-match-btn"
-            >
-              ✦ AI Smart Match
-            </button>
-            <p style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 8, textAlign: "center" }}>Let AI find your perfect home automatically</p>
-          </div>
-          <div className="filter-block">
-            <div className="filter-title">Property Type</div>
-            <div className="bhk-grid" style={{ gridTemplateColumns: "repeat(2,1fr)" }}>
-              {["Apartment", "Villa", "Plot", "Builder Floor", "Office", "PG/Co-living"].map((t, i) => (
-                <button key={t} type="button" className={`bhk-btn ${propertyTypeIndex === i ? "active" : ""}`} onClick={() => {
-                    setPropertyTypeIndex(i);
-                    setParams({ type: PROPERTY_TYPE_FILTERS[i] ?? "" });
-                  }}>{t}</button>
-              ))}
-            </div>
-          </div>
-          <div className="filter-block">
-            <div className="filter-title">Bedrooms (BHK)</div>
-            <div className="bhk-grid">
-              {BHK_OPTIONS.map((b, i) => (
-                <button
-                  key={b}
-                  type="button"
-                  className={`bhk-btn ${bhkIndex === i ? "active" : ""}`}
-                  onClick={() => {
-                    setBhkIndex(i);
-                    setParams({ bhk: b === "4+" ? "4" : b });
-                  }}
-                >
-                  {b}
-                </button>
-              ))}
-            </div>
-          </div>
-          <div className="filter-block">
-            <div className="filter-title">Budget <span style={{ fontWeight: 400, color: "var(--teal)", fontSize: 13, textTransform: "none", letterSpacing: 0 }}>₹50L – ₹2Cr</span></div>
-            <div className="range-wrap">
-              <input type="range" className="range" min={20} max={1000} defaultValue={200} />
-              <div className="range-labels"><span>₹20L</span><span className="range-val">₹200L</span><span>₹10Cr</span></div>
-            </div>
-          </div>
-          <div className="filter-block">
-            <div className="filter-title">Area (sq.ft)</div>
-            <div className="range-wrap">
-              <input type="range" className="range" min={500} max={5000} defaultValue={1500} />
-              <div className="range-labels"><span>500</span><span className="range-val">1,500 sqft</span><span>5,000+</span></div>
-            </div>
-          </div>
-          <div className="filter-block">
-            <div className="filter-title">Status</div>
-            <div className="checkbox-list">
-              <label className="checkbox-item">
-                <input type="checkbox" checked={params.ready} onChange={(e) => setParams({ ready: e.target.checked })} />
-                Ready to Move
-              </label>
-              <label className="checkbox-item"><input type="checkbox" /> Under Construction</label>
-              <label className="checkbox-item"><input type="checkbox" /> New Launch</label>
-            </div>
-          </div>
-          <div className="filter-block">
-            <div className="filter-title">Quality</div>
-            <div className="checkbox-list">
-              <label className="checkbox-item">
-                <input type="checkbox" checked={params.verified} onChange={(e) => setParams({ verified: e.target.checked })} />
-                Verified only
-              </label>
-            </div>
-          </div>
-          <div className="filter-block">
-            <div className="filter-title">AI Score <span style={{ fontWeight: 400, fontSize: 11, color: "var(--teal)", textTransform: "none", letterSpacing: 0 }}>Min: 75</span></div>
-            <div className="range-wrap">
-              <input type="range" className="range" min={0} max={100} defaultValue={75} />
-              <div className="range-labels"><span>0</span><span className="range-val">75</span><span>100</span></div>
-            </div>
-          </div>
-        </aside>
+        <FilterSidebar
+          filters={{
+            type: params.type,
+            bhk: params.bhk,
+            minPrice: params.minPrice,
+            maxPrice: params.maxPrice,
+            ready: params.ready,
+            verified: params.verified,
+          }}
+          onChange={(patch) =>
+            setParams(patch as Parameters<typeof setParams>[0])
+          }
+          onAIMatch={() => openPanelWithPrompt(buildAIPromptFromFilters())}
+        />
 
         <div className="search-main">
           <div className="listings-wrap">
@@ -452,7 +372,13 @@ export default function SearchPageClient() {
                   )}
                 {!nlSearchLoading &&
                   (nlSearchResults ?? apiProperties ?? []).length > 0 && (
-                    <div className="prop-grid">
+                    <div
+                      className="prop-grid"
+                      style={{
+                        gridTemplateColumns:
+                          "repeat(auto-fill, minmax(280px, 1fr))",
+                      }}
+                    >
                       {(nlSearchResults ?? apiProperties ?? []).map((p) => (
                         <PropertyCard
                           key={p.id}
