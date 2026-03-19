@@ -7,12 +7,21 @@
  */
 
 import type { Metadata } from "next";
+import { buildMetadata } from "@/lib/seo";
 import { NeighbourhoodExplorerClient } from "./NeighbourhoodExplorerClient";
 
-export const metadata: Metadata = {
-  title: "Neighbourhood Score Explorer — UrbanNest.ai",
-  description: "Compare localities, check livability scores, and explore neighbourhood insights.",
-};
+export const metadata: Metadata = buildMetadata({
+  title: "Neighbourhood Score Explorer",
+  description:
+    "Compare Indian localities on safety, commute, schools, hospitals, and 40+ livability signals. Make data-driven real estate decisions.",
+  path: "/neighbourhood",
+  keywords: [
+    "neighbourhood score India",
+    "best locality Bangalore",
+    "safe areas Mumbai",
+    "livability score",
+  ],
+});
 
 export default function NeighbourhoodPage() {
   return (
