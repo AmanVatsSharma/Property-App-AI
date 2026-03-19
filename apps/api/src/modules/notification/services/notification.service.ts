@@ -15,7 +15,7 @@ import { NotificationGateway } from '../gateways/notification.gateway';
 export class NotificationService {
   constructor(
     private readonly repo: NotificationRepository,
-    @Optional() private readonly gateway?: NotificationGateway,
+    @Optional() private readonly gateway: NotificationGateway | null,
   ) {}
 
   async create(
@@ -32,22 +32,22 @@ export class NotificationService {
       body,
       data: data ?? null,
     });
-    this.gateway?.pushToUser(userId, 'notification', {
-      id: notification.id,
-      type,
-      title,
-      body,
-      data: data ?? null,
-      createdAt: notification.createdAt,
-    });
+    try {
+      this.gateway?.pushToUser(userId, 'notification', {
+        id: notification.id,
+        type,
+        title,
+        body,
+        data: data ?? null,
+        createdAt: notification.createdAt,
+      });
+    } catch {
+      // WS push is best-effort — never fail the notification create
+    }
     return notification;
   }
 
-  async myNotifications(
-    userId: string,
-    limit = 20,
-    offset = 0,
-  ): Promise<Notification[]> {
+  async myNotifications(userId: string, limit = 20, offset = 0): Promise<Notification[]> {
     return this.repo.findByUserId(userId, limit, offset);
   }
 

@@ -6,11 +6,11 @@
  * @created 2025-03-10
  */
 
-import { ArgsType, Field, Float, Int } from '@nestjs/graphql';
+import { InputType, Field, Float, Int } from '@nestjs/graphql';
 import { IsOptional, IsString, IsNumber, Min, Max, IsIn } from 'class-validator';
 import { Type } from 'class-transformer';
 
-@ArgsType()
+@InputType()
 export class PropertyFilterDto {
   @Field({ nullable: true })
   @IsOptional()
