@@ -15,6 +15,7 @@ import { useTheme } from "next-themes";
 import { NAV_LINKS } from "@property-app-ai/shared";
 import { useAuth } from "@/components/providers/AuthProvider";
 import LoginModal from "@/components/auth/LoginModal";
+import NotificationBell from "@/components/layout/NotificationBell";
 import { gqlMe } from "@/lib/graphql-client";
 
 function getActiveLabel(pathname: string): string | null {
@@ -112,6 +113,14 @@ export default function Nav() {
           <Link href="/about" className="nbtn-ghost">
             About
           </Link>
+          {isAuthenticated && (
+            <>
+              <NotificationBell />
+              <Link href="/saved-searches" className="nbtn-ghost" style={{ fontSize: 12 }}>
+                🔔 Alerts
+              </Link>
+            </>
+          )}
           {isAuthenticated ? (
             <div className="relative">
               <button
