@@ -12,6 +12,7 @@ import { z } from 'zod';
 import { LoggerService } from '@api/shared/logger';
 import { PropertyService } from '@api/modules/property/services/property.service';
 import { AreaService } from '@api/modules/area/services/area.service';
+import { PriceForecastService } from '@api/modules/agent/services/price-forecast.service';
 import type { Area } from '@api/modules/area/entities/area.entity';
 import type { StructuredToolInterface } from '@langchain/core/tools';
 import type { Property } from '@api/modules/property/entities/property.entity';
@@ -34,6 +35,7 @@ export class AgentToolsService {
   constructor(
     private readonly propertyService: PropertyService,
     private readonly areaService: AreaService,
+    private readonly priceForecastService: PriceForecastService,
     private readonly logger: LoggerService,
   ) {}
 
@@ -431,11 +433,18 @@ export class AgentToolsService {
   }
 
   private async getPriceForecastImpl(
-    _locality: string,
-    _city?: string,
-    _horizonMonths: number = 24,
+    locality: string,
+    city?: string,
+    horizonMonths = 24,
   ): Promise<string> {
-    return 'Price forecast for localities is coming soon. This feature will use demand and infrastructure data in a future update.';
+    const result = await this.priceForecastService.getForecast(
+      locality,
+      city ?? '',
+      horizonMonths,
+    );
+    return `Price forecast for ${result.locality}${result.city ? `, ${result.city}` : ''}: ` +
+      `12m +${result.forecast12m}%, 24m +${result.forecast24m}%, 36m +${result.forecast36m}%. ` +
+      `Demand: ${result.demandSignal}. Confidence: ${result.confidence}. ${result.rationale}`;
   }
 
   private async checkReraImpl(_projectNameOrNumber: string): Promise<string> {
