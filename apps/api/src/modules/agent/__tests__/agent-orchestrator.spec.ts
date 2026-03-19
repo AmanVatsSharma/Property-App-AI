@@ -11,6 +11,7 @@ import { ConfigService } from '@nestjs/config';
 import { AgentOrchestratorService } from '../services/agent-orchestrator.service';
 import { AgentToolsService } from '../services/agent-tools.service';
 import { LoggerService } from '@api/shared/logger';
+import { MetricsService } from '@api/modules/metrics/services/metrics.service';
 
 describe('AgentOrchestratorService', () => {
   let service: AgentOrchestratorService;
@@ -35,6 +36,7 @@ describe('AgentOrchestratorService', () => {
       clearAgentContext: jest.fn(),
     };
     const mockLogger = { debug: jest.fn(), log: jest.fn(), error: jest.fn(), warn: jest.fn() };
+    const mockMetrics = { recordAgentCall: jest.fn() };
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -42,6 +44,7 @@ describe('AgentOrchestratorService', () => {
         { provide: AgentToolsService, useValue: mockTools },
         { provide: LoggerService, useValue: mockLogger },
         { provide: ConfigService, useValue: mockConfig },
+        { provide: MetricsService, useValue: mockMetrics },
       ],
     }).compile();
 
