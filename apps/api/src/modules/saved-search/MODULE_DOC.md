@@ -9,7 +9,7 @@
 - `entities/saved-search.entity.ts` — id, userId, name, filters (jsonb), alertEnabled, lastAlertSentAt, createdAt, updatedAt.
 - `dtos/saved-search.dto.ts` — CreateSavedSearchInput, UpdateSavedSearchInput (GraphQL InputTypes, class-validator).
 - `repository/saved-search.repository.ts` — findByUserId, findById, findAllWithAlerts, create, update, delete, markAlertSent.
-- `services/saved-search.service.ts` — CRUD; runAlerts() (loads alert-enabled searches, 24h cooldown, propertyService.findAll + notification create + markAlertSent).
+- `services/saved-search.service.ts` — CRUD; runAlerts() (loads alert-enabled searches, 24h cooldown, propertyService.findAll + notification create + MailService.send for email alert when SMTP configured, fire-and-forget, + markAlertSent).
 - `resolvers/saved-search.resolver.ts` — mySavedSearches, createSavedSearch, updateSavedSearch, deleteSavedSearch (all auth-required).
 - `processors/saved-search-alert.processor.ts` — BullMQ @Processor(SAVED_SEARCH_QUEUE); process(job) calls savedSearchService.runAlerts().
 - `schedulers/saved-search-alert.scheduler.ts` — @Cron(EVERY_DAY_AT_6AM) adds a 'run-alerts' job to SAVED_SEARCH_QUEUE.
@@ -22,6 +22,9 @@
 
 **Scheduling:** SavedSearchAlertScheduler adds a job to `saved-search-alerts` daily at 06:00 (server time) via @nestjs/schedule. The processor runs when a job is added and calls SavedSearchService.runAlerts().
 
+**Integration:** Email alert is sent via MailService when SMTP is configured (fire-and-forget); recipient is placeholder until User entity has email.
+
 **Change-log:**
+- 2026-03-19: runAlerts() sends email via MailService (saved-search-alert template) alongside in-app notification; MailModule @Global().
 - 2026-03-19: Added SavedSearchAlertScheduler (daily 06:00 cron) to add job to saved-search-alerts queue; ScheduleModule in AppModule.
 - 2026-03-19: Initial module (migration CreateSavedSearch, entity, DTOs, repository, service, resolver, BullMQ processor). Alert cooldown 24h; runAlerts uses PropertyService.findAll and NotificationService.create.
