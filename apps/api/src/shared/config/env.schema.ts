@@ -61,6 +61,10 @@ export const envSchema = Joi.object({
   TWILIO_FROM: Joi.string().optional().allow(''),
   MSG91_AUTH_KEY: Joi.string().optional().allow(''),
   MSG91_SENDER: Joi.string().optional().allow(''),
+  NEXT_PUBLIC_SITE_URL: Joi.string().uri().optional().allow(''),
+  COMPRESSION_ENABLED: Joi.boolean().default(true),
+  WS_CORS_ORIGIN: Joi.string().optional().allow(''),
+  GOOGLE_SITE_VERIFICATION: Joi.string().optional().allow(''),
 }).unknown(true);
 
 export type EnvSchema = {

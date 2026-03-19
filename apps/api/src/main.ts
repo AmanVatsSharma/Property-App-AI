@@ -11,6 +11,7 @@ import { NestFactory } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
 import { VersioningType } from '@nestjs/common';
 import { IoAdapter } from '@nestjs/platform-socket.io';
+import * as compression from 'compression';
 import helmet from 'helmet';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from '@api/app/app.module';
@@ -18,6 +19,7 @@ import { logger } from '@api/shared/logger';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  app.use(compression());
   app.useWebSocketAdapter(new IoAdapter(app));
   const config = app.get(ConfigService);
   const swaggerConfig = new DocumentBuilder()
@@ -42,17 +44,21 @@ async function bootstrap() {
       forbidNonWhitelisted: true,
     }),
   );
-  const corsOrigin = config.get<string>('CORS_ORIGIN') ?? '*';
+  const corsOriginRaw = config.get<string>('CORS_ORIGIN') ?? '*';
   const isProduction = config.get<string>('NODE_ENV') === 'production';
-  if (isProduction && (corsOrigin === '*' || !corsOrigin.trim())) {
+  if (isProduction && (corsOriginRaw === '*' || !corsOriginRaw.trim())) {
     throw new Error(
       'Production requires CORS_ORIGIN to be set to explicit origin(s). Do not use * (see .env.example).',
     );
   }
+  const corsOrigins = corsOriginRaw.includes(',')
+    ? corsOriginRaw.split(',').map((o) => o.trim())
+    : corsOriginRaw;
   app.enableCors({
-    origin: corsOrigin,
+    origin: corsOrigins,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     credentials: true,
+    maxAge: 86400,
   });
   const port = config.get<number>('PORT') ?? 3333;
   if (isProduction) {
