@@ -38,6 +38,16 @@ export const NEIGHBOURHOOD_COPY = {
 } as const;
 
 /**
+ * Footer credit line — powered by Vedpragya (i18n keys: footer.poweredBy, footer.vedpragya, footer.tagline).
+ */
+export const FOOTER_COPY = {
+  poweredBy: "Powered by ",
+  vedpragya: "Vedpragya",
+  vedpragyaUrl: "https://vedpragya.com",
+  tagline: " · Thoughtfully built for modern real estate",
+} as const;
+
+/**
  * App store URLs. Set NEXT_PUBLIC_APP_STORE_URL / NEXT_PUBLIC_PLAY_STORE_URL in env when available.
  */
 export const APP_STORE_URL = process.env.NEXT_PUBLIC_APP_STORE_URL ?? "#";
