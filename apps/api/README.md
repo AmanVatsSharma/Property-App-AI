@@ -2,20 +2,28 @@
 
 Backend for UrbanNest.ai: GraphQL (Apollo, code-first) with TypeORM and Postgres.
 
-## Run
+## Run (local dev)
 
-From **repo root**:
+From **repo root**, install dependencies once (`pnpm install` or `npm install`). The monorepo uses **pnpm** lockfiles; `npm install` at root also works for the same workspace scripts.
 
 ```bash
 npm run dev:api
+# or
+pnpm dev:api
+# or
+nx run api:serve
 ```
 
-Or: `nx run api:serve`.
+**Dev pipeline:** `api:serve` runs **`api:compile`** with **SWC** (fast transpile, `skipTypeCheck: true`) in watch mode, then starts Node on `dist/apps/api/src/main.js`. Path aliases `@api/*` are resolved at compile time via [`apps/api/.swcrc`](.swcrc). Dev compile does **not** type-check the whole project; rely on the editor, `pnpm exec tsc --noEmit -p apps/api/tsconfig.app.json` when needed (may require a large `NODE_OPTIONS` heap on this codebase), and CI.
+
+**Production / Docker image pipeline:** `api:build` still uses **Webpack** + **`tsc`** (NxAppWebpackPlugin) so you get a bundled output, `generatePackageJson`, and the same type-checking behaviour as before; this target is heavier by design.
 
 API: **http://localhost:3333**  
 GraphQL playground: **http://localhost:3333/graphql**
 
-## Build
+Optional one-off compile (no watch): `npm run compile:api` or `nx run api:compile`.
+
+## Build (production bundle)
 
 ```bash
 npm run build:api

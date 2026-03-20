@@ -2,6 +2,7 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "baseUrl": ".",
+    "noEmit": false,
     "outDir": "../../dist/out-tsc",
     "module": "commonjs",
     "moduleResolution": "node",
@@ -9,6 +10,7 @@
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "target": "es2021",
+    "lib": ["ES2021"],
     "strictPropertyInitialization": false,
     "paths": {
       "@api/shared/*": ["src/shared/*"],
@@ -18,5 +20,6 @@
       "@api/database/*": ["src/database/*"]
     }
   },
-  "include": ["src/**/*.ts"]
+  "include": ["src/**/*.ts"],
+  "exclude": ["src/**/*.spec.ts", "src/**/__tests__/**"]
 }

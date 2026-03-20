@@ -4,6 +4,30 @@
   "sourceRoot": "apps/api/src",
   "projectType": "application",
   "targets": {
+    "compile": {
+      "executor": "@nx/js:swc",
+      "outputs": ["{workspaceRoot}/dist/apps/api"],
+      "options": {
+        "main": "apps/api/src/main.ts",
+        "outputPath": "dist/apps/api",
+        "tsConfig": "apps/api/tsconfig.app.json",
+        "swcrc": "apps/api/.swcrc",
+        "skipTypeCheck": true,
+        "assets": [
+          {
+            "glob": "**/*",
+            "input": "apps/api/src/assets",
+            "output": "assets"
+          }
+        ],
+        "watch": false
+      },
+      "configurations": {
+        "development": {
+          "watch": true
+        }
+      }
+    },
     "build": {
       "executor": "nx:run-commands",
       "options": {
@@ -46,14 +70,14 @@
       "continuous": true,
       "executor": "@nx/js:node",
       "defaultConfiguration": "development",
-      "dependsOn": ["build"],
       "options": {
-        "buildTarget": "api:build",
-        "runBuildTargetDependencies": false
+        "buildTarget": "api:compile:development",
+        "runBuildTargetDependencies": false,
+        "watch": true
       },
       "configurations": {
         "development": {
-          "buildTarget": "api:build:development"
+          "buildTarget": "api:compile:development"
         },
         "production": {
           "buildTarget": "api:build:production"
