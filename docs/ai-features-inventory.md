@@ -77,5 +77,6 @@ Defined in `apps/api/src/modules/agent/services/agent-tools.service.ts`.
 ## 6. References
 
 - Agent module: `apps/api/src/modules/agent/MODULE_DOC.md`
+- **LLM token logs and Claude cost estimates:** `docs/llm-token-billing.md`
 - Architecture (legal/forecast): `docs/architecture-legal-forecast-api.md`
 - MVP plan: `docs/MVP_READINESS_PLAN.md`
