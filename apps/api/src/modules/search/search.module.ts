@@ -8,10 +8,11 @@
 
 import { Module } from '@nestjs/common';
 import { LoggerModule } from '@api/shared/logger';
+import { MetricsModule } from '@api/modules/metrics/metrics.module';
 import { SearchParserService } from './services/search-parser.service';
 
 @Module({
-  imports: [LoggerModule],
+  imports: [LoggerModule, MetricsModule],
   providers: [SearchParserService],
   exports: [SearchParserService],
 })
