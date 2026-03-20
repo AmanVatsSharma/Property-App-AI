@@ -20,6 +20,12 @@ import type { AskAgentResult } from '../dtos/ask-agent-result.dto';
 import type { AskAgentInput } from '../dtos/ask-agent-input.dto';
 import { AGENT_CONFIG_KEYS } from '../config/agent-config';
 import { DOMAIN_SYSTEM_PROMPT, PLAN_FIRST_INSTRUCTION } from '../prompts/domain-system.prompt';
+import {
+  addLlmUsage,
+  buildLlmUsageLogFields,
+  parseLlmUsageFromLlmMessage,
+  type LlmTokenTotals,
+} from '@api/shared/llm/llm-token-usage';
 
 @Injectable()
 export class AgentOrchestratorService {
@@ -196,6 +202,9 @@ export class AgentOrchestratorService {
         provider,
         model,
         inputSize: input.prompt?.length ?? 0,
+        ...(sawTokenUsage
+          ? buildLlmUsageLogFields('agent_ask', provider, tokenTotals.inputTokens, tokenTotals.outputTokens)
+          : { llmTokenUsageMissing: true }),
       });
       return {
         answer: finalText,

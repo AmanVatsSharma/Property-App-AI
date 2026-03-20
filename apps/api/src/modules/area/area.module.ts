@@ -9,6 +9,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { LoggerModule } from '@api/shared/logger';
+import { MetricsModule } from '@api/modules/metrics/metrics.module';
 import { Area } from './entities/area.entity';
 import { AreaRepository } from './repository/area.repository';
 import { AreaService } from './services/area.service';
@@ -17,7 +18,7 @@ import { PriceForecastService } from './services/price-forecast.service';
 import { NeighbourhoodController } from './controllers/neighbourhood.controller';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Area]), LoggerModule],
+  imports: [TypeOrmModule.forFeature([Area]), LoggerModule, MetricsModule],
   controllers: [NeighbourhoodController],
   providers: [AreaRepository, AreaService, AreaAssessorService, PriceForecastService],
   exports: [AreaService, PriceForecastService],

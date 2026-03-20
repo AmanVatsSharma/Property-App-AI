@@ -6,7 +6,8 @@
  * @created 2025-03-11
  */
 
-import { Resolver, Mutation, Query, Args, Context, UseGuards } from '@nestjs/graphql';
+import { UseGuards } from '@nestjs/common';
+import { Resolver, Mutation, Query, Args, Context } from '@nestjs/graphql';
 import { ConfigService } from '@nestjs/config';
 import { AgentRateLimitGuard } from '@api/common/guards/agent-rate-limit.guard';
 import { AgentOrchestratorService } from '../services/agent-orchestrator.service';
