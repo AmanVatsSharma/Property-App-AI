@@ -38,6 +38,8 @@ nx run api:build
 
 Copy `apps/api/.env.example` to `apps/api/.env` (or use a root `.env` when running from repo root). The API loads `apps/api/.env` first if present, then falls back to root `.env`. Set env before running. In development, TypeORM `synchronize` is on (schema auto-updated); disable in production and use migrations.
 
+**Local Postgres:** Ensure the database exists. If using host Postgres with ident/peer auth, create it once: `sudo -u postgres createdb property_app`. Or start Postgres via Docker: `docker compose up -d postgres` (from repo root; ensure port 5432 is free or stop host Postgres).
+
 ## GraphQL API
 
 - **Query `properties`** — List properties with optional filters: `type`, `location`, `minPrice`, `maxPrice`, `bedrooms`, `limit`, `offset`.
