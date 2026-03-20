@@ -46,6 +46,8 @@
 
 **Flow:** Client calls **askAgent(input)** → Resolver (if queue enabled: add job, return jobId; else) → Orchestrator.ask() → createLlm() (OpenAI or Claude, optional extended thinking) → domain system prompt (+ plan-first instruction if enabled) → ReAct loop (invoke → tool_calls → ToolMessages → repeat until no tool calls or max steps) → AskAgentResult. For **scoreProperty(propertyId)** → AgentToolsService.scoreAndPersistProperty → PropertyService.findOne, AreaService.getOrCreate (assess if missing), compute score/tip, PropertyService.update.
 
+**Observability (LLM billing):** Each model step in the agent loop records tokens to Prometheus (`llm_tokens_total{feature="agent_ask",...}`). Completion logs (`ask completed` / `ask completed (max steps)`) include cumulative `llmInputTokens`, `llmOutputTokens`, and for Anthropic `llmEstimatedUsdSonnet4Base` (rough USD at published Sonnet 4 base rates). See `docs/llm-token-billing.md`.
+
 **Scoring and long-thinking:** For "is this a good deal" or property scoring flows, recommend setting **AGENT_THINKING_BUDGET_TOKENS** (e.g. 4096) and **AGENT_PLAN_FIRST=true** so the model can plan multi-step (e.g. assess_region → score_property) and reason over locality and listing details.
 
 **MVP/deploy:** Set OPENAI_API_KEY or ANTHROPIC_API_KEY per AGENT_PROVIDER; when keys are missing the orchestrator returns a stub message (no mock listing or user data). No fake responses in production when configured.
@@ -69,6 +71,8 @@ No mock listing data, no fake property or user data, and no tool execution.
 ---
 
 **Change-log:**
+- 2026-03-20: **LLM token usage:** Per-step token parse from LangChain messages; cumulative totals and optional Anthropic USD estimate on agent completion logs; `llm_tokens_total` Prometheus counter.
+
 - 2026-03-18: **Conversation persistence:** AgentConversation entity (messages JSONB); ConversationService (startConversation, appendMessages, getConversation, myConversations); askAgent accepts optional **conversationId**; when provided loads conversation history and passes to orchestrator; after sync result appends user + assistant messages and returns **conversationId** in AskAgentResult; **myAgentConversations** query; JsonScalar (graphql-type-json) for messages; migration CreateAgentConversation.
 - 2026-03-17: MVP verification—live tools (search_properties, get_property, score_property, get_neighbourhood_score, assess_region, compare_properties, create_listing) use real PropertyService/AreaService; coming-soon tools (get_price_forecast, check_rera, analyze_document, get_negotiation_advice) return clear placeholders only, no fake data.
 - 2026-03-15: Documented that RERA/forecast/document/negotiation tools are placeholders until real integrations; no fake numeric data.

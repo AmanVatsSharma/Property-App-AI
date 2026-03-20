@@ -54,6 +54,7 @@ import { CacheModule } from '@api/shared/cache/cache.module';
     RateLimitModule,
     CacheModule,
     JwtModule.registerAsync({
+      global: true,
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
         secret: config.get<string>('JWT_SECRET') ?? 'default-secret-min-16-chars',

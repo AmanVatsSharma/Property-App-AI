@@ -35,8 +35,14 @@ describe('AgentOrchestratorService', () => {
       setAgentContext: jest.fn(),
       clearAgentContext: jest.fn(),
     };
-    const mockLogger = { debug: jest.fn(), log: jest.fn(), error: jest.fn(), warn: jest.fn() };
-    const mockMetrics = { recordAgentCall: jest.fn() };
+    const mockLogger = {
+      debug: jest.fn(),
+      log: jest.fn(),
+      info: jest.fn(),
+      error: jest.fn(),
+      warn: jest.fn(),
+    };
+    const mockMetrics = { recordAgentCall: jest.fn(), recordLlmTokens: jest.fn() };
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
