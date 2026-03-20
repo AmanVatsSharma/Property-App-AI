@@ -15,7 +15,7 @@
 - prompts/area-assess.prompt.ts — Prompt for locality assessment JSON
 - providers/area-data-provider.interface.ts — **AreaDataProvider** interface and **AreaData** type for pluggable external area data (e.g. AREA_PROVIDER=mapbox when implemented)
 
-**Dependencies:** TypeORM (Area entity), LoggerModule, ConfigService; agent config (AGENT_CONFIG_KEYS) for provider and API keys.
+**Dependencies:** TypeORM (Area entity), LoggerModule, MetricsModule (LLM token counter), ConfigService; agent config (AGENT_CONFIG_KEYS) for provider and API keys.
 
 **APIs:**
 - **GET /api/v1/neighbourhood** (public, no auth): Query params `locality` (required), `city` (optional). Returns area scores: locality, city, livabilityScore, connectivityScore, schoolsScore, safetyScore, priceTrendPctAnnual, amenitiesSummary, lastAssessedAt. Calls AreaService.getOrCreate(locality, city, { assessIfMissing: true }); triggers assessment if area is missing or stale.
@@ -31,7 +31,10 @@
 
 **Fallback scores (no mock listing data):** When `OPENAI_API_KEY` (or `ANTHROPIC_API_KEY` for anthropic provider) is not set, when the LLM invocation fails, or when the LLM response is missing or unparseable, `AreaAssessorService` uses a fixed fallback result: livability 75, connectivity 70, schools 70, safety 75, price trend 8% annual, and a generic amenities summary. This is backend-only (area metadata); it does not create fake property listings. For production, set an LLM provider to get real locality assessments. Optionally label or filter areas in the UI when `dataSource` or assessment method indicates fallback.
 
+**Observability:** Area assess and price-forecast LLM calls log token usage and increment `llm_tokens_total` (`area_assess`, `price_forecast`). See `docs/llm-token-billing.md`.
+
 **Change-log:**
+- 2026-03-20: LLM token usage logs and `llm_tokens_total` for area assess and price forecast.
 - 2026-03-17: Neighbourhood API contract verified for MVP; response shape matches web NeighbourhoodExplorerClient (locality, city, livabilityScore, connectivityScore, schoolsScore, safetyScore, priceTrendPctAnnual, amenitiesSummary, lastAssessedAt).
 - 2026-03-15: Added HTTP API GET /api/v1/neighbourhood (NeighbourhoodController, NeighbourhoodQueryDto); public route for web app; returns locality, city, scores, priceTrendPctAnnual, amenitiesSummary, lastAssessedAt.
 - 2026-03-15: MVP readiness: fallback scores (when LLM missing/fails) documented; no mock listing data.

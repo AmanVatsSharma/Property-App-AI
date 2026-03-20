@@ -9,7 +9,12 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { LoggerService } from '@api/shared/logger';
+import { MetricsService } from '@api/modules/metrics/services/metrics.service';
 import { AGENT_CONFIG_KEYS } from '@api/modules/agent/config/agent-config';
+import {
+  buildLlmUsageLogFields,
+  parseLlmUsageFromLlmMessage,
+} from '@api/shared/llm/llm-token-usage';
 
 export interface PriceForecastResult {
   locality: string;
@@ -46,6 +51,7 @@ export class PriceForecastService {
   constructor(
     private readonly config: ConfigService,
     private readonly logger: LoggerService,
+    private readonly metrics: MetricsService,
   ) {}
 
   async getForecast(
@@ -86,6 +92,15 @@ export class PriceForecastService {
           maxTokens: 512,
         });
         const res = await llm.invoke(FORECAST_PROMPT(locality, city));
+        const usage = parseLlmUsageFromLlmMessage(res);
+        if (usage) {
+          this.metrics.recordLlmTokens('price_forecast', 'anthropic', usage.inputTokens, usage.outputTokens);
+          this.logger.info('price forecast LLM usage', {
+            locality,
+            city,
+            ...buildLlmUsageLogFields('price_forecast', 'anthropic', usage.inputTokens, usage.outputTokens),
+          });
+        }
         text = typeof res.content === 'string' ? res.content : String(res.content);
       } else {
         const apiKey = this.config.get<string>(AGENT_CONFIG_KEYS.OPENAI_API_KEY);
@@ -99,6 +114,15 @@ export class PriceForecastService {
           openAIApiKey: apiKey,
         });
         const res = await llm.invoke(FORECAST_PROMPT(locality, city));
+        const usage = parseLlmUsageFromLlmMessage(res);
+        if (usage) {
+          this.metrics.recordLlmTokens('price_forecast', 'openai', usage.inputTokens, usage.outputTokens);
+          this.logger.info('price forecast LLM usage', {
+            locality,
+            city,
+            ...buildLlmUsageLogFields('price_forecast', 'openai', usage.inputTokens, usage.outputTokens),
+          });
+        }
         text = typeof res.content === 'string' ? res.content : String(res.content);
       }
 
