@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json.schemastore.org/swcrc",
+  "sourceMaps": true,
+  "module": {
+    "type": "commonjs",
+    "noInterop": false
+  },
+  "jsc": {
+    "parser": {
+      "syntax": "typescript",
+      "decorators": true,
+      "dynamicImport": true
+    },
+    "keepClassNames": true,
+    "transform": {
+      "legacyDecorator": true,
+      "decoratorMetadata": true
+    },
+    "target": "es2021",
+    "baseUrl": "./",
+    "paths": {
+      "@api/shared/*": ["src/shared/*"],
+      "@api/common/*": ["src/common/*"],
+      "@api/modules/*": ["src/modules/*"],
+      "@api/app/*": ["src/app/*"],
+      "@api/database/*": ["src/database/*"]
+    }
+  },
+  "minify": false
+}
