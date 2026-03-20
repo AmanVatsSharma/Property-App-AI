@@ -1,7 +1,7 @@
 /**
  * @file metrics.module.ts
  * @module metrics
- * @description Exposes GET /metrics for Prometheus; custom counters/histogram for agent, OTP, property.
+ * @description Exposes GET /metrics for Prometheus; custom counters/histogram for agent, LLM tokens, OTP, property.
  * @author BharatERP
  * @created 2026-03-17
  */
