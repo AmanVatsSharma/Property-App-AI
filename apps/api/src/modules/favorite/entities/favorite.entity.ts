@@ -13,15 +13,15 @@ import { Property } from '@api/modules/property/entities/property.entity';
 @ObjectType()
 @Entity('favorite')
 export class Favorite {
-  @Field()
+  @Field(() => String)
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Field()
+  @Field(() => String)
   @Column({ type: 'uuid' })
   userId: string;
 
-  @Field()
+  @Field(() => String)
   @Column({ type: 'uuid' })
   propertyId: string;
 
@@ -30,7 +30,7 @@ export class Favorite {
   @JoinColumn({ name: 'propertyId' })
   property: Property;
 
-  @Field()
+  @Field(() => Date)
   @CreateDateColumn()
   createdAt: Date;
 }

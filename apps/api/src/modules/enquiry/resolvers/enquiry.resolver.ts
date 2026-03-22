@@ -22,7 +22,7 @@ export class EnquiryResolver {
 
   @Mutation(() => Enquiry, { name: 'sendEnquiry' })
   async sendEnquiry(
-    @Args('input') input: CreateEnquiryInput,
+    @Args('input', { type: () => CreateEnquiryInput }) input: CreateEnquiryInput,
     @Context() ctx: GqlContext,
   ): Promise<Enquiry> {
     const userId = ctx.req?.user?.sub;
@@ -46,8 +46,8 @@ export class EnquiryResolver {
 
   @Mutation(() => Enquiry, { name: 'updateEnquiryStatus', nullable: true })
   async updateEnquiryStatus(
-    @Args('id') id: string,
-    @Args('status') status: string,
+    @Args('id', { type: () => String }) id: string,
+    @Args('status', { type: () => String }) status: string,
     @Context() ctx: GqlContext,
   ): Promise<Enquiry | null> {
     const userId = ctx.req?.user?.sub;
