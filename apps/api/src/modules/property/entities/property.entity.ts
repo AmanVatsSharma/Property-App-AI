@@ -18,27 +18,27 @@ import { ObjectType, Field, Float, Int } from '@nestjs/graphql';
 @ObjectType()
 @Entity('property')
 export class Property {
-  @Field()
+  @Field(() => String)
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Field()
+  @Field(() => String)
   @Column()
   title: string;
 
-  @Field()
+  @Field(() => String)
   @Column()
   location: string;
 
-  @Field({ nullable: true })
+  @Field(() => String, { nullable: true })
   @Column({ type: 'uuid', nullable: true })
   areaId: string | null;
 
-  @Field({ nullable: true })
+  @Field(() => String, { nullable: true })
   @Column({ type: 'varchar', length: 200, nullable: true })
   locality: string | null;
 
-  @Field({ nullable: true })
+  @Field(() => String, { nullable: true })
   @Column({ type: 'varchar', length: 200, nullable: true })
   city: string | null;
 
@@ -54,7 +54,7 @@ export class Property {
   @Column({ type: 'decimal', precision: 14, scale: 2 })
   price: number;
 
-  @Field()
+  @Field(() => String)
   @Column({ default: 'apartment' })
   type: string;
 
@@ -70,19 +70,19 @@ export class Property {
   @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
   areaSqft: number | null;
 
-  @Field({ nullable: true })
-  @Column({ nullable: true })
+  @Field(() => String, { nullable: true })
+  @Column({ type: 'varchar', length: 32, nullable: true })
   status: string | null;
 
-  @Field({ nullable: true })
-  @Column({ nullable: true })
+  @Field(() => String, { nullable: true })
+  @Column({ type: 'varchar', length: 16, nullable: true })
   listingFor: string | null;
 
   @Field(() => [String], { nullable: true })
   @Column('simple-array', { nullable: true })
   specs: string[] | null;
 
-  @Field({ nullable: true })
+  @Field(() => String, { nullable: true })
   @Column({ type: 'text', nullable: true })
   aiTip: string | null;
 
@@ -90,7 +90,7 @@ export class Property {
   @Column({ type: 'int', nullable: true })
   aiScore: number | null;
 
-  @Field({ nullable: true })
+  @Field(() => String, { nullable: true })
   @Column({ type: 'text', nullable: true })
   coverImageUrl: string | null;
 
@@ -102,7 +102,7 @@ export class Property {
   @Column({ type: 'jsonb', nullable: true })
   nearbyAmenities: string[] | null;
 
-  @Field({ nullable: true })
+  @Field(() => String, { nullable: true })
   @Column({ type: 'uuid', nullable: true })
   createdByUserId: string | null;
 
@@ -114,11 +114,11 @@ export class Property {
   @Column({ type: 'int', default: 0 })
   viewCount: number;
 
-  @Field()
+  @Field(() => Date)
   @CreateDateColumn()
   createdAt: Date;
 
-  @Field()
+  @Field(() => Date)
   @UpdateDateColumn()
   updatedAt: Date;
 }

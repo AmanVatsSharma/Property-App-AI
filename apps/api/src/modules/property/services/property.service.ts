@@ -218,6 +218,16 @@ export class PropertyService {
     return result;
   }
 
+  /**
+   * Persists AI score/tip from agent tools (no owner check — internal trusted path).
+   */
+  async updateAiScoresFromAgent(id: string, aiScore: number, aiTip: string): Promise<Property> {
+    const property = await this.findOne(id);
+    const result = await this.propertyRepo.update(property, { aiScore, aiTip });
+    await this.cache.del(`property:${id}`);
+    return result;
+  }
+
   async remove(
     id: string,
     requestingUserId: string,

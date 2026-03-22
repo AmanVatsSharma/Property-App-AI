@@ -32,7 +32,8 @@ export class PropertyResolver {
 
   @Query(() => [Property], { name: 'properties' })
   async properties(
-    @Args('filter', { nullable: true, defaultValue: {} }) filter: PropertyFilterDto,
+    @Args('filter', { nullable: true, defaultValue: {}, type: () => PropertyFilterDto })
+    filter: PropertyFilterDto,
   ): Promise<Property[]> {
     this.logger.debug('properties query entry', { method: 'properties' });
     const result = await this.propertyService.findAll(filter);
@@ -62,7 +63,8 @@ export class PropertyResolver {
 
   @Query(() => PropertiesPage, { name: 'propertiesPage' })
   async propertiesPage(
-    @Args('filter', { nullable: true, defaultValue: {} }) filter: PropertyFilterDto,
+    @Args('filter', { nullable: true, defaultValue: {}, type: () => PropertyFilterDto })
+    filter: PropertyFilterDto,
   ): Promise<PropertiesPage> {
     return this.propertyService.findAllPage(filter);
   }
@@ -90,7 +92,7 @@ export class PropertyResolver {
   }
 
   @Query(() => Property, { name: 'property', nullable: true })
-  async property(@Args('id') id: string): Promise<Property> {
+  async property(@Args('id', { type: () => String }) id: string): Promise<Property> {
     this.logger.debug('property query entry', { method: 'property', id });
     const result = await this.propertyService.findOne(id);
     this.logger.debug('property query exit', { method: 'property', id });
@@ -111,12 +113,12 @@ export class PropertyResolver {
 
   @Mutation(() => Property)
   async updateProperty(
-    @Args('id') id: string,
-    @Args('input') input: UpdatePropertyDto,
+    @Args('id', { type: () => String }) id: string,
+    @Args('input', { type: () => UpdatePropertyDto }) input: UpdatePropertyDto,
     @Context() ctx: GqlContext,
   ): Promise<Property> {
     const userId = ctx.req?.user?.sub;
-    const role = ctx.req?.user?.role;
+    const role = ctx.req?.user?.role ?? 'user';
     if (!userId) throw new UnauthorizedException('Sign in required');
     this.logger.debug('updateProperty mutation entry', { method: 'updateProperty', id });
     const result = await this.propertyService.update(id, input, userId, role);
@@ -126,11 +128,11 @@ export class PropertyResolver {
 
   @Mutation(() => Boolean)
   async deleteProperty(
-    @Args('id') id: string,
+    @Args('id', { type: () => String }) id: string,
     @Context() ctx: GqlContext,
   ): Promise<boolean> {
     const userId = ctx.req?.user?.sub;
-    const role = ctx.req?.user?.role;
+    const role = ctx.req?.user?.role ?? 'user';
     if (!userId) throw new UnauthorizedException('Sign in required');
     this.logger.debug('deleteProperty mutation entry', { method: 'deleteProperty', id });
     const result = await this.propertyService.remove(id, userId, role);
@@ -140,12 +142,12 @@ export class PropertyResolver {
 
   @Mutation(() => Property, { name: 'changePropertyStatus' })
   async changePropertyStatus(
-    @Args('id') id: string,
-    @Args('status') status: string,
+    @Args('id', { type: () => String }) id: string,
+    @Args('status', { type: () => String }) status: string,
     @Context() ctx: GqlContext,
   ): Promise<Property> {
     const userId = ctx.req?.user?.sub;
-    const role = ctx.req?.user?.role;
+    const role = ctx.req?.user?.role ?? 'user';
     if (!userId) throw new UnauthorizedException('Sign in required');
     return this.propertyService.changeStatus(id, status as 'draft' | 'active' | 'sold' | 'rented', userId, role);
   }

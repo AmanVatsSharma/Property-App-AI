@@ -25,6 +25,7 @@
 **Integration:** Email alert is sent via MailService when SMTP is configured (fire-and-forget); recipient is placeholder until User entity has email.
 
 **Change-log:**
+- 2026-03-21: Saved search `filters` fields use `GraphQLJSON` in GraphQL; removed unused `JsonScalar` provider from the module.
 - 2026-03-19: runAlerts() sends email via MailService (saved-search-alert template) alongside in-app notification; MailModule @Global().
 - 2026-03-19: Added SavedSearchAlertScheduler (daily 06:00 cron) to add job to saved-search-alerts queue; ScheduleModule in AppModule.
 - 2026-03-19: Initial module (migration CreateSavedSearch, entity, DTOs, repository, service, resolver, BullMQ processor). Alert cooldown 24h; runAlerts uses PropertyService.findAll and NotificationService.create.
