@@ -8,11 +8,11 @@
 
 import { InputType, Field } from '@nestjs/graphql';
 import { IsOptional } from 'class-validator';
-import { JsonScalar } from '@api/shared/scalars/json.scalar';
+import GraphQLJSON from 'graphql-type-json';
 
 @InputType()
 export class RequestBrokerVerificationInput {
-  @Field(() => JsonScalar, { nullable: true, description: 'Optional documents (e.g. license) for verification' })
+  @Field(() => GraphQLJSON, { nullable: true, description: 'Optional documents (e.g. license) for verification' })
   @IsOptional()
   documents?: Record<string, unknown>;
 }

@@ -8,44 +8,44 @@
 
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 import { ObjectType, Field } from '@nestjs/graphql';
-import { JsonScalar } from '@api/shared/scalars/json.scalar';
+import GraphQLJSON from 'graphql-type-json';
 
 @ObjectType()
 @Entity('broker_request')
 export class BrokerRequest {
-  @Field()
+  @Field(() => String)
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Field()
+  @Field(() => String)
   @Column({ type: 'uuid', unique: true })
   userId: string;
 
-  @Field()
+  @Field(() => String)
   @Column({ type: 'varchar', length: 20, default: 'pending' })
   status: string;
 
-  @Field(() => JsonScalar, { nullable: true })
+  @Field(() => GraphQLJSON, { nullable: true })
   @Column({ type: 'jsonb', nullable: true })
   documents: Record<string, unknown> | null;
 
-  @Field({ nullable: true })
+  @Field(() => String, { nullable: true })
   @Column({ type: 'text', nullable: true })
   adminNote: string | null;
 
-  @Field({ nullable: true })
+  @Field(() => Date, { nullable: true })
   @Column({ type: 'timestamp', nullable: true })
   reviewedAt: Date | null;
 
-  @Field({ nullable: true })
+  @Field(() => String, { nullable: true })
   @Column({ type: 'uuid', nullable: true })
   reviewedByUserId: string | null;
 
-  @Field()
+  @Field(() => Date)
   @CreateDateColumn()
   createdAt: Date;
 
-  @Field()
+  @Field(() => Date)
   @UpdateDateColumn()
   updatedAt: Date;
 }

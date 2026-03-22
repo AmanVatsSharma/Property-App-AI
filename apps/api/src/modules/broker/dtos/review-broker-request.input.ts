@@ -11,16 +11,16 @@ import { IsString, IsIn, IsOptional } from 'class-validator';
 
 @InputType()
 export class ReviewBrokerRequestInput {
-  @Field({ description: 'Broker request ID' })
+  @Field(() => String, { description: 'Broker request ID' })
   @IsString()
   requestId: string;
 
-  @Field({ description: 'approve or reject' })
+  @Field(() => String, { description: 'approve or reject' })
   @IsString()
   @IsIn(['approve', 'reject'])
   action: 'approve' | 'reject';
 
-  @Field({ nullable: true, description: 'Admin note (e.g. reason for rejection)' })
+  @Field(() => String, { nullable: true, description: 'Admin note (e.g. reason for rejection)' })
   @IsOptional()
   @IsString()
   adminNote?: string;
