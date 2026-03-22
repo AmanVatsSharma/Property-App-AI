@@ -4,7 +4,11 @@
 
 ### Added
 
-- **API fast dev serve (2026-03-20)** — `api:serve` uses new `api:compile` (`@nx/js:swc`, watch) instead of a full Webpack build on every start; `api:build` remains Webpack + tsc for deployable output. Added `apps/api/.swcrc` (CommonJS, decorators, path aliases). `tsconfig.app.json`: `noEmit: false`, narrowed `lib`, exclude specs/__tests__ for app compile; root `compile:api` script. DevDependencies: `@swc/cli`. Fixes: `UseGuards` imports from `@nestjs/common` (agent/broker resolvers); `JwtModule.registerAsync({ global: true })` in AppModule for NotificationGateway DI.
+- **Dev watch ENOSPC mitigation (2026-03-21)** — `api:compile:development` sets `CHOKIDAR_USEPOLLING` / `CHOKIDAR_INTERVAL` for `tsc-alias --watch` and `TSC_WATCHFILE=DynamicPriorityPolling` for `tsc --watch` to reduce Linux inotify pressure. `apps/api/README.md` documents `ENOSPC` and `sysctl fs.inotify.max_user_watches`.
+
+- **API build & CI split (2026-03-21)** — `api:typecheck` runs `tsc --noEmit -p apps/api/tsconfig.app.json`; CI “Type check API” uses `nx run api:typecheck` instead of a cold `api:build --skip-nx-cache`. `api:compile` uses `tsc` + `tsc-alias` (replaces SWC) so path aliases work in emitted JS; `api:build` Webpack sets `skipTypeChecking: true` on NxAppWebpackPlugin to avoid ForkTsChecker OOM; Nx `outputs`/`cache` on `api:build` and `api:compile` for better caching. GraphQL JSON fields use `GraphQLJSON` from `graphql-type-json` only; removed duplicate `JsonScalar` Nest provider. Deleted unused `apps/api/src/shared/scalars/json.scalar.ts`.
+
+- **API fast dev serve (2026-03-20)** — `api:serve` uses watch **`api:compile`** instead of a full Webpack build each start. **2026-03-21:** compile is **`tsc` + `tsc-alias`** (see **API build & CI split**); SWC-only dev compile was replaced for reliable `@api/*` in emitted JS. `tsconfig.app.json` app compile settings and root `compile:api` script remain relevant. Fixes retained: `UseGuards` from `@nestjs/common` (agent/broker resolvers); `JwtModule.registerAsync({ global: true })` in AppModule for NotificationGateway DI.
 
 - **LLM token observability (2026-03-20)** — Parse LangChain `usage_metadata` / OpenAI-style usage; log structured fields (`llmFeature`, `llmInputTokens`, `llmOutputTokens`, `llmEstimatedUsdSonnet4Base` for Anthropic); Prometheus counter `llm_tokens_total{feature,provider,token_type}`. Wired in agent orchestrator (per-step accumulate), SearchParserService, AreaAssessorService, PriceForecastService. Docs: `docs/llm-token-billing.md`. MODULE_DOC updates (agent, area, search).
 

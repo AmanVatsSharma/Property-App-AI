@@ -29,7 +29,7 @@ export class UserResolver {
 
   @Mutation(() => User)
   async updateMyProfile(
-    @Args('input') input: UpdateProfileInput,
+    @Args('input', { type: () => UpdateProfileInput }) input: UpdateProfileInput,
     @Context() ctx: GqlContext,
   ): Promise<User> {
     const userId = ctx.req?.user?.sub;
