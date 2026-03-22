@@ -10,6 +10,7 @@
     "compile:api": "nx run api:compile",
     "dev:all": "concurrently -n api,web -c cyan,magenta \"pnpm dev:api\" \"pnpm dev\"",
     "build:api": "nx run api:build",
+    "typecheck:api": "nx run api:typecheck",
     "mobile": "nx run mobile:start",
     "mobile:ios": "nx run mobile:run-ios",
     "mobile:android": "nx run mobile:run-android",
@@ -36,6 +37,7 @@
     "@swc/cli": "~0.6.0",
     "@swc/core": "~1.5.7",
     "@swc/helpers": "~0.5.11",
+    "@types/multer": "^2.1.0",
     "@types/node": "20.19.9",
     "@types/nodemailer": "^7.0.11",
     "concurrently": "^9.1.2",
@@ -45,6 +47,7 @@
     "pino-pretty": "^11.3.0",
     "prettier": "^2.6.2",
     "ts-jest": "^29.2.5",
+    "tsc-alias": "^1.8.16",
     "typescript": "~5.9.2",
     "webpack-cli": "^5.1.4"
   },

@@ -26,7 +26,7 @@ jobs:
           cache: "npm"
       - run: npm ci
       - name: Type check API
-        run: npx nx run api:build --skip-nx-cache
+        run: npx nx run api:typecheck --skip-nx-cache
         env:
           NODE_OPTIONS: "--max-old-space-size=8192"
       - name: Type check Web

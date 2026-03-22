@@ -5,31 +5,30 @@
   "projectType": "application",
   "targets": {
     "compile": {
-      "executor": "@nx/js:swc",
+      "executor": "nx:run-commands",
       "outputs": ["{workspaceRoot}/dist/apps/api"],
       "options": {
-        "main": "apps/api/src/main.ts",
-        "outputPath": "dist/apps/api",
-        "tsConfig": "apps/api/tsconfig.app.json",
-        "swcrc": "apps/api/.swcrc",
-        "skipTypeCheck": true,
-        "assets": [
-          {
-            "glob": "**/*",
-            "input": "apps/api/src/assets",
-            "output": "assets"
-          }
+        "cwd": "apps/api",
+        "commands": [
+          "NODE_OPTIONS='--max-old-space-size=8192' npx tsc -p tsconfig.app.json",
+          "npx tsc-alias -p tsconfig.app.json"
         ],
-        "watch": false
+        "parallel": false
       },
       "configurations": {
         "development": {
-          "watch": true
+          "commands": [
+            "NODE_OPTIONS='--max-old-space-size=8192' npx tsc -p tsconfig.app.json --watch",
+            "npx tsc-alias -p tsconfig.app.json --watch"
+          ],
+          "parallel": true
         }
       }
     },
     "build": {
       "executor": "nx:run-commands",
+      "outputs": ["{workspaceRoot}/dist/apps/api"],
+      "cache": true,
       "options": {
         "command": "NODE_OPTIONS='--max-old-space-size=8192' webpack-cli build",
         "args": ["--node-env=production"],
@@ -39,6 +38,14 @@
         "development": {
           "args": ["--node-env=development"]
         }
+      }
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "outputs": [],
+      "options": {
+        "command": "NODE_OPTIONS='--max-old-space-size=8192' npx tsc --noEmit -p tsconfig.app.json",
+        "cwd": "apps/api"
       }
     },
     "prune-lockfile": {
