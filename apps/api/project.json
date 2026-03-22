@@ -21,7 +21,12 @@
             "NODE_OPTIONS='--max-old-space-size=8192' npx tsc -p tsconfig.app.json --watch",
             "npx tsc-alias -p tsconfig.app.json --watch"
           ],
-          "parallel": true
+          "parallel": true,
+          "env": {
+            "CHOKIDAR_USEPOLLING": "true",
+            "CHOKIDAR_INTERVAL": "1500",
+            "TSC_WATCHFILE": "DynamicPriorityPolling"
+          }
         }
       }
     },

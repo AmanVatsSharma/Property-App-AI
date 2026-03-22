@@ -23,6 +23,22 @@ GraphQL playground: **http://localhost:3333/graphql**
 
 Optional one-off compile (no watch): `npm run compile:api` or `nx run api:compile`. **`api:build`** declares Nx `outputs` for `dist/apps/api` so Nx can cache the production bundle when inputs are unchanged.
 
+### Linux: `ENOSPC` / “System limit for number of file watchers reached”
+
+`api:serve` runs **`tsc --watch`** and **`tsc-alias --watch`**. On Linux, each watcher uses **inotify**; the default limit (often ~100k) can be exhausted when the IDE and other tools also watch files.
+
+1. **Already mitigated in repo:** `api:compile:development` sets **`CHOKIDAR_USEPOLLING`** for `tsc-alias` and **`TSC_WATCHFILE=DynamicPriorityPolling`** for TypeScript so dev uses lighter/polling-based watching where supported.
+2. **Raise the system limit (recommended on Fedora/Ubuntu):**
+   ```bash
+   # Current value (optional):
+   cat /proc/sys/fs/inotify/max_user_watches
+   # Apply until reboot:
+   sudo sysctl fs.inotify.max_user_watches=524288
+   # Persist after reboot:
+   echo 'fs.inotify.max_user_watches=524288' | sudo tee /etc/sysctl.d/99-inotify-watches.conf
+   sudo sysctl --system
+   ```
+
 ## Build (production bundle)
 
 ```bash
