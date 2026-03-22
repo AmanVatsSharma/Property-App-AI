@@ -8,7 +8,15 @@
 
 import { Injectable } from '@nestjs/common';
 import type { Redis } from 'ioredis';
-import type { ThrottlerStorage, ThrottlerStorageRecord } from '@nestjs/throttler';
+import type { ThrottlerStorage } from '@nestjs/throttler';
+
+/** Aligns with ThrottlerStorage.increment return shape (@nestjs/throttler v6). */
+type ThrottlerIncrementResult = {
+  totalHits: number;
+  timeToExpire: number;
+  isBlocked: boolean;
+  timeToBlockExpire: number;
+};
 
 const THROTTLER_PREFIX = 'throttler:';
 const BLOCK_PREFIX = 'throttler:block:';
@@ -23,7 +31,7 @@ export class RedisThrottlerStorage implements ThrottlerStorage {
     limit: number,
     blockDuration: number,
     _throttlerName: string,
-  ): Promise<ThrottlerStorageRecord> {
+  ): Promise<ThrottlerIncrementResult> {
     const countKey = THROTTLER_PREFIX + key;
     const blockKey = BLOCK_PREFIX + key;
     const ttlSec = Math.max(1, Math.ceil(ttl / 1000));

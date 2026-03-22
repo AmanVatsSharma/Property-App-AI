@@ -46,7 +46,7 @@ export class AdminResolver {
   @UseGuards(AdminGuard)
   @Mutation(() => User, { name: 'setUserRole' })
   async setUserRole(
-    @Args('userId') userId: string,
+    @Args('userId', { type: () => String }) userId: string,
     @Args('role', { type: () => UserRole }) role: UserRole,
   ): Promise<User> {
     const user = await this.userService.findById(userId);

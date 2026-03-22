@@ -20,7 +20,6 @@ import { AreaModule } from '@api/modules/area/area.module';
 import { AgentConversation } from './conversation/entities/agent-conversation.entity';
 import { AgentConversationRepository } from './conversation/repository/agent-conversation.repository';
 import { ConversationService } from './conversation/services/conversation.service';
-import { JsonScalar } from '@api/shared/scalars/json.scalar';
 import { MetricsModule } from '@api/modules/metrics/metrics.module';
 
 @Module({
@@ -32,7 +31,6 @@ import { MetricsModule } from '@api/modules/metrics/metrics.module';
     BullModule.registerQueue({ name: AgentQueueService.AGENT_QUEUE_NAME }),
   ],
   providers: [
-    JsonScalar,
     AgentConversationRepository,
     ConversationService,
     AgentToolsService,
