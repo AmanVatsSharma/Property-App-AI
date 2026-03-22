@@ -22,7 +22,7 @@ export class FavoriteResolver {
 
   @Mutation(() => ToggleFavoriteResult)
   async toggleFavorite(
-    @Args('propertyId') propertyId: string,
+    @Args('propertyId', { type: () => String }) propertyId: string,
     @Context() ctx: GqlContext,
   ): Promise<ToggleFavoriteResult> {
     const userId = ctx.req?.user?.sub;

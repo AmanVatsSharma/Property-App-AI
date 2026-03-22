@@ -13,12 +13,10 @@ import { NotificationRepository } from './repository/notification.repository';
 import { NotificationService } from './services/notification.service';
 import { NotificationResolver } from './resolvers/notification.resolver';
 import { NotificationGateway } from './gateways/notification.gateway';
-import { JsonScalar } from '@api/shared/scalars/json.scalar';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Notification])],
   providers: [
-    JsonScalar,
     NotificationRepository,
     NotificationGateway,
     NotificationService,

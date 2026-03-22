@@ -22,6 +22,7 @@
 **Integration:** EnquiryService.send() calls NotificationService.create() for the listing owner when an enquiry is created (type 'enquiry', title 'New enquiry', body truncated message, data: { enquiryId, propertyId }). SavedSearchService.runAlerts() creates notifications (type 'saved_search_alert').
 
 **Change-log:**
+- 2026-03-21: `notification.data` (jsonb) exposed in GraphQL with `GraphQLJSON` from `graphql-type-json`; removed unused `JsonScalar` provider from the module (single `JSON` scalar in schema).
 - 2026-03-20: JwtModule registered as `global: true` in AppModule so NotificationGateway can inject JwtService (MODULE_DOC previously described JwtModule here; implementation now matches).
 - 2026-03-19: NotificationGateway (namespace /notifications, JWT auth, pushToUser); NotificationService.create() pushes real-time event; main.ts IoAdapter; JwtModule in NotificationModule for gateway.
 - 2026-03-18: Initial module (migration CreateNotification, entity, repository, service, resolver). Enquiry integration.
