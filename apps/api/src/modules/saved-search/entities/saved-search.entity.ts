@@ -14,40 +14,40 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { ObjectType, Field } from '@nestjs/graphql';
-import { JsonScalar } from '@api/shared/scalars/json.scalar';
+import GraphQLJSON from 'graphql-type-json';
 
 @ObjectType()
 @Entity('saved_search')
 export class SavedSearch {
-  @Field()
+  @Field(() => String)
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Field()
+  @Field(() => String)
   @Column({ type: 'uuid' })
   userId: string;
 
-  @Field()
+  @Field(() => String)
   @Column({ type: 'varchar', length: 200 })
   name: string;
 
-  @Field(() => JsonScalar)
+  @Field(() => GraphQLJSON)
   @Column({ type: 'jsonb', default: () => "'{}'" })
   filters: Record<string, unknown>;
 
-  @Field()
+  @Field(() => Boolean)
   @Column({ type: 'boolean', default: true })
   alertEnabled: boolean;
 
-  @Field({ nullable: true })
+  @Field(() => Date, { nullable: true })
   @Column({ type: 'timestamp', nullable: true })
   lastAlertSentAt: Date | null;
 
-  @Field()
+  @Field(() => Date)
   @CreateDateColumn()
   createdAt: Date;
 
-  @Field()
+  @Field(() => Date)
   @UpdateDateColumn()
   updatedAt: Date;
 }

@@ -8,20 +8,20 @@
 
 import { InputType, Field } from '@nestjs/graphql';
 import { IsString, IsOptional, IsBoolean, IsObject, MaxLength } from 'class-validator';
-import { JsonScalar } from '@api/shared/scalars/json.scalar';
+import GraphQLJSON from 'graphql-type-json';
 
 @InputType()
 export class CreateSavedSearchInput {
-  @Field({ description: 'Human-readable name e.g. "3BHK Koramangala under 1Cr"' })
+  @Field(() => String, { description: 'Human-readable name e.g. "3BHK Koramangala under 1Cr"' })
   @IsString()
   @MaxLength(200)
   name: string;
 
-  @Field(() => JsonScalar, { description: 'Filter criteria matching PropertyFilterDto shape' })
+  @Field(() => GraphQLJSON, { description: 'Filter criteria matching PropertyFilterDto shape' })
   @IsObject()
   filters: Record<string, unknown>;
 
-  @Field({ nullable: true, defaultValue: true })
+  @Field(() => Boolean, { nullable: true, defaultValue: true })
   @IsOptional()
   @IsBoolean()
   alertEnabled?: boolean;
@@ -29,18 +29,18 @@ export class CreateSavedSearchInput {
 
 @InputType()
 export class UpdateSavedSearchInput {
-  @Field({ nullable: true })
+  @Field(() => String, { nullable: true })
   @IsOptional()
   @IsString()
   @MaxLength(200)
   name?: string;
 
-  @Field(() => JsonScalar, { nullable: true })
+  @Field(() => GraphQLJSON, { nullable: true })
   @IsOptional()
   @IsObject()
   filters?: Record<string, unknown>;
 
-  @Field({ nullable: true })
+  @Field(() => Boolean, { nullable: true })
   @IsOptional()
   @IsBoolean()
   alertEnabled?: boolean;
