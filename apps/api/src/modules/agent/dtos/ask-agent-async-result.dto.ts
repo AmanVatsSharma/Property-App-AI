@@ -10,6 +10,6 @@ import { ObjectType, Field } from '@nestjs/graphql';
 
 @ObjectType()
 export class AskAgentAsyncResult {
-  @Field({ description: 'Job ID to poll for status/result via agentJobStatus' })
+  @Field(() => String, { description: 'Job ID to poll for status/result via agentJobStatus' })
   jobId: string;
 }

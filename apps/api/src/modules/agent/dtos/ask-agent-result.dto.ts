@@ -10,31 +10,34 @@ import { ObjectType, Field, Int } from '@nestjs/graphql';
 
 @ObjectType()
 export class AgentSource {
-  @Field({ description: 'Tool or resource that contributed to the answer' })
+  @Field(() => String, { description: 'Tool or resource that contributed to the answer' })
   type: string;
 
-  @Field({ description: 'Human-readable label' })
+  @Field(() => String, { description: 'Human-readable label' })
   label: string;
 
-  @Field({ nullable: true, description: 'Related entity ID e.g. property id' })
+  @Field(() => String, { nullable: true, description: 'Related entity ID e.g. property id' })
   id?: string;
 }
 
 @ObjectType()
 export class AgentSuggestedAction {
-  @Field({ description: 'Action label e.g. View property' })
+  @Field(() => String, { description: 'Action label e.g. View property' })
   label: string;
 
-  @Field({ nullable: true, description: 'Target path or entity id' })
+  @Field(() => String, { nullable: true, description: 'Target path or entity id' })
   target?: string;
 }
 
 @ObjectType()
 export class AskAgentResult {
-  @Field({ description: 'Final answer text from the agent' })
+  @Field(() => String, { description: 'Final answer text from the agent' })
   answer: string;
 
-  @Field({ nullable: true, description: 'Persisted conversation ID when conversation persistence is used' })
+  @Field(() => String, {
+    nullable: true,
+    description: 'Persisted conversation ID when conversation persistence is used',
+  })
   conversationId?: string;
 
   @Field(() => [AgentSource], {
