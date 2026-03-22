@@ -8,7 +8,7 @@
 
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 import { ObjectType, Field } from '@nestjs/graphql';
-import { JsonScalar } from '@api/shared/scalars/json.scalar';
+import GraphQLJSON from 'graphql-type-json';
 
 export interface ConversationMessage {
   role: 'user' | 'assistant';
@@ -18,27 +18,27 @@ export interface ConversationMessage {
 @ObjectType()
 @Entity('agent_conversation')
 export class AgentConversation {
-  @Field()
+  @Field(() => String)
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Field({ nullable: true })
+  @Field(() => String, { nullable: true })
   @Column({ type: 'uuid', nullable: true })
   userId: string | null;
 
-  @Field({ nullable: true })
+  @Field(() => String, { nullable: true })
   @Column({ type: 'varchar', length: 200, nullable: true })
   title: string | null;
 
-  @Field(() => JsonScalar)
+  @Field(() => GraphQLJSON, { description: 'Conversation messages as JSON array' })
   @Column({ type: 'jsonb', default: [] })
   messages: ConversationMessage[];
 
-  @Field()
+  @Field(() => Date)
   @CreateDateColumn()
   createdAt: Date;
 
-  @Field()
+  @Field(() => Date)
   @UpdateDateColumn()
   updatedAt: Date;
 }

@@ -11,7 +11,7 @@ import { AskAgentResult } from './ask-agent-result.dto';
 
 @ObjectType()
 export class AgentJobStatusResult {
-  @Field({ description: 'Job state: waiting, active, completed, failed, not_found' })
+  @Field(() => String, { description: 'Job state: waiting, active, completed, failed, not_found' })
   status: string;
 
   @Field(() => AskAgentResult, { nullable: true, description: 'Result when status is completed' })
