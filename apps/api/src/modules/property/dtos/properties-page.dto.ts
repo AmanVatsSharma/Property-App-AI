@@ -14,7 +14,7 @@ export class PropertiesPage {
   @Field(() => [Property])
   items: Property[];
 
-  @Field({ nullable: true, description: 'Cursor for next page; pass as "after" in next request' })
+  @Field(() => String, { nullable: true, description: 'Cursor for next page; pass as "after" in next request' })
   nextCursor: string | null;
 
   @Field(() => Int, { description: 'Total count matching the filter' })

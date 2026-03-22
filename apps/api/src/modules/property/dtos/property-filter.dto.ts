@@ -12,17 +12,20 @@ import { Type } from 'class-transformer';
 
 @InputType()
 export class PropertyFilterDto {
-  @Field({ nullable: true })
+  @Field(() => String, { nullable: true })
   @IsOptional()
   @IsString()
   type?: string;
 
-  @Field({ nullable: true })
+  @Field(() => String, { nullable: true })
   @IsOptional()
   @IsString()
   location?: string;
 
-  @Field({ nullable: true, description: 'Filter by owner (UUID); server may set from auth for myListings)' })
+  @Field(() => String, {
+    nullable: true,
+    description: 'Filter by owner (UUID); server may set from auth for myListings)',
+  })
   @IsOptional()
   @IsString()
   createdByUserId?: string;
@@ -97,13 +100,13 @@ export class PropertyFilterDto {
   @Max(100)
   connectivityScoreMin?: number;
 
-  @Field({ nullable: true, description: 'Sort field: createdAt, price, aiScore' })
+  @Field(() => String, { nullable: true, description: 'Sort field: createdAt, price, aiScore' })
   @IsOptional()
   @IsString()
   @IsIn(['createdAt', 'price', 'aiScore'])
   sortBy?: string;
 
-  @Field({ nullable: true, description: 'Sort order: asc or desc' })
+  @Field(() => String, { nullable: true, description: 'Sort order: asc or desc' })
   @IsOptional()
   @IsString()
   @IsIn(['asc', 'desc', 'ASC', 'DESC'])
@@ -124,7 +127,10 @@ export class PropertyFilterDto {
   @Min(0)
   offset?: number = 0;
 
-  @Field({ nullable: true, description: 'Cursor for pagination; ISO date string of last item\'s createdAt' })
+  @Field(() => String, {
+    nullable: true,
+    description: 'Cursor for pagination; ISO date string of last item\'s createdAt',
+  })
   @IsOptional()
   @IsString()
   after?: string;

@@ -11,27 +11,27 @@ import { IsString, IsNumber, IsOptional, IsArray, Min } from 'class-validator';
 
 @InputType()
 export class UpdatePropertyDto {
-  @Field({ nullable: true })
+  @Field(() => String, { nullable: true })
   @IsString()
   @IsOptional()
   title?: string;
 
-  @Field({ nullable: true })
+  @Field(() => String, { nullable: true })
   @IsString()
   @IsOptional()
   location?: string;
 
-  @Field({ nullable: true })
+  @Field(() => String, { nullable: true })
   @IsString()
   @IsOptional()
   areaId?: string;
 
-  @Field({ nullable: true })
+  @Field(() => String, { nullable: true })
   @IsString()
   @IsOptional()
   locality?: string;
 
-  @Field({ nullable: true })
+  @Field(() => String, { nullable: true })
   @IsString()
   @IsOptional()
   city?: string;
@@ -52,7 +52,7 @@ export class UpdatePropertyDto {
   @Min(0)
   price?: number;
 
-  @Field({ nullable: true })
+  @Field(() => String, { nullable: true })
   @IsString()
   @IsOptional()
   type?: string;
@@ -75,12 +75,12 @@ export class UpdatePropertyDto {
   @Min(0)
   areaSqft?: number;
 
-  @Field({ nullable: true })
+  @Field(() => String, { nullable: true })
   @IsString()
   @IsOptional()
   status?: string;
 
-  @Field({ nullable: true })
+  @Field(() => String, { nullable: true })
   @IsString()
   @IsOptional()
   listingFor?: string;
@@ -91,7 +91,7 @@ export class UpdatePropertyDto {
   @IsOptional()
   specs?: string[];
 
-  @Field({ nullable: true })
+  @Field(() => String, { nullable: true })
   @IsString()
   @IsOptional()
   aiTip?: string;
@@ -102,7 +102,7 @@ export class UpdatePropertyDto {
   @Min(0)
   aiScore?: number;
 
-  @Field({ nullable: true })
+  @Field(() => String, { nullable: true })
   @IsString()
   @IsOptional()
   coverImageUrl?: string;
