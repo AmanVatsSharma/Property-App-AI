@@ -11,7 +11,7 @@ import { IsString, Matches, MinLength } from 'class-validator';
 
 @InputType()
 export class SendOtpInput {
-  @Field({ description: 'Indian mobile number (10 digits, optional +91)' })
+  @Field(() => String, { description: 'Indian mobile number (10 digits, optional +91)' })
   @IsString()
   @MinLength(10)
   @Matches(/^\+?[0-9\s-]{10,15}$/, { message: 'Invalid phone format' })

@@ -10,9 +10,9 @@ import { ObjectType, Field } from '@nestjs/graphql';
 
 @ObjectType()
 export class SendOtpResult {
-  @Field()
+  @Field(() => Boolean)
   success: boolean;
 
-  @Field()
+  @Field(() => String)
   message: string;
 }
