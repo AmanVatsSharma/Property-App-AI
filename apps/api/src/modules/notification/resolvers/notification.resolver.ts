@@ -33,7 +33,7 @@ export class NotificationResolver {
 
   @Mutation(() => Notification, { name: 'markNotificationRead', nullable: true })
   async markNotificationRead(
-    @Args('id') id: string,
+    @Args('id', { type: () => String }) id: string,
     @Context() ctx: GqlContext,
   ): Promise<Notification | null> {
     const userId = ctx.req?.user?.sub;

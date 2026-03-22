@@ -8,40 +8,40 @@
 
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn } from 'typeorm';
 import { ObjectType, Field } from '@nestjs/graphql';
-import { JsonScalar } from '@api/shared/scalars/json.scalar';
+import GraphQLJSON from 'graphql-type-json';
 
 @ObjectType()
 @Entity('notification')
 export class Notification {
-  @Field()
+  @Field(() => String)
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Field()
+  @Field(() => String)
   @Column({ type: 'uuid' })
   userId: string;
 
-  @Field()
+  @Field(() => String)
   @Column({ type: 'varchar', length: 50 })
   type: string;
 
-  @Field()
+  @Field(() => String)
   @Column({ type: 'varchar', length: 200 })
   title: string;
 
-  @Field()
+  @Field(() => String)
   @Column({ type: 'text' })
   body: string;
 
-  @Field(() => JsonScalar, { nullable: true })
+  @Field(() => GraphQLJSON, { nullable: true })
   @Column({ type: 'jsonb', nullable: true })
   data: Record<string, unknown> | null;
 
-  @Field({ nullable: true })
+  @Field(() => Date, { nullable: true })
   @Column({ type: 'timestamp', nullable: true })
   readAt: Date | null;
 
-  @Field()
+  @Field(() => Date)
   @CreateDateColumn()
   createdAt: Date;
 }

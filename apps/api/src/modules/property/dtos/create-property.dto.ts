@@ -11,25 +11,25 @@ import { IsString, IsNumber, IsOptional, IsArray, Min } from 'class-validator';
 
 @InputType()
 export class CreatePropertyDto {
-  @Field()
+  @Field(() => String)
   @IsString()
   title: string;
 
-  @Field()
+  @Field(() => String)
   @IsString()
   location: string;
 
-  @Field({ nullable: true })
+  @Field(() => String, { nullable: true })
   @IsString()
   @IsOptional()
   areaId?: string;
 
-  @Field({ nullable: true })
+  @Field(() => String, { nullable: true })
   @IsString()
   @IsOptional()
   locality?: string;
 
-  @Field({ nullable: true })
+  @Field(() => String, { nullable: true })
   @IsString()
   @IsOptional()
   city?: string;
@@ -49,7 +49,7 @@ export class CreatePropertyDto {
   @Min(0)
   price: number;
 
-  @Field({ defaultValue: 'apartment' })
+  @Field(() => String, { defaultValue: 'apartment' })
   @IsString()
   @IsOptional()
   type?: string;
@@ -72,12 +72,12 @@ export class CreatePropertyDto {
   @Min(0)
   areaSqft?: number;
 
-  @Field({ nullable: true })
+  @Field(() => String, { nullable: true })
   @IsString()
   @IsOptional()
   status?: string;
 
-  @Field({ nullable: true })
+  @Field(() => String, { nullable: true })
   @IsString()
   @IsOptional()
   listingFor?: string;
@@ -88,7 +88,7 @@ export class CreatePropertyDto {
   @IsOptional()
   specs?: string[];
 
-  @Field({ nullable: true })
+  @Field(() => String, { nullable: true })
   @IsString()
   @IsOptional()
   aiTip?: string;
@@ -99,7 +99,7 @@ export class CreatePropertyDto {
   @Min(0)
   aiScore?: number;
 
-  @Field({ nullable: true })
+  @Field(() => String, { nullable: true })
   @IsString()
   @IsOptional()
   coverImageUrl?: string;
