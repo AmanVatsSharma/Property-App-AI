@@ -3,10 +3,11 @@
   "compilerOptions": {
     "baseUrl": ".",
     "noEmit": false,
-    "outDir": "../../dist/out-tsc",
+    "outDir": "../../dist/apps/api",
+    "rootDir": ".",
     "module": "commonjs",
     "moduleResolution": "node",
-    "types": ["node"],
+    "types": ["node", "multer"],
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "target": "es2021",

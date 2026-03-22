@@ -14,14 +14,14 @@ pnpm dev:api
 nx run api:serve
 ```
 
-**Dev pipeline:** `api:serve` runs **`api:compile`** with **SWC** (fast transpile, `skipTypeCheck: true`) in watch mode, then starts Node on `dist/apps/api/src/main.js`. Path aliases `@api/*` are resolved at compile time via [`apps/api/.swcrc`](.swcrc). Dev compile does **not** type-check the whole project; rely on the editor, `pnpm exec tsc --noEmit -p apps/api/tsconfig.app.json` when needed (may require a large `NODE_OPTIONS` heap on this codebase), and CI.
+**Dev pipeline:** `api:serve` runs **`api:compile`** in watch mode: **`tsc -p tsconfig.app.json`** then **`tsc-alias`** so `@api/*` resolves in emitted JS under `dist/apps/api`. The dev server runs `dist/apps/api/src/main.js`. For a fast gate without emit, use **`nx run api:typecheck`** (or root `typecheck:api`) — same as CI’s API type step.
 
-**Production / Docker image pipeline:** `api:build` still uses **Webpack** + **`tsc`** (NxAppWebpackPlugin) so you get a bundled output, `generatePackageJson`, and the same type-checking behaviour as before; this target is heavier by design.
+**Production / Docker image pipeline:** `api:build` uses **Webpack** with **NxAppWebpackPlugin** (`compiler: 'tsc'`). **Fork-ts-checker is disabled** (`skipTypeChecking: true` in [`webpack.config.js`](webpack.config.js)) to avoid very large memory use; rely on **`api:typecheck`** for full project type safety. Output is bundled with `generatePackageJson` for deployable artifacts.
 
 API: **http://localhost:3333**  
 GraphQL playground: **http://localhost:3333/graphql**
 
-Optional one-off compile (no watch): `npm run compile:api` or `nx run api:compile`.
+Optional one-off compile (no watch): `npm run compile:api` or `nx run api:compile`. **`api:build`** declares Nx `outputs` for `dist/apps/api` so Nx can cache the production bundle when inputs are unchanged.
 
 ## Build (production bundle)
 

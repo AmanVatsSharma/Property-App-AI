@@ -31,6 +31,8 @@ module.exports = {
       generatePackageJson: true,
       sourceMaps: true,
       memoryLimit: 8192,
+      /** ForkTsCheckerWebpackPlugin peaks near 8GB+ on this graph; typecheck runs via `api:typecheck`. */
+      skipTypeChecking: true,
     }),
   ],
 };
