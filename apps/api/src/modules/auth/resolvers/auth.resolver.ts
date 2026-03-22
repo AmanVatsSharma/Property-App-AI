@@ -20,13 +20,13 @@ export class AuthResolver {
 
   @Public()
   @Mutation(() => SendOtpResult)
-  async sendOtp(@Args('input') input: SendOtpInput): Promise<SendOtpResult> {
+  async sendOtp(@Args('input', { type: () => SendOtpInput }) input: SendOtpInput): Promise<SendOtpResult> {
     return this.authService.sendOtp(input.phone);
   }
 
   @Public()
   @Mutation(() => VerifyOtpResult)
-  async verifyOtp(@Args('input') input: VerifyOtpInput): Promise<VerifyOtpResult> {
+  async verifyOtp(@Args('input', { type: () => VerifyOtpInput }) input: VerifyOtpInput): Promise<VerifyOtpResult> {
     return this.authService.verifyOtp(input.phone, input.code);
   }
 }

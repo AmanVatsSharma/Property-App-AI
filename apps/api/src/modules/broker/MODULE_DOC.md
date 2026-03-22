@@ -5,7 +5,7 @@
 **Purpose:** A user can request broker verification via `requestBrokerVerification`. The request is stored with status `pending`. An admin uses `reviewBrokerRequest` to approve (which sets the user's role to BROKER) or reject (with optional note). Until approved, the user remains in `user` role.
 
 **Files:**
-- `broker.module.ts` — Nest module; TypeOrmModule.forFeature([BrokerRequest]), UserModule; JsonScalar, repository, service, resolver.
+- `broker.module.ts` — Nest module; TypeOrmModule.forFeature([BrokerRequest]), UserModule; repository, service, resolver. JSON fields use `graphql-type-json` (`GraphQLJSON`) in GraphQL schema (no duplicate custom scalar).
 - `entities/broker-request.entity.ts` — BrokerRequest (id, userId, status, documents, adminNote, reviewedAt, reviewedByUserId, createdAt, updatedAt).
 - `repository/broker-request.repository.ts` — findByUserId, findById, create, updateStatus.
 - `services/broker-request.service.ts` — requestBrokerVerification, approveBrokerRequest, rejectBrokerRequest.
