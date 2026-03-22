@@ -12,39 +12,39 @@ import { ObjectType, Field } from '@nestjs/graphql';
 @ObjectType()
 @Entity('enquiry')
 export class Enquiry {
-  @Field()
+  @Field(() => String)
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Field()
+  @Field(() => String)
   @Column({ type: 'uuid' })
   propertyId: string;
 
-  @Field()
+  @Field(() => String)
   @Column({ type: 'uuid' })
   fromUserId: string;
 
-  @Field({ nullable: true })
+  @Field(() => String, { nullable: true })
   @Column({ type: 'uuid', nullable: true })
   ownerUserId: string | null;
 
-  @Field()
+  @Field(() => String)
   @Column({ type: 'text' })
   message: string;
 
-  @Field({ nullable: true })
+  @Field(() => String, { nullable: true })
   @Column({ type: 'varchar', length: 20, nullable: true })
   phone: string | null;
 
-  @Field()
+  @Field(() => String)
   @Column({ type: 'varchar', length: 20, default: 'open' })
   status: string;
 
-  @Field()
+  @Field(() => Date)
   @CreateDateColumn()
   createdAt: Date;
 
-  @Field()
+  @Field(() => Date)
   @UpdateDateColumn()
   updatedAt: Date;
 }

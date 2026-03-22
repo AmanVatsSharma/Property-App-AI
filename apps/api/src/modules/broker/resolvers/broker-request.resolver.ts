@@ -24,7 +24,8 @@ export class BrokerRequestResolver {
 
   @Mutation(() => BrokerRequest, { name: 'requestBrokerVerification' })
   async requestBrokerVerification(
-    @Args('input', { nullable: true }) input: RequestBrokerVerificationInput | undefined,
+    @Args('input', { nullable: true, type: () => RequestBrokerVerificationInput })
+    input: RequestBrokerVerificationInput | undefined,
     @Context() ctx: GqlContext,
   ): Promise<BrokerRequest> {
     const userId = ctx.req?.user?.sub;
@@ -35,7 +36,7 @@ export class BrokerRequestResolver {
   @Mutation(() => BrokerRequest, { name: 'reviewBrokerRequest' })
   @UseGuards(AdminGuard)
   async reviewBrokerRequest(
-    @Args('input') input: ReviewBrokerRequestInput,
+    @Args('input', { type: () => ReviewBrokerRequestInput }) input: ReviewBrokerRequestInput,
     @Context() ctx: GqlContext,
   ): Promise<BrokerRequest> {
     const adminUserId = ctx.req?.user?.sub;

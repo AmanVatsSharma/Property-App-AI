@@ -11,16 +11,16 @@ import { IsString, IsOptional, MaxLength } from 'class-validator';
 
 @InputType()
 export class CreateEnquiryInput {
-  @Field({ description: 'Property ID to enquire about' })
+  @Field(() => String, { description: 'Property ID to enquire about' })
   @IsString()
   propertyId: string;
 
-  @Field({ description: 'Message (max 1000 chars)' })
+  @Field(() => String, { description: 'Message (max 1000 chars)' })
   @IsString()
   @MaxLength(1000)
   message: string;
 
-  @Field({ nullable: true, description: 'Optional contact phone' })
+  @Field(() => String, { nullable: true, description: 'Optional contact phone' })
   @IsOptional()
   @IsString()
   @MaxLength(20)
