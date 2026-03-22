@@ -23,6 +23,15 @@ export interface ToolResult {
   suggestedActions?: Array<{ label: string; target?: string }>;
 }
 
+/** LangChain `tool()` + Zod exceeds TS instantiation depth (TS2589); Zod still validates at runtime. */
+function lcTool(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- bridge to LangChain tool(); Zod validates shape
+  run: (input: any) => Promise<string | ToolResult>,
+  meta: { name: string; description: string; schema: z.ZodTypeAny },
+): StructuredToolInterface {
+  return tool(run as never, meta as never) as unknown as StructuredToolInterface;
+}
+
 export interface AgentContext {
   userId?: string | null;
 }
@@ -57,7 +66,7 @@ export class AgentToolsService {
     this.logger.debug('getTools build', { method: 'getTools' });
     const self = this;
     const tools: StructuredToolInterface[] = [
-      tool(
+      lcTool(
         async (
           input: {
             query: string;
@@ -100,7 +109,7 @@ export class AgentToolsService {
           }),
         },
       ),
-      tool(
+      lcTool(
         async (input: { property_id: string }) => {
           return self.getPropertyImpl(input.property_id);
         },
@@ -113,7 +122,7 @@ export class AgentToolsService {
           }),
         },
       ),
-      tool(
+      lcTool(
         async (input: { property_id: string }) => {
           return self.scorePropertyImpl(input.property_id);
         },
@@ -126,7 +135,7 @@ export class AgentToolsService {
           }),
         },
       ),
-      tool(
+      lcTool(
         async (input: { locality: string; city?: string }) => {
           return self.getNeighbourhoodScoreImpl(input.locality, input.city);
         },
@@ -140,7 +149,7 @@ export class AgentToolsService {
           }),
         },
       ),
-      tool(
+      lcTool(
         async (input: { locality: string; city?: string }) => {
           return self.assessRegionImpl(input.locality, input.city);
         },
@@ -154,7 +163,7 @@ export class AgentToolsService {
           }),
         },
       ),
-      tool(
+      lcTool(
         async (input: { locality: string; city?: string; horizon_months?: number }) => {
           return self.getPriceForecastImpl(input.locality, input.city, input.horizon_months);
         },
@@ -169,7 +178,7 @@ export class AgentToolsService {
           }),
         },
       ),
-      tool(
+      lcTool(
         async (input: { project_name_or_number: string }) => {
           return self.checkReraImpl(input.project_name_or_number);
         },
@@ -182,7 +191,7 @@ export class AgentToolsService {
           }),
         },
       ),
-      tool(
+      lcTool(
         async (input: { document_summary_or_text: string }) => {
           return self.analyzeDocumentImpl(input.document_summary_or_text);
         },
@@ -195,7 +204,7 @@ export class AgentToolsService {
           }),
         },
       ),
-      tool(
+      lcTool(
         async (input: { property_id: string; context?: string }) => {
           return self.getNegotiationAdviceImpl(input.property_id, input.context);
         },
@@ -209,7 +218,7 @@ export class AgentToolsService {
           }),
         },
       ),
-      tool(
+      lcTool(
         async (input: { property_ids: string[] }) => {
           return self.comparePropertiesImpl(input.property_ids);
         },
@@ -222,7 +231,7 @@ export class AgentToolsService {
           }),
         },
       ),
-      tool(
+      lcTool(
         async (input: {
           title: string;
           location: string;
@@ -379,7 +388,7 @@ export class AgentToolsService {
       const { locality, city } = this.parseLocationToLocalityCity(p.location);
       const area = await this.areaService.getOrCreate(locality, city, { assessIfMissing: true });
       const { score, tip } = this.computePropertyScoreAndTip(p, area);
-      await this.propertyService.update(propertyId, { aiScore: score, aiTip: tip });
+      await this.propertyService.updateAiScoresFromAgent(propertyId, score, tip);
       return `Property: ${p.title}. AI Score: ${score}/100. AI Tip: ${tip}`;
     } catch {
       return `Property ${propertyId} not found.`;
@@ -490,7 +499,7 @@ export class AgentToolsService {
     const { locality, city } = this.parseLocationToLocalityCity(p.location);
     const area = await this.areaService.getOrCreate(locality, city, { assessIfMissing: true });
     const { score, tip } = this.computePropertyScoreAndTip(p, area);
-    const updated = await this.propertyService.update(propertyId, { aiScore: score, aiTip: tip });
+    const updated = await this.propertyService.updateAiScoresFromAgent(propertyId, score, tip);
     this.logger.debug('scoreAndPersistProperty exit', { method: 'scoreAndPersistProperty', propertyId });
     return updated;
   }

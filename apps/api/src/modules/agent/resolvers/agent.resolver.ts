@@ -51,8 +51,8 @@ export class AgentResolver {
 
   @Mutation(() => AgentAskResponseUnion, { name: 'askAgent' })
   async askAgent(
-    @Args('input') input: AskAgentInput,
-    @Args('conversationId', { nullable: true }) conversationId: string | undefined,
+    @Args('input', { type: () => AskAgentInput }) input: AskAgentInput,
+    @Args('conversationId', { nullable: true, type: () => String }) conversationId: string | undefined,
     @Context() ctx?: GraphQLContext,
   ): Promise<AskAgentResult | AskAgentAsyncResult> {
     const requestId = ctx?.requestId;
@@ -101,7 +101,7 @@ export class AgentResolver {
   }
 
   @Mutation(() => Property, { name: 'scoreProperty', nullable: true })
-  async scoreProperty(@Args('propertyId') propertyId: string): Promise<Property> {
+  async scoreProperty(@Args('propertyId', { type: () => String }) propertyId: string): Promise<Property> {
     this.logger.debug('scoreProperty mutation entry', { method: 'scoreProperty', propertyId });
     const property = await this.tools.scoreAndPersistProperty(propertyId);
     this.logger.debug('scoreProperty mutation exit', { method: 'scoreProperty', propertyId });

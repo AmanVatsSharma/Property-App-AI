@@ -20,13 +20,6 @@ import type { AskAgentResult } from '../dtos/ask-agent-result.dto';
 import type { AskAgentInput } from '../dtos/ask-agent-input.dto';
 import { AGENT_CONFIG_KEYS } from '../config/agent-config';
 import { DOMAIN_SYSTEM_PROMPT, PLAN_FIRST_INSTRUCTION } from '../prompts/domain-system.prompt';
-import {
-  addLlmUsage,
-  buildLlmUsageLogFields,
-  parseLlmUsageFromLlmMessage,
-  type LlmTokenTotals,
-} from '@api/shared/llm/llm-token-usage';
-
 @Injectable()
 export class AgentOrchestratorService {
   constructor(
@@ -96,7 +89,11 @@ export class AgentOrchestratorService {
     try {
       const llm = this.createLlm();
       const toolList = this.tools.getTools();
-      const modelWithTools = llm.bindTools(toolList);
+      const bindTools = llm.bindTools?.bind(llm);
+      if (!bindTools) {
+        throw new Error('LLM does not support tool binding');
+      }
+      const modelWithTools = bindTools(toolList);
 
       const sources: AskAgentResult['sources'] = [];
       const suggestedActions: AskAgentResult['suggestedActions'] = [];
@@ -136,7 +133,7 @@ export class AgentOrchestratorService {
 
         const toolCalls = response.tool_calls ?? [];
         if (toolCalls.length === 0) {
-          const text = typeof response.content === 'string' ? response.content : (response.content as unknown[])?.[0]?.text ?? '';
+          const text = this.extractAiMessageText(response);
           const durationMs = Date.now() - startMs;
           this.metrics.recordAgentCall(provider, 'success', durationMs / 1000);
           this.logger.info('ask completed', {
@@ -202,9 +199,6 @@ export class AgentOrchestratorService {
         provider,
         model,
         inputSize: input.prompt?.length ?? 0,
-        ...(sawTokenUsage
-          ? buildLlmUsageLogFields('agent_ask', provider, tokenTotals.inputTokens, tokenTotals.outputTokens)
-          : { llmTokenUsageMissing: true }),
       });
       return {
         answer: finalText,
@@ -215,10 +209,14 @@ export class AgentOrchestratorService {
       const message = err instanceof Error ? err.message : String(err);
       const durationMs = Date.now() - startMs;
       this.metrics.recordAgentCall(provider, 'error', durationMs / 1000);
-      this.logger.warn(
-        { method: 'ask', requestId, error: message, durationMs, provider, model: model ?? 'n/a' },
-        'Agent ask failed',
-      );
+      this.logger.warn('Agent ask failed', {
+        method: 'ask',
+        requestId,
+        error: message,
+        durationMs,
+        provider,
+        model: model ?? 'n/a',
+      });
       return {
         answer: `Sorry, something went wrong: ${message}. Please try again.`,
         sources: [],
@@ -255,10 +253,24 @@ export class AgentOrchestratorService {
 
     const openaiKey = this.config.get<string>(AGENT_CONFIG_KEYS.OPENAI_API_KEY);
     const modelName = this.config.get<string>(AGENT_CONFIG_KEYS.AGENT_MODEL) ?? 'gpt-4o';
-    return new ChatOpenAI({
+    // Avoid TS2589 from deep LangChain generics while keeping runtime ChatOpenAI.
+    const OpenAI = ChatOpenAI as unknown as new (fields: Record<string, unknown>) => BaseChatModel;
+    return new OpenAI({
       modelName,
       temperature: 0.2,
       openAIApiKey: openaiKey,
     });
+  }
+
+  private extractAiMessageText(response: AIMessage): string {
+    const c = response.content;
+    if (typeof c === 'string') {
+      return c;
+    }
+    if (!Array.isArray(c)) {
+      return '';
+    }
+    const first = c[0] as { text?: string } | undefined;
+    return typeof first?.text === 'string' ? first.text : '';
   }
 }
