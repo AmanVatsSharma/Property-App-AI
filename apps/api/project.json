@@ -80,19 +80,31 @@
     },
     "serve": {
       "continuous": true,
-      "executor": "@nx/js:node",
+      "executor": "nx:run-commands",
       "defaultConfiguration": "development",
       "options": {
-        "buildTarget": "api:compile:development",
-        "runBuildTargetDependencies": false,
-        "watch": true
+        "cwd": "apps/api"
       },
       "configurations": {
         "development": {
-          "buildTarget": "api:compile:development"
+          "parallel": true,
+          "commands": [
+            "NODE_OPTIONS='--max-old-space-size=8192' npx tsc -p tsconfig.app.json --watch",
+            "npx tsc-alias -p tsconfig.app.json --watch",
+            "sh -c 'until [ -f ../../dist/apps/api/src/main.js ]; do sleep 0.3; done; npx tsc-alias -p tsconfig.app.json && exec node --watch ../../dist/apps/api/src/main.js'"
+          ],
+          "env": {
+            "CHOKIDAR_USEPOLLING": "true",
+            "CHOKIDAR_INTERVAL": "1500",
+            "TSC_WATCHFILE": "DynamicPriorityPolling"
+          }
         },
         "production": {
-          "buildTarget": "api:build:production"
+          "parallel": false,
+          "commands": [
+            "cd ../.. && NODE_OPTIONS='--max-old-space-size=8192' npx nx run api:build --configuration=production",
+            "node ../../dist/apps/api/main.js"
+          ]
         }
       }
     },

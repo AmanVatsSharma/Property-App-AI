@@ -14,7 +14,7 @@ pnpm dev:api
 nx run api:serve
 ```
 
-**Dev pipeline:** `api:serve` runs **`api:compile`** in watch mode: **`tsc -p tsconfig.app.json`** then **`tsc-alias`** so `@api/*` resolves in emitted JS under `dist/apps/api`. The dev server runs `dist/apps/api/src/main.js`. For a fast gate without emit, use **`nx run api:typecheck`** (or root `typecheck:api`) — same as CI’s API type step.
+**Dev pipeline:** `api:serve` runs **three processes in parallel**: **`tsc --watch`**, **`tsc-alias --watch`**, and **`node --watch`** on `dist/apps/api/src/main.js` (after `main.js` exists, a one-off **`tsc-alias`** runs so path aliases are rewritten before the first boot). This replaces `@nx/js:node` + `api:compile:watch`, because Nx’s node executor waits for `nx:run-commands` watch tasks to **exit** (they never do), so the API process never started. Webpack’s dev server for this app is available as **`nx run api:webpack-serve`** if you need it (`serveTargetName` in root `nx.json`). For a fast gate without emit, use **`nx run api:typecheck`** (or root `typecheck:api`) — same as CI’s API type step.
 
 **Production / Docker image pipeline:** `api:build` uses **Webpack** with **NxAppWebpackPlugin** (`compiler: 'tsc'`). **Fork-ts-checker is disabled** (`skipTypeChecking: true` in [`webpack.config.js`](webpack.config.js)) to avoid very large memory use; rely on **`api:typecheck`** for full project type safety. Output is bundled with `generatePackageJson` for deployable artifacts.
 

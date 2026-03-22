@@ -4,6 +4,8 @@
 
 ### Added
 
+- **api:serve runs Nest after tsc watch (2026-03-22)** — `api:serve` uses `nx:run-commands` (parallel: `tsc --watch`, `tsc-alias --watch`, `node --watch` on emitted `src/main.js` plus one-off `tsc-alias` before first start). Fixes “stuck” dev where only “Found 0 errors. Watching…” appeared: `@nx/js:node` + `nx:run-commands` watch never got a completing build event. Root `nx.json`: `@nx/webpack/plugin` `serveTargetName` → `webpack-serve` so plugin no longer merges `webpack-cli serve` into `api:serve`.
+
 - **Dev watch ENOSPC mitigation (2026-03-21)** — `api:compile:development` sets `CHOKIDAR_USEPOLLING` / `CHOKIDAR_INTERVAL` for `tsc-alias --watch` and `TSC_WATCHFILE=DynamicPriorityPolling` for `tsc --watch` to reduce Linux inotify pressure. `apps/api/README.md` documents `ENOSPC` and `sysctl fs.inotify.max_user_watches`.
 
 - **API build & CI split (2026-03-21)** — `api:typecheck` runs `tsc --noEmit -p apps/api/tsconfig.app.json`; CI “Type check API” uses `nx run api:typecheck` instead of a cold `api:build --skip-nx-cache`. `api:compile` uses `tsc` + `tsc-alias` (replaces SWC) so path aliases work in emitted JS; `api:build` Webpack sets `skipTypeChecking: true` on NxAppWebpackPlugin to avoid ForkTsChecker OOM; Nx `outputs`/`cache` on `api:build` and `api:compile` for better caching. GraphQL JSON fields use `GraphQLJSON` from `graphql-type-json` only; removed duplicate `JsonScalar` Nest provider. Deleted unused `apps/api/src/shared/scalars/json.scalar.ts`.
