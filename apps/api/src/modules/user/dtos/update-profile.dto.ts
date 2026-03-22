@@ -11,7 +11,7 @@ import { IsString, IsOptional, MaxLength } from 'class-validator';
 
 @InputType()
 export class UpdateProfileInput {
-  @Field({ nullable: true, description: 'Display name' })
+  @Field(() => String, { nullable: true, description: 'Display name' })
   @IsOptional()
   @IsString()
   @MaxLength(200)

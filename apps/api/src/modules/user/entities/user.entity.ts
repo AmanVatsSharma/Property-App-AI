@@ -20,15 +20,15 @@ registerEnumType(UserRole, { name: 'UserRole' });
 @ObjectType()
 @Entity('user')
 export class User {
-  @Field()
+  @Field(() => String)
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Field()
+  @Field(() => String)
   @Column({ unique: true, length: 20 })
   phone: string;
 
-  @Field({ nullable: true })
+  @Field(() => String, { nullable: true })
   @Column({ type: 'varchar', length: 200, nullable: true })
   displayName: string | null;
 
@@ -36,11 +36,11 @@ export class User {
   @Column({ type: 'varchar', length: 20, default: UserRole.USER })
   role: UserRole;
 
-  @Field()
+  @Field(() => Date)
   @CreateDateColumn()
   createdAt: Date;
 
-  @Field()
+  @Field(() => Date)
   @UpdateDateColumn()
   updatedAt: Date;
 }

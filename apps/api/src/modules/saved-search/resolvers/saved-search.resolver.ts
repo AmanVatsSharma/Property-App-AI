@@ -29,7 +29,7 @@ export class SavedSearchResolver {
 
   @Mutation(() => SavedSearch, { name: 'createSavedSearch' })
   async createSavedSearch(
-    @Args('input') input: CreateSavedSearchInput,
+    @Args('input', { type: () => CreateSavedSearchInput }) input: CreateSavedSearchInput,
     @Context() ctx: GqlContext,
   ): Promise<SavedSearch> {
     const userId = ctx.req?.user?.sub;
@@ -39,8 +39,8 @@ export class SavedSearchResolver {
 
   @Mutation(() => SavedSearch, { name: 'updateSavedSearch' })
   async updateSavedSearch(
-    @Args('id') id: string,
-    @Args('input') input: UpdateSavedSearchInput,
+    @Args('id', { type: () => String }) id: string,
+    @Args('input', { type: () => UpdateSavedSearchInput }) input: UpdateSavedSearchInput,
     @Context() ctx: GqlContext,
   ): Promise<SavedSearch> {
     const userId = ctx.req?.user?.sub;
@@ -50,7 +50,7 @@ export class SavedSearchResolver {
 
   @Mutation(() => Boolean, { name: 'deleteSavedSearch' })
   async deleteSavedSearch(
-    @Args('id') id: string,
+    @Args('id', { type: () => String }) id: string,
     @Context() ctx: GqlContext,
   ): Promise<boolean> {
     const userId = ctx.req?.user?.sub;
