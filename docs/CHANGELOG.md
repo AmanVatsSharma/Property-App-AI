@@ -4,6 +4,8 @@
 
 ### Added
 
+- **Local Postgres single-DB dev (2026-03-22)** — Documented Podman one-container Postgres (`property_app` on host **5433**, user/password `postgres`/`postgres`) so the API avoids Fedora-style TCP **ident** on host :5432. `apps/api/.env.example` and root `.env.example` default **`DB_PORT=5433`** with comments; `apps/api/README.md` “Local PostgreSQL” section. Added gitignored **`apps/api/.env`** template for local dev (remove from machine if you prefer secrets only in private files).
+
 - **api:serve runs Nest after tsc watch (2026-03-22)** — `api:serve` uses `nx:run-commands` (parallel: `tsc --watch`, `tsc-alias --watch`, `node --watch` on emitted `src/main.js` plus one-off `tsc-alias` before first start). Fixes “stuck” dev where only “Found 0 errors. Watching…” appeared: `@nx/js:node` + `nx:run-commands` watch never got a completing build event. Root `nx.json`: `@nx/webpack/plugin` `serveTargetName` → `webpack-serve` so plugin no longer merges `webpack-cli serve` into `api:serve`.
 
 - **Dev watch ENOSPC mitigation (2026-03-21)** — `api:compile:development` sets `CHOKIDAR_USEPOLLING` / `CHOKIDAR_INTERVAL` for `tsc-alias --watch` and `TSC_WATCHFILE=DynamicPriorityPolling` for `tsc --watch` to reduce Linux inotify pressure. `apps/api/README.md` documents `ENOSPC` and `sysctl fs.inotify.max_user_watches`.

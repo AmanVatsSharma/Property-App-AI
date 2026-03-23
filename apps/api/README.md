@@ -53,7 +53,7 @@ nx run api:build
 |------------|------------|--------------------|
 | `PORT`     | `3333`     | HTTP port          |
 | `DB_HOST`  | `localhost`| Postgres host      |
-| `DB_PORT`  | `5432`     | Postgres port      |
+| `DB_PORT`  | `5433` (Podman dev) / `5432` (Compose) | Postgres port      |
 | `DB_USER`  | `postgres` | Postgres user      |
 | `DB_PASSWORD` | `postgres` | Postgres password |
 | `DB_NAME`  | `property_app` | Database name  |
@@ -62,7 +62,23 @@ nx run api:build
 
 Copy `apps/api/.env.example` to `apps/api/.env` (or use a root `.env` when running from repo root). The API loads `apps/api/.env` first if present, then falls back to root `.env`. Set env before running. In development, TypeORM `synchronize` is on (schema auto-updated); disable in production and use migrations.
 
-**Local Postgres:** Ensure the database exists. If using host Postgres with ident/peer auth, create it once: `sudo -u postgres createdb property_app`. Or start Postgres via Docker: `docker compose up -d postgres` (from repo root; ensure port 5432 is free or stop host Postgres).
+**Local PostgreSQL (one DB for this app):** On many Linux installs, Postgres on **:5432** uses **ident** for TCP, so the API (user + password over TCP) cannot connect. Use **one** dev database in Podman on **5433** (does not fight with host :5432):
+
+```bash
+podman run -d --name property-app-postgres \
+  -e POSTGRES_USER=postgres \
+  -e POSTGRES_PASSWORD=postgres \
+  -e POSTGRES_DB=property_app \
+  -p 5433:5432 \
+  --restart unless-stopped \
+  docker.io/library/postgres:16-alpine
+```
+
+Set **`DB_HOST=localhost`**, **`DB_PORT=5433`**, **`DB_USER=postgres`**, **`DB_PASSWORD=postgres`**, **`DB_NAME=property_app`** (see `apps/api/.env.example`). After first start, run migrations: `nx run api:migration:run`.
+
+**Docker Compose:** `docker compose up -d postgres` publishes **:5432** — use **`DB_PORT=5432`** only when that service owns the port (stop host Postgres or avoid the Podman mapping above).
+
+**Host Postgres + peer:** You can create `property_app` with `psql` over the Unix socket, but the Nest app still needs **scram/trust for 127.0.0.1** in `pg_hba.conf` for TCP, or use the container instead.
 
 ## GraphQL API
 
