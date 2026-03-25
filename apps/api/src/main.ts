@@ -26,7 +26,20 @@ async function bootstrap() {
   // ── WebSocket adapter (required for notification gateway) ──
   try {
     const { IoAdapter } = await import('@nestjs/platform-socket.io');
-    app.useWebSocketAdapter(new IoAdapter(app));
+    const wsOriginRaw =
+      config.get<string>('WS_CORS_ORIGIN') ??
+      config.get<string>('CORS_ORIGIN') ??
+      (isProduction ? '' : '*');
+    const wsOrigin = wsOriginRaw.includes(',')
+      ? wsOriginRaw.split(',').map((o) => o.trim()).filter(Boolean)
+      : wsOriginRaw;
+    // Extend IoAdapter to set CORS at the socket.io server level
+    class CorsIoAdapter extends IoAdapter {
+      override createIOServer(port: number, options?: Record<string, unknown>) {
+        return super.createIOServer(port, { ...options, cors: { origin: wsOrigin, credentials: true } });
+      }
+    }
+    app.useWebSocketAdapter(new CorsIoAdapter(app));
   } catch {
     logger.warn('socket.io adapter not available — real-time notifications disabled');
   }
