@@ -13,9 +13,26 @@ export function fromApiUrl(url: string | undefined): string {
   return url ? url.replace(/\/$/, '') + '/graphql' : '';
 }
 
+/** Use same-origin /graphql (Next rewrite) in the browser when the target is local Nest — satisfies CSP and avoids CORS. */
+function browserGraphqlUrl(resolved: string): string {
+  if (typeof window === 'undefined') return resolved;
+  if (!resolved) return '/graphql';
+  try {
+    const u = new URL(resolved);
+    const isLocalNest =
+      (u.hostname === 'localhost' || u.hostname === '127.0.0.1') && u.port === '3333';
+    if (isLocalNest) return '/graphql';
+  } catch {
+    /* keep resolved */
+  }
+  return resolved;
+}
+
 function getGraphQLUrl(): string {
   if (typeof window !== 'undefined') {
-    return process.env.NEXT_PUBLIC_GRAPHQL_HTTP ?? fromApiUrl(process.env.NEXT_PUBLIC_API_URL) ?? '';
+    const resolved =
+      process.env.NEXT_PUBLIC_GRAPHQL_HTTP ?? fromApiUrl(process.env.NEXT_PUBLIC_API_URL) ?? '';
+    return browserGraphqlUrl(resolved);
   }
   return (
     process.env.NEXT_PUBLIC_GRAPHQL_HTTP ??
