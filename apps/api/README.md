@@ -1,6 +1,6 @@
 # Property-App-AI — NestJS GraphQL API
 
-Backend for UrbanNest.ai: GraphQL (Apollo, code-first) with TypeORM and Postgres.
+Backend for KonKreet: GraphQL (Apollo, code-first) with TypeORM and Postgres.
 
 ## Run (local dev)
 

@@ -1,6 +1,6 @@
 # Admin Panel
 
-Next.js admin app for UrbanNest (property listing). Manages properties and users; access is restricted to users with role `admin` (assigned via `ADMIN_PHONES` on the API). **MVP uses the real API only; no mock or fake data in production.**
+Next.js admin app for KonKreet (property listing). Manages properties and users; access is restricted to users with role `admin` (assigned via `ADMIN_PHONES` on the API). **MVP uses the real API only; no mock or fake data in production.**
 
 ## Run
 

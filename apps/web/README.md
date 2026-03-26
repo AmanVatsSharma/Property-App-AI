@@ -1,4 +1,4 @@
-# UrbanNest.ai — Next.js App
+# KonKreet — Next.js App
 
 Consumer-facing Next.js app for property search, listings, EMI calculator, legal checker, and post-property flow. Uses App Router, Tailwind, and GraphQL/REST to the Property-App-AI API.
 
@@ -30,7 +30,7 @@ Optional: `NEXT_PUBLIC_APP_STORE_URL`, `NEXT_PUBLIC_PLAY_STORE_URL` for app-down
 
 ## Theme
 
-Light/dark theme switching is powered by **next-themes** (class-based on `html`). Use the sun/moon toggle in the nav to switch; preference is persisted in `localStorage` under `urbannest-theme`.
+Light/dark theme switching is powered by **next-themes** (class-based on `html`). Use the sun/moon toggle in the nav to switch; preference is persisted in `localStorage` under `konkreet-theme`.
 
 ## Responsive
 

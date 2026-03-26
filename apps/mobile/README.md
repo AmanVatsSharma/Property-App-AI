@@ -1,4 +1,4 @@
-# UrbanNest.ai — Mobile App
+# KonKreet — Mobile App
 
 Native iOS/Android app for Property-App-AI, built with **Expo**, **React Native**, **NativeWind** (Tailwind), and **TypeScript**. Mirrors the web app flows and branding. For module purpose, flows, and key files see [MODULE_DOC.md](./MODULE_DOC.md).
 

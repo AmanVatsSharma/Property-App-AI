@@ -1,16 +1,16 @@
 # Module: mobile
 
-**Short:** Native iOS/Android app for UrbanNest.ai (Property-App-AI), built with Expo, React Native, NativeWind, and TypeScript. Mirrors web flows: landing, search, property detail, post property, and tools (More).
+**Short:** Native iOS/Android app for KonKreet (Property-App-AI), built with Expo, React Native, NativeWind, and TypeScript. Mirrors web flows: landing, search, property detail, post property, and tools (More).
 
 **Purpose:**
 
 - Deliver the same product flows as the web app (landing, search, property detail, post property, tools) on iOS and Android.
 - Reuse branding and design tokens (dark/light theme, teal primary, radius) from web via NativeWind `tailwind.config.js`.
-- Light/dark theme with persistence (urbannest-theme); shared header with location and profile/theme menu.
+- Light/dark theme with persistence (konkreet-theme); shared header with location and profile/theme menu.
 
 **Key files:**
 
-- `app/_layout.tsx` — Root layout; ThemeProvider + LocationProvider; UrbanNest dark/light theme; Stack (tabs + property + modal + login); StatusBar.
+- `app/_layout.tsx` — Root layout; ThemeProvider + LocationProvider; KonKreet dark/light navigation theme; Stack (tabs + property + modal + login); StatusBar.
 - `app/(tabs)/_layout.tsx` — Tab bar (theme-aware) and AppHeader.
 - `app/(tabs)/index.tsx` — Landing (theme-aware).
 - `app/(tabs)/search.tsx` — Search and property list (theme + location filter).
@@ -21,7 +21,7 @@
 - `components/AppHeader.tsx` — Location (left) and avatar menu with theme toggle (right).
 - `components/LocationSheet.tsx` — Modal: “Use your current location” and city list.
 - `components/providers/ThemeProvider.tsx` — Theme context; persistence (AsyncStorage); NativeWind colorScheme sync.
-- `lib/theme-storage.ts` — Persist/load theme (urbannest-theme).
+- `lib/theme-storage.ts` — Persist/load theme (konkreet-theme).
 - `lib/location-context.tsx` — Location state (city or coords); useCurrentLocation (expo-location).
 - `constants/cities.ts` — Shared city list for home and location sheet.
 - `global.css` — Tailwind base/components/utilities.
@@ -50,9 +50,11 @@
 
 **Change-log**
 
+- 2026-03-26: KonKreet branding; theme storage key `konkreet-theme`; auth token key `konkreet_auth_token`; navigation themes `KonKreetDarkTheme` / `KonKreetLightTheme`.
+
 - 2026-03-15: MVP readiness: CITIES counts clarified or removed for no-mock; city cards and location sheet show neutral label (Explore) only; home stats use neutral labels (no illustrative numbers); no mock listings; featured section from API or empty state.
 - 2026-03-14: Documentation consistency pass (canonical template and code alignment).
 - 2025-03-14: MVP readiness (no mock data): home featured and property list from API only; empty state when API unconfigured or no results. Property detail shows not-found state when ID missing or API returns null.
-- 2025-03-14: Light/dark theme with persistence (ThemeProvider, theme-storage, urbannest-theme); NativeWind darkMode: class and light palette in tailwind; UrbanNestLightTheme in root layout; StatusBar and nav/tab theme-aware. AppHeader with location (left) and avatar (right); LocationProvider and LocationSheet (city list + “Use your current location” via expo-location); app.json location permissions. Avatar menu: theme toggle (Light/Dark). Search filter by location (city or coords bounding box). All tab and stack screens theme-aware (home, search, post, more, property detail). CITIES moved to constants/cities.ts.
+- 2025-03-14: Light/dark theme with persistence (ThemeProvider, theme-storage, then `urbannest-theme`, now `konkreet-theme`); NativeWind darkMode: class and light palette in tailwind; KonKreet light/dark navigation theme in root layout; StatusBar and nav/tab theme-aware. AppHeader with location (left) and avatar (right); LocationProvider and LocationSheet (city list + “Use your current location” via expo-location); app.json location permissions. Avatar menu: theme toggle (Light/Dark). Search filter by location (city or coords bounding box). All tab and stack screens theme-aware (home, search, post, more, property detail). CITIES moved to constants/cities.ts.
 - 2025-03-12: APK build: android.package in app.json; prebuild/build:apk:debug/release scripts; Nx build-apk target and root mobile:apk script; eas.json preview profile; README and MODULE_DOC updated.
 - 2025-03-10: Initial module. Expo app with NativeWind; tabs and stack navigation; Landing, Search, Post, More (with tools), Property detail; design tokens aligned with web.

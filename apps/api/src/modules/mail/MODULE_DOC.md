@@ -11,7 +11,7 @@
 
 **Env:**
 - `SMTP_HOST`, `SMTP_USER`, `SMTP_PASS` — required for real sending; all optional/empty in schema (stub mode).
-- `SMTP_PORT` (default 587), `SMTP_SECURE` (default false), `SMTP_FROM` (default "UrbanNest.ai <noreply@urbannest.ai>").
+- `SMTP_PORT` (default 587), `SMTP_SECURE` (default false), `SMTP_FROM` (default "KonKreet <noreply@urbannest.ai>").
 
 **Integration:** SavedSearchService.runAlerts() calls MailService.send() with saved-search alert payload (fire-and-forget). Recipient is placeholder until User entity has email.
 

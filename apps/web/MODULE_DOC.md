@@ -2,7 +2,7 @@
 
 **Short:** Consumer-facing Next.js (App Router) app for property search, listings, EMI, legal checker, post-property, and AI-assisted flows; talks to Property-App-AI API via GraphQL and REST.
 
-**Purpose:** Provide the main public web experience for UrbanNest.ai: landing, search and filters, property detail by id/slug, post-property with image upload, EMI calculator, legal checker, neighbourhood and price-forecast entry points, theme switching, and AI FAB. All listing/detail data comes from the API (no mock data in production); demo images are fallbacks for marketing and empty galleries.
+**Purpose:** Provide the main public web experience for KonKreet: landing, search and filters, property detail by id/slug, post-property with image upload, EMI calculator, legal checker, neighbourhood and price-forecast entry points, theme switching, and AI FAB. All listing/detail data comes from the API (no mock data in production); demo images are fallbacks for marketing and empty galleries.
 
 **Files:**
 
@@ -15,6 +15,8 @@
 - `MODULE_DOC.md` — this file
 
 **Change-log:**
+
+- 2026-03-26: KonKreet product branding (copy, metadata, PWA manifest, auth cookie `konkreet_token`, theme storage `konkreet-theme`); deployment domain remains configurable via `NEXT_PUBLIC_SITE_URL` (default `https://urbannest.ai`).
 
 - 2025-03-19: Phase 2 premium design: `globals.css` Phase 2 block (ease/shadow/radius tokens, pc-* Property Card system, button/nav/card/search/sidebar/hero micro-interactions, light overrides); PropertyCard rewritten with Next/Image, glass price tag, heart, badges, AI score; new FilterSidebar (type, BHK, budget presets, status/quality, AI Smart Match); SearchPageClient uses FilterSidebar and auto-fill prop grid; Landing hero-stats data-driven with LiveCounter prefix; Nav pills frosted glass.
 

@@ -1,4 +1,4 @@
-# Property-App-AI (UrbanNest.ai)
+# Property-App-AI (KonKreet)
 
 Nx monorepo for the UrbanNest.ai property platform. **Web** app in `apps/web` (Next.js). **Native mobile** app in `apps/mobile` (Expo + React Native + NativeWind).
 
@@ -74,7 +74,7 @@ Then open [http://localhost:3000](http://localhost:3000); the web app will call 
 
 ## Structure
 
-- **apps/web** — Next.js 16 app (UrbanNest.ai web). See [apps/web/README.md](apps/web/README.md).
+- **apps/web** — Next.js 16 app (KonKreet web). See [apps/web/README.md](apps/web/README.md).
 - **apps/api** — NestJS GraphQL API (property CRUD, AI agent). See [apps/api/README.md](apps/api/README.md).
 - **apps/admin** — Next.js admin dashboard (properties, users). See [apps/admin/README.md](apps/admin/README.md).
 - **apps/mobile** — Expo (React Native) app with NativeWind. See [apps/mobile/README.md](apps/mobile/README.md).

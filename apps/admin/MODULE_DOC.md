@@ -1,8 +1,8 @@
 # App: admin
 
-**Short:** Next.js admin panel for UrbanNest. Dashboard, properties CRUD, users list; OTP login; access restricted to users with role `admin` (via API `ADMIN_PHONES`).
+**Short:** Next.js admin panel for KonKreet. Dashboard, properties CRUD, users list; OTP login; access restricted to users with role `admin` (via API `ADMIN_PHONES`).
 
-**Purpose:** Admin panel for UrbanNest: dashboard (stats, recent properties), properties (list, create, edit, delete), users (list with phone, display name, role), and role-gated access. **MVP uses the real API only; no mock or fake data in production.**
+**Purpose:** Admin panel for KonKreet: dashboard (stats, recent properties), properties (list, create, edit, delete), users (list with phone, display name, role), and role-gated access. **MVP uses the real API only; no mock or fake data in production.**
  Authentication is OTP-based; only phones listed in the API’s `ADMIN_PHONES` receive the `admin` role and can access dashboard routes.
 
 **Files:**

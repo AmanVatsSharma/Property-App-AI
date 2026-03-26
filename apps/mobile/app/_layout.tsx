@@ -38,7 +38,7 @@ const KonKreetDarkTheme = {
   },
 };
 
-const UrbanNestLightTheme = {
+const KonKreetLightTheme = {
   ...DefaultTheme,
   colors: {
     ...DefaultTheme.colors,

@@ -1,6 +1,6 @@
 # Module: property
 
-**Short:** Property CRUD and search for UrbanNest.ai.
+**Short:** Property CRUD and search for KonKreet.
 
 **Purpose:** Manage property listings: list with filters (type, location, price, bedrooms, **map viewport bounds**, **sortBy**/ **sortOrder**), get by id, create, update, delete. Create requires an authenticated user; the owner’s first listing is marked **isFreeListing** = true, subsequent listings false. Geocoding (Mapbox) fills **latitude**/ **longitude** when not provided on create/update. **Area resolution** (AreaService.getOrCreate) sets **areaId**, **locality**, **city** from reverse geocode or geocode context for listing enrichment and area-based search. Aligns with frontend search/detail and post-property flows.
 

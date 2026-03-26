@@ -53,12 +53,12 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "UrbanNest.ai",
+    title: "KonKreet",
   },
   openGraph: {
     type: "website",
     locale: "en_IN",
-    siteName: "UrbanNest.ai",
+    siteName: "KonKreet",
     images: [{ url: "/og-default.jpg", width: 1200, height: 630 }],
   },
   twitter: {
