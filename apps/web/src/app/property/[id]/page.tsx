@@ -1,9 +1,11 @@
 /**
  * @file page.tsx
  * @module app/property/[id]
- * @description Dynamic property detail page; fetches by id/slug. Uses only API data (property query); DEMO_IMAGES only as fallback for missing cover/gallery images.
+ * @description Dynamic property detail page; fetches by id. Server component renders
+ *              gallery + structured data; PropertyDetailClient handles interactive UI.
  * @author BharatERP
  * @created 2025-03-10
+ * @updated 2026-03-26
  */
 
 import type { Metadata } from "next";
@@ -11,8 +13,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getPropertyById } from "@/lib/property-api";
 import { buildMetadata, propertyJsonLd } from "@/lib/seo";
-import { PropertyDetailActions } from "@/components/property/PropertyDetailActions";
 import { PropertyGallery } from "@/components/property/PropertyGallery";
+import { PropertyDetailClient } from "@/components/property/PropertyDetailClient";
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://urbannest.ai";
 
@@ -54,8 +56,12 @@ export default async function PropertyDetailPage({ params }: PageProps) {
     imageUrl: property.coverImage,
     url: `${BASE_URL}/property/${property.id}`,
     bedrooms: Number.isNaN(bedrooms) ? undefined : bedrooms,
-    areaSqft: Number.isNaN(areaSqft) ? undefined : areaSqft ?? undefined,
+    areaSqft: Number.isNaN(areaSqft) ? undefined : (areaSqft ?? undefined),
   });
+
+  /* Derive city from address for breadcrumb (no hardcoded "Buy in Gurgaon") */
+  const city = property.address.split(",").slice(-2)[0]?.trim() ?? property.address.split(",")[0]?.trim() ?? "India";
+  const shortTitle = property.title.split("—")[0]?.trim() ?? property.title;
 
   return (
     <>
@@ -64,84 +70,30 @@ export default async function PropertyDetailPage({ params }: PageProps) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       <div className="page-wrap">
-      <div className="detail-top-wrap" style={{ padding: "20px 52px 0", background: "var(--dark)", borderBottom: "1px solid var(--border)" }}>
-        <div className="breadcrumb">
-          <Link href="/">Home</Link><span>/</span>
-          <Link href="/search">Buy in Gurgaon</Link><span>/</span>
-          <span style={{ color: "var(--text-muted)" }}>{property.title.split("—")[0]?.trim() ?? property.title}</span>
+        {/* Gallery + breadcrumb header */}
+        <div
+          className="detail-top-wrap"
+          style={{ padding: "20px 52px 0", background: "var(--dark)", borderBottom: "1px solid var(--border)" }}
+        >
+          <nav className="breadcrumb" aria-label="Breadcrumb">
+            <Link href="/">Home</Link>
+            <span aria-hidden>/</span>
+            <Link href={`/search?location=${encodeURIComponent(city)}`}>
+              Properties in {city}
+            </Link>
+            <span aria-hidden>/</span>
+            <span style={{ color: "var(--text-muted)" }} aria-current="page">{shortTitle}</span>
+          </nav>
+          <PropertyGallery
+            coverImage={property.coverImage}
+            galleryImages={property.galleryImages}
+            title={property.title}
+          />
         </div>
-        <PropertyGallery
-          coverImage={property.coverImage}
-          galleryImages={property.galleryImages}
-          title={property.title}
-        />
+
+        {/* All interactive content (sticky header, tabs, sidebar, similar) */}
+        <PropertyDetailClient property={property} />
       </div>
-      <div className="detail-layout">
-        <div>
-          <div className="prop-header">
-            <div className="prop-title-row">
-              <div>
-                <div style={{ display: "flex", gap: 8, marginBottom: 10 }}>
-                  {property.badges.map((b, i) => (
-                    <span key={i} className={`badge ${b.variant}`}>{b.label}</span>
-                  ))}
-                </div>
-                <div className="prop-main-title">{property.title}</div>
-                <div className="prop-address">📍 {property.address}</div>
-              </div>
-              <div style={{ textAlign: "right" }}>
-                <div className="prop-price-big">{property.price}</div>
-                <span className="prop-price-per">{property.pricePerSqft}</span>
-                <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
-                  <PropertyDetailActions
-                    propertyId={property.id}
-                    createdByUserId={property.createdByUserId}
-                    currentStatus={property.status}
-                  />
-                </div>
-              </div>
-            </div>
-            <div className="prop-quick-specs">
-              {property.quickSpecs.map((q) => (
-                <div key={q.label} className="qs-item">
-                  <div className="qs-icon">{q.icon}</div>
-                  <div className="qs-val">{q.val}</div>
-                  <div className="qs-label">{q.label}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-          <div className="detail-tabs">
-            <div className="dtab active">Overview</div>
-            <div className="dtab">Amenities</div>
-            <div className="dtab">Price History</div>
-            <div className="dtab">Neighbourhood</div>
-          </div>
-          <div className="overview-grid">
-            {property.overview.map((o) => (
-              <div key={o.label} className="ov-item">
-                <div className="ov-label">{o.label}</div>
-                <div className="ov-val" style={o.green ? { color: "var(--green)" } : undefined}>{o.val}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-        <div className="detail-sidebar">
-          <div className="contact-card">
-            <h4>Contact Owner</h4>
-            <p>Get in touch for site visits and negotiations</p>
-            <button type="button" className="call-btn" style={{ width: "100%", marginBottom: 8 }}>📞 Call Now</button>
-            <button type="button" className="whatsapp-btn" style={{ width: "100%" }}>WhatsApp</button>
-          </div>
-          <div className="ai-score-card">
-            <div className="big-score-row">
-              <div className="score-circle">{property.aiScore}</div>
-              <div><strong style={{ color: "var(--teal)" }}>AI Score: Excellent</strong><br /><span style={{ fontSize: 12, color: "var(--text-muted)" }}>{property.aiScoreLabel}</span></div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
     </>
   );
 }

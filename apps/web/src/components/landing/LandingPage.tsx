@@ -1,74 +1,237 @@
 /**
  * @file LandingPage.tsx
  * @module landing
- * @description Landing page content with hero, search, city, listings, etc.
+ * @description World-class landing page — immersive hero, Framer Motion animations,
+ *              animated counters, bento AI features, premium city cards, dual CTA.
+ *              Full light + dark mode support via CSS variable tokens.
  * @author BharatERP
  * @created 2025-03-10
+ * @updated 2026-03-26
  */
 
 "use client";
 
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import Image from "next/image";
+import { motion, AnimatePresence, useInView } from "framer-motion";
 import { DEMO_IMAGES } from "@/lib/demo-images";
-import { PropertyImage } from "@/components/ui/PropertyImage";
 import { PropertyCard } from "@/components/search/PropertyCard";
-import { LiveCounter } from "@/components/ui/LiveCounter";
 import { SkeletonCard } from "@/components/ui/Skeleton";
 import { SEARCH_TABS } from "@property-app-ai/shared";
 import { useAIFab } from "@/components/providers/AIFabProvider";
 import { gqlProperties, type ApiProperty } from "@/lib/graphql-client";
 
-/** AI-first search placeholders; no mock data. */
+/* ── constants ────────────────────────────────────────────────────── */
+
 const PLACEHOLDERS = [
-  "AI Search... Describe what you want in plain language — e.g. 3BHK near good school, walkable to metro, Pune",
-  "AI Search... e.g. 2BHK investment with high rental yield in Hyderabad",
-  "AI Search... e.g. Luxury villa with pool in Gurgaon under ₹4Cr",
-  "AI Search... e.g. 1BHK near IT park in Whitefield Bangalore under ₹50L",
+  "e.g. 3BHK near good school, walkable to metro, Pune under ₹1.2Cr",
+  "e.g. 2BHK investment with high rental yield in Hyderabad",
+  "e.g. Luxury villa with pool in Gurgaon under ₹4Cr",
+  "e.g. 1BHK near IT park in Whitefield Bangalore under ₹50L",
 ];
 
-/** Illustrative marketing copy; counts and trends are not live data. */
+/** Marketing copy — not live data. */
 const CITIES = [
-  { name: "Mumbai", count: "4.2L+ listings", trend: "↑ 22% YoY growth", emoji: "🌆", bg: "linear-gradient(135deg,#1a2340,#0d1626)" },
-  { name: "Bangalore", count: "3.8L+ listings", trend: "↑ 31% YoY growth", emoji: "🏙️", bg: "linear-gradient(135deg,#1a2916,#0d1e0d)" },
-  { name: "Delhi NCR", count: "5.1L+ listings", trend: "↑ 18% YoY growth", emoji: "🗼", bg: "linear-gradient(135deg,#291a2a,#1a0d1e)" },
-  { name: "Hyderabad", count: "2.6L+ listings", trend: "↑ 27% YoY growth", emoji: "🌃", bg: "linear-gradient(135deg,#1a2921,#0d1e13)" },
-  { name: "Pune", count: "1.9L+ listings", trend: "↑ 24% YoY growth", emoji: "🌇", bg: "linear-gradient(135deg,#261a12,#1a0d06)" },
-  { name: "Chennai", count: "1.4L+ listings", trend: "↑ 15% YoY growth", emoji: "🏛️", bg: "linear-gradient(135deg,#121a26,#060d1a)" },
+  { name: "Mumbai", count: "4.2L+", trend: "↑ 22% YoY", color: "#0ea5e9", accent: "rgba(14,165,233,0.15)", emoji: "🌆" },
+  { name: "Bangalore", count: "3.8L+", trend: "↑ 31% YoY", color: "#22c55e", accent: "rgba(34,197,94,0.15)", emoji: "🏙️" },
+  { name: "Delhi NCR", count: "5.1L+", trend: "↑ 18% YoY", color: "#a855f7", accent: "rgba(168,85,247,0.15)", emoji: "🗼" },
+  { name: "Hyderabad", count: "2.6L+", trend: "↑ 27% YoY", color: "#00d4aa", accent: "rgba(0,212,170,0.15)", emoji: "🌃" },
+  { name: "Pune", count: "1.9L+", trend: "↑ 24% YoY", color: "#f59e0b", accent: "rgba(245,158,11,0.15)", emoji: "🌇" },
+  { name: "Chennai", count: "1.4L+", trend: "↑ 15% YoY", color: "#f97316", accent: "rgba(249,115,22,0.15)", emoji: "🏛️" },
+  { name: "Kolkata", count: "1.1L+", trend: "↑ 11% YoY", color: "#ec4899", accent: "rgba(236,72,153,0.15)", emoji: "🌉" },
+  { name: "Ahmedabad", count: "0.9L+", trend: "↑ 19% YoY", color: "#6366f1", accent: "rgba(99,102,241,0.15)", emoji: "🕌" },
 ];
+
+const STATS = [
+  { target: 2.4, decimals: 1, suffix: "M+", label: "Active Listings", sub: "↑ 12% this month" },
+  { target: 1.2, decimals: 1, suffix: "L+", label: "Families Helped", sub: "↑ 8% this month" },
+  { target: 340, decimals: 0, suffix: "+", label: "Indian Cities", sub: "Tier 1, 2 & 3" },
+  { target: 18, decimals: 0, prefix: "₹", suffix: "K", label: "Avg. Savings", sub: "Per transaction" },
+];
+
+const AI_FEATURES = [
+  {
+    icon: "🧠",
+    title: "Conversational AI Search",
+    desc: "Describe your dream home in plain English. Our GPT-4 powered engine understands intent, budget, and lifestyle — not just keywords.",
+    badge: "GPT-4 Powered",
+    color: "var(--teal)",
+    bg: "var(--teal-dim)",
+    border: "rgba(0,212,170,0.2)",
+    num: "4x",
+    numLabel: "faster to find",
+  },
+  {
+    icon: "📊",
+    title: "Price Intelligence",
+    desc: "Know instantly if a property is overpriced or undervalued — backed by ₹2.4 trillion in verified Indian transaction data.",
+    badge: "10M+ Data Points",
+    color: "var(--coral)",
+    bg: "var(--coral-dim)",
+    border: "rgba(255,107,74,0.2)",
+    num: "89%",
+    numLabel: "accuracy rate",
+  },
+  {
+    icon: "🗺️",
+    title: "Neighbourhood AI",
+    desc: "Score any locality on safety, commute, schools, hospitals and 40+ signals. Make informed decisions — not gambles.",
+    badge: "40+ Signals",
+    color: "var(--gold)",
+    bg: "var(--gold-dim)",
+    border: "rgba(245,200,66,0.2)",
+    num: "40+",
+    numLabel: "liveability signals",
+  },
+];
+
+const TRUST_ITEMS = [
+  { icon: "✅", label: "RERA Verified" },
+  { icon: "🔒", label: "Zero Spam" },
+  { icon: "🤖", label: "AI Validated" },
+  { icon: "📋", label: "Legal Shield" },
+  { icon: "🇮🇳", label: "Made for India" },
+];
+
+const TESTIMONIALS = [
+  {
+    quote: "The AI search is genuinely magical. Typed a paragraph and it showed exactly what I wanted. Bought in 3 weeks.",
+    savings: "Saved ₹14 lakhs via AI Price Check",
+    name: "Priya Sharma",
+    detail: "3BHK in Sector 62, Noida · ₹1.1 Cr",
+    avatarIndex: 0,
+    stars: 5,
+  },
+  {
+    quote: "The Price Intelligence feature showed the asking price was 12% above market. I negotiated down and closed the deal.",
+    savings: "Saved ₹8 lakhs via Negotiation Coach",
+    name: "Arjun Mehta",
+    detail: "2BHK in Baner, Pune · ₹76 L",
+    avatarIndex: 1,
+    stars: 5,
+  },
+  {
+    quote: "As a first-time buyer moving from Delhi to Bangalore, neighbourhood AI helped me pick the perfect locality.",
+    savings: "Found ideal home in 11 days",
+    name: "Ananya Singh",
+    detail: "Koramangala, Bangalore · ₹38K/mo",
+    avatarIndex: 2,
+    stars: 5,
+  },
+];
+
+/* ── animation variants ───────────────────────────────────────────── */
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 28 },
+  visible: (i = 0) => ({
+    opacity: 1,
+    y: 0,
+    transition: { delay: i * 0.1, duration: 0.6, ease: "easeOut" as const },
+  }),
+};
+
+const stagger = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.08 } },
+};
+
+/* ── sub-components ───────────────────────────────────────────────── */
+
+function AnimatedCounter({
+  target,
+  decimals,
+  prefix = "",
+  suffix = "",
+  duration = 1800,
+}: {
+  target: number;
+  decimals: number;
+  prefix?: string;
+  suffix?: string;
+  duration?: number;
+}) {
+  const [value, setValue] = useState(0);
+  const ref = useRef<HTMLSpanElement>(null);
+  const started = useRef(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !started.current) {
+          started.current = true;
+          const startTime = performance.now();
+          const animate = (now: number) => {
+            const progress = Math.min((now - startTime) / duration, 1);
+            const eased = 1 - Math.pow(1 - progress, 3);
+            setValue(parseFloat((eased * target).toFixed(decimals)));
+            if (progress < 1) requestAnimationFrame(animate);
+          };
+          requestAnimationFrame(animate);
+        }
+      },
+      { threshold: 0.3 },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [target, duration, decimals]);
+
+  return (
+    <span ref={ref}>
+      {prefix}{value.toFixed(decimals)}{suffix}
+    </span>
+  );
+}
+
+function SectionReveal({ children, className = "" }: { children: React.ReactNode; className?: string }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const isInView = useInView(ref, { once: true, margin: "-80px" });
+  return (
+    <div
+      ref={ref}
+      className={className}
+      style={{
+        opacity: isInView ? 1 : 0,
+        transform: isInView ? "translateY(0)" : "translateY(32px)",
+        transition: "opacity 0.65s cubic-bezier(0.22,1,0.36,1), transform 0.65s cubic-bezier(0.22,1,0.36,1)",
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
+/* ── main component ───────────────────────────────────────────────── */
 
 export default function LandingPage() {
   const { setOpen: openAIPanel, openPanelWithPrompt } = useAIFab();
   const [activeTab, setActiveTab] = useState("buy");
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
   const [heroSearchQuery, setHeroSearchQuery] = useState("");
+  const [searchFocused, setSearchFocused] = useState(false);
   const [featuredProperties, setFeaturedProperties] = useState<ApiProperty[] | null>(null);
   const [featuredLoading, setFeaturedLoading] = useState(true);
   const [featuredError, setFeaturedError] = useState<string | null>(null);
 
+  /* Rotating placeholder */
   useEffect(() => {
     const t = setInterval(() => {
       setPlaceholderIndex((i) => (i + 1) % PLACEHOLDERS.length);
-    }, 3000);
+    }, 3500);
     return () => clearInterval(t);
   }, []);
 
+  /* Featured listings */
   useEffect(() => {
     let cancelled = false;
     setFeaturedLoading(true);
-    setFeaturedError(null);
     (async () => {
       try {
-        const list = await gqlProperties({
-          limit: 3,
-          sortBy: "createdAt",
-          sortOrder: "desc",
-        });
-        if (!cancelled) {
-          setFeaturedProperties(list);
-          setFeaturedError(null);
-        }
+        const list = await gqlProperties({ limit: 3, sortBy: "createdAt", sortOrder: "desc" });
+        if (!cancelled) { setFeaturedProperties(list); setFeaturedError(null); }
       } catch (e) {
         if (!cancelled) {
           setFeaturedProperties([]);
@@ -81,65 +244,120 @@ export default function LandingPage() {
     return () => { cancelled = true; };
   }, []);
 
+  const handleSearch = useCallback(() => {
+    openPanelWithPrompt(heroSearchQuery.trim() || "Find my perfect home");
+  }, [heroSearchQuery, openPanelWithPrompt]);
+
   return (
     <>
-      <section className="hero">
-        <div className="hero-glow-1" />
-        <div className="hero-glow-2" />
-        <div className="skyline">
-          <svg viewBox="0 0 1400 260" preserveAspectRatio="xMidYMax meet" fill="rgba(0,212,170,0.8)">
-            <rect x="0" y="120" width="60" height="140" />
-            <rect x="20" y="80" width="20" height="180" />
-            <rect x="70" y="140" width="40" height="120" />
-            <rect x="120" y="60" width="50" height="200" />
-            <rect x="180" y="100" width="30" height="160" />
-            <rect x="220" y="70" width="60" height="190" />
-            <rect x="290" y="120" width="40" height="140" />
-            <rect x="340" y="50" width="70" height="210" />
-            <rect x="420" y="90" width="50" height="170" />
-            <rect x="525" y="60" width="55" height="200" />
-            <rect x="590" y="110" width="45" height="150" />
-            <rect x="645" y="40" width="65" height="220" />
-            <rect x="720" y="80" width="50" height="180" />
-            <rect x="830" y="55" width="60" height="205" />
-            <rect x="900" y="100" width="45" height="160" />
-            <rect x="1020" y="120" width="40" height="140" />
-            <rect x="1070" y="45" width="70" height="215" />
-            <rect x="1150" y="90" width="50" height="170" />
+      {/* ── HERO ──────────────────────────────────────────────────── */}
+      <section
+        className="hero"
+        style={{
+          background: "var(--night)",
+          position: "relative",
+          overflow: "hidden",
+          minHeight: "100vh",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          padding: "100px 52px 80px",
+        }}
+      >
+        {/* Animated gradient glows */}
+        <motion.div
+          className="hero-glow-1"
+          animate={{ scale: [1, 1.1, 1], opacity: [0.6, 1, 0.6] }}
+          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+        />
+        <motion.div
+          className="hero-glow-2"
+          animate={{ scale: [1, 1.15, 1], opacity: [0.5, 0.8, 0.5] }}
+          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 2 }}
+        />
+        {/* Indigo glow (new accent) */}
+        <div
+          aria-hidden
+          style={{
+            position: "absolute",
+            width: 500,
+            height: 500,
+            borderRadius: "50%",
+            top: "10%",
+            right: "10%",
+            background: "radial-gradient(circle, rgba(99,102,241,0.08) 0%, transparent 65%)",
+            pointerEvents: "none",
+          }}
+        />
+        {/* Animated grid */}
+        <div className="skyline" aria-hidden>
+          <svg viewBox="0 0 1400 260" preserveAspectRatio="xMidYMax meet" fill="rgba(0,212,170,0.08)">
+            <rect x="0" y="120" width="60" height="140" /><rect x="20" y="80" width="20" height="180" />
+            <rect x="70" y="140" width="40" height="120" /><rect x="120" y="60" width="50" height="200" />
+            <rect x="180" y="100" width="30" height="160" /><rect x="220" y="70" width="60" height="190" />
+            <rect x="290" y="120" width="40" height="140" /><rect x="340" y="50" width="70" height="210" />
+            <rect x="420" y="90" width="50" height="170" /><rect x="525" y="60" width="55" height="200" />
+            <rect x="590" y="110" width="45" height="150" /><rect x="645" y="40" width="65" height="220" />
+            <rect x="720" y="80" width="50" height="180" /><rect x="830" y="55" width="60" height="205" />
+            <rect x="900" y="100" width="45" height="160" /><rect x="1020" y="120" width="40" height="140" />
+            <rect x="1070" y="45" width="70" height="215" /><rect x="1150" y="90" width="50" height="170" />
             <rect x="1320" y="80" width="45" height="180" />
           </svg>
         </div>
-        <div className="hero-content">
-          <div className="hero-pill">
+
+        <motion.div
+          className="hero-content"
+          variants={stagger}
+          initial="hidden"
+          animate="visible"
+        >
+          {/* Live pill */}
+          <motion.div variants={fadeUp} custom={0} className="hero-pill">
             <div className="pill-live">
-              <div className="pill-dot" /> Live Market Data
+              <div className="pill-dot" aria-hidden /> Live Market Data
             </div>
             India&apos;s Most Intelligent Real Estate Platform
-          </div>
-          <h1>
+          </motion.div>
+
+          {/* Headline */}
+          <motion.h1
+            variants={fadeUp}
+            custom={1}
+            style={{ fontFamily: "var(--font-playfair), 'Playfair Display', serif", textAlign: "center" }}
+          >
             Search Smarter.
             <br />
-            <span className="line-teal">Buy Better.</span>
+            <span
+              className="gradient-text-teal"
+              style={{ fontStyle: "italic" }}
+            >
+              Buy Better.
+            </span>
             <br />
             <span className="line-outline">Live Richer.</span>
-          </h1>
-          <p className="hero-sub">
-            UrbanNest.ai is powered by advanced AI that understands what you actually want — not just keywords. Get verified listings, real price intelligence, and neighbourhood insights across 340+ Indian cities.
-          </p>
-          <p className="hero-sub" style={{ marginTop: 8, marginBottom: 16 }}>
-            Describe what you want in plain language — search properties or post your own listing. Our AI handles the rest.
-          </p>
-          <button
-            type="button"
-            onClick={() => openAIPanel(true)}
-            className="btn-outline"
-            style={{ marginBottom: 24, padding: "12px 24px" }}
-            aria-label="Try AI search — open AI assistant"
+          </motion.h1>
+
+          <motion.p variants={fadeUp} custom={2} className="hero-sub">
+            UrbanNest.ai is powered by AI that understands what you actually want — not just keywords. Verified listings, real price intelligence, and neighbourhood insights across 340+ Indian cities.
+          </motion.p>
+
+          {/* Search card */}
+          <motion.div
+            variants={fadeUp}
+            custom={3}
+            className="search-mega"
           >
-            Try AI
-          </button>
-          <div className="search-mega">
-            <div className="search-card">
+            <div
+              className="search-card"
+              style={{
+                transition: "box-shadow 0.3s",
+                boxShadow: searchFocused
+                  ? "0 24px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(0,212,170,0.25), 0 0 40px rgba(0,212,170,0.1)"
+                  : "0 24px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(0,212,170,0.08)",
+              }}
+            >
+              {/* Search type tabs */}
               <div className="search-tabs-row">
                 {SEARCH_TABS.map((tab) => (
                   <button
@@ -148,27 +366,33 @@ export default function LandingPage() {
                     className={activeTab === tab.id ? "stab active" : "stab"}
                     onClick={() => setActiveTab(tab.id)}
                   >
-                    <div className="stab-dot" /> {tab.label}
+                    <div className="stab-dot" aria-hidden /> {tab.label}
                   </button>
                 ))}
               </div>
+
+              {/* Search input row */}
               <div className="search-row">
                 <div className="search-ai-badge" aria-hidden>✦ AI</div>
                 <div className="search-divider" aria-hidden />
-                <input
-                  className="search-field"
-                  placeholder={PLACEHOLDERS[placeholderIndex]}
-                  value={heroSearchQuery}
-                  onChange={(e) => setHeroSearchQuery(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      e.preventDefault();
-                      openPanelWithPrompt(heroSearchQuery.trim() || "Find my perfect home");
-                    }
-                  }}
-                  aria-label="Describe what you want in plain language for AI search (opens AI assistant on Enter)"
-                  data-testid="landing-ai-search-input"
-                />
+                <AnimatePresence mode="wait">
+                  <motion.input
+                    key={placeholderIndex}
+                    className="search-field"
+                    placeholder={PLACEHOLDERS[placeholderIndex]}
+                    value={heroSearchQuery}
+                    onChange={(e) => setHeroSearchQuery(e.target.value)}
+                    onFocus={() => setSearchFocused(true)}
+                    onBlur={() => setSearchFocused(false)}
+                    onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleSearch(); } }}
+                    aria-label="AI-powered property search. Describe what you want in plain language."
+                    data-testid="landing-ai-search-input"
+                    initial={{ opacity: 0.7 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0.7 }}
+                    transition={{ duration: 0.4 }}
+                  />
+                </AnimatePresence>
                 <div className="search-filters">
                   <button type="button" className="filter-btn" aria-label="Filter by size">📐 Size</button>
                   <button type="button" className="filter-btn" aria-label="Filter by budget">💰 Budget</button>
@@ -176,138 +400,207 @@ export default function LandingPage() {
                 <button
                   type="button"
                   className="search-go"
-                  onClick={() => openPanelWithPrompt(heroSearchQuery.trim() || "Find my perfect home")}
-                  aria-label="Try AI search — open AI assistant"
+                  onClick={handleSearch}
+                  aria-label="Open AI assistant"
                   data-testid="landing-try-ai-cta"
                 >
-                  Try AI
+                  Try AI ✦
                 </button>
-                <Link href="/search" className="search-go" style={{ marginLeft: 4 }} aria-label="Go to search page">Search ✦</Link>
+                <Link
+                  href="/search"
+                  className="search-go"
+                  style={{ marginLeft: 4, textDecoration: "none" }}
+                  aria-label="Go to search page"
+                >
+                  Search →
+                </Link>
               </div>
+
+              {/* Trending chips */}
               <div className="search-suggestions">
                 <span className="suggest-label">Trending:</span>
-                <span className="suggest-chip">🔥 Gurgaon Sector 65</span>
-                <span className="suggest-chip">📈 Noida Expressway</span>
-                <span className="suggest-chip">🌟 Baner, Pune</span>
-                <span className="suggest-chip">🏙️ Whitefield, Bangalore</span>
-                <span className="suggest-chip">✨ BKC Mumbai</span>
+                {["Gurgaon Sector 65", "Noida Expressway", "Baner Pune", "Whitefield Blr", "BKC Mumbai"].map((chip) => (
+                  <button
+                    key={chip}
+                    type="button"
+                    className="suggest-chip"
+                    onClick={() => { setHeroSearchQuery(chip); openPanelWithPrompt(chip); }}
+                  >
+                    {chip}
+                  </button>
+                ))}
                 <span className="trend-badge">↑ 18% price jump in Hyderabad</span>
               </div>
             </div>
-          </div>
-          <div
-            className="hero-stats"
-            style={{ marginTop: 44, animation: "fadeUp 0.7s 0.4s ease both" }}
-          >
-            {[
-              {
-                num: 2.4,
-                decimals: 1,
-                suffix: "M+",
-                label: "Active Listings",
-                sub: "↑ 12% this month",
-              },
-              {
-                num: 1.2,
-                decimals: 1,
-                suffix: "L+",
-                label: "Families Helped",
-                sub: "↑ 8% this month",
-              },
-              {
-                num: 340,
-                decimals: 0,
-                suffix: "+",
-                label: "Indian Cities",
-                sub: "Tier 1, 2 & 3",
-              },
-              {
-                num: 18,
-                decimals: 0,
-                prefix: "₹",
-                suffix: "K",
-                label: "Avg. Savings",
-                sub: "Per transaction",
-              },
-            ].map((s, i) => (
-              <div key={i} className="stat-item">
+          </motion.div>
+
+          {/* Stats bar */}
+          <motion.div variants={fadeUp} custom={4} className="hero-stats">
+            {STATS.map((s) => (
+              <div key={s.label} className="stat-item">
                 <div className="stat-num">
-                  <LiveCounter
-                    target={s.num}
+                  <span className="unit" style={{ fontSize: 18, color: "var(--teal)" }}>{s.prefix ?? ""}</span>
+                  <AnimatedCounter
+                    target={s.target}
                     decimals={s.decimals}
                     suffix={s.suffix}
-                    prefix={s.prefix ?? ""}
-                    className="stat-animated"
                   />
                 </div>
                 <div className="stat-label">{s.label}</div>
                 <div className="stat-delta">{s.sub}</div>
               </div>
             ))}
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       </section>
 
+      {/* ── TRUST BAR ─────────────────────────────────────────────── */}
       <div className="trust-bar">
-        <div className="trust-item"><div className="trust-icon">✅</div> RERA Verified Listings</div>
-        <div className="trust-divider" />
-        <div className="trust-item"><div className="trust-icon">🔒</div> Zero Spam Guarantee</div>
-        <div className="trust-divider" />
-        <div className="trust-item"><div className="trust-icon">🤖</div> AI Price Validation</div>
-        <div className="trust-divider" />
-        <div className="trust-item"><div className="trust-icon">📋</div> Legal Doc Checker</div>
-        <div className="trust-divider" />
-        <div className="trust-item"><div className="trust-icon">🇮🇳</div> Made for India</div>
+        {TRUST_ITEMS.map((item, i) => (
+          <div key={item.label}>
+            {i > 0 && <div className="trust-divider" aria-hidden />}
+            <motion.div
+              className="trust-item"
+              initial={{ opacity: 0, y: 12 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: i * 0.07, duration: 0.4 }}
+            >
+              <div className="trust-icon" aria-hidden>{item.icon}</div>
+              {item.label}
+            </motion.div>
+          </div>
+        ))}
       </div>
 
-      <section className="city-section reveal">
-        <div className="sec-eyebrow">Explore by City</div>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
-          <h2 className="sec-title">India&apos;s Hottest<br />Real Estate <em>Markets</em></h2>
-          <Link href="/search" className="view-all-link">All 340+ cities →</Link>
-        </div>
-        <div className="cities-row">
-          {CITIES.map((c) => (
-            <div key={c.name} className="city-card reveal">
-              <div className="city-img">
-                {DEMO_IMAGES.cities[c.name as keyof typeof DEMO_IMAGES.cities] ? (
-                  <Image
-                    src={DEMO_IMAGES.cities[c.name as keyof typeof DEMO_IMAGES.cities]}
-                    alt={c.name}
-                    fill
-                    sizes="200px"
-                    className="object-cover"
-                  />
-                ) : (
-                  <span style={{ fontSize: 52, position: "relative", zIndex: 1 }}>{c.emoji}</span>
-                )}
-                <div className="city-overlay" />
-              </div>
-              <div className="city-info">
-                <div className="city-name">{c.name}</div>
-                <div className="city-count">{c.count}</div>
-                <div className="city-trend">{c.trend}</div>
-              </div>
-            </div>
+      {/* ── PARTNER LOGOS ─────────────────────────────────────────── */}
+      <SectionReveal>
+        <div
+          style={{
+            padding: "28px 52px",
+            borderBottom: "1px solid var(--border)",
+            background: "var(--dark)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 12,
+            flexWrap: "wrap",
+          }}
+        >
+          <span style={{ fontSize: 11, color: "var(--text-dim)", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", marginRight: 16 }}>
+            Trusted &amp; Partnered With
+          </span>
+          {["HDFC Bank", "SBI Home Loans", "RERA India", "99acres Data", "MagicBricks API", "Google Play ★4.8", "App Store ★4.7"].map((logo) => (
+            <span key={logo} className="partner-logo">{logo}</span>
           ))}
         </div>
+      </SectionReveal>
+
+      {/* ── CITY GRID ─────────────────────────────────────────────── */}
+      <section className="city-section">
+        <SectionReveal>
+          <div className="sec-eyebrow">Explore by City</div>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
+            <h2 className="sec-title">
+              India&apos;s Hottest<br />Real Estate <em>Markets</em>
+            </h2>
+            <Link href="/search" className="view-all-link">All 340+ cities →</Link>
+          </div>
+        </SectionReveal>
+        <motion.div
+          className="cities-row"
+          variants={stagger}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-60px" }}
+          style={{ marginTop: 44 }}
+        >
+          {CITIES.map((c, i) => (
+            <motion.div
+              key={c.name}
+              variants={fadeUp}
+              custom={i}
+              whileHover={{ y: -6, scale: 1.02 }}
+              transition={{ type: "spring", stiffness: 300, damping: 20 }}
+            >
+              <Link
+                href={`/search?location=${encodeURIComponent(c.name)}`}
+                className="city-card"
+                style={{ display: "block", textDecoration: "none" }}
+                aria-label={`Search properties in ${c.name}`}
+              >
+                <div
+                  className="city-img"
+                  style={{
+                    background: `radial-gradient(ellipse at 50% 30%, ${c.accent} 0%, rgba(15,22,35,0.95) 70%)`,
+                    borderBottom: `1px solid ${c.color}22`,
+                  }}
+                >
+                  {DEMO_IMAGES.cities[c.name as keyof typeof DEMO_IMAGES.cities] ? (
+                    <Image
+                      src={DEMO_IMAGES.cities[c.name as keyof typeof DEMO_IMAGES.cities]}
+                      alt={c.name}
+                      fill
+                      sizes="200px"
+                      className="object-cover"
+                    />
+                  ) : (
+                    <span style={{ fontSize: 52, position: "relative", zIndex: 1 }}>{c.emoji}</span>
+                  )}
+                  <div className="city-overlay" />
+                  {/* Trending badge on top 3 */}
+                  {i < 3 && (
+                    <div
+                      style={{
+                        position: "absolute",
+                        top: 10,
+                        right: 10,
+                        background: `${c.color}22`,
+                        border: `1px solid ${c.color}44`,
+                        color: c.color,
+                        borderRadius: 100,
+                        padding: "2px 8px",
+                        fontSize: 10,
+                        fontWeight: 700,
+                        zIndex: 2,
+                      }}
+                    >
+                      🔥 Hot
+                    </div>
+                  )}
+                </div>
+                <div className="city-info">
+                  <div className="city-name">{c.name}</div>
+                  <div className="city-count">{c.count} listings</div>
+                  <div className="city-trend" style={{ color: c.color }}>{c.trend}</div>
+                </div>
+              </Link>
+            </motion.div>
+          ))}
+        </motion.div>
       </section>
 
+      {/* ── FEATURED LISTINGS ─────────────────────────────────────── */}
       <section className="section listings-section">
-        <div className="listings-header reveal">
-          <div>
-            <div className="sec-eyebrow">From Our Listings</div>
-            <h2 className="sec-title">Properties You&apos;ll <em>Love</em></h2>
+        <SectionReveal>
+          <div className="listings-header">
+            <div>
+              <div className="sec-eyebrow">AI-Curated Picks</div>
+              <h2 className="sec-title">Properties You&apos;ll <em>Love</em></h2>
+            </div>
+            <Link href="/search" className="view-all-link">View all listings →</Link>
           </div>
-          <Link href="/search" className="view-all-link">View all listings →</Link>
-        </div>
-        <div className="grid-3" style={{ gap: 20 }}>
+        </SectionReveal>
+        <motion.div
+          className="grid-3"
+          style={{ gap: 20 }}
+          variants={stagger}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-60px" }}
+        >
           {featuredLoading ? (
-            <>
-              <SkeletonCard key="sk1" />
-              <SkeletonCard key="sk2" />
-              <SkeletonCard key="sk3" />
-            </>
+            <><SkeletonCard key="sk1" /><SkeletonCard key="sk2" /><SkeletonCard key="sk3" /></>
           ) : featuredError || !featuredProperties?.length ? (
             <div
               style={{
@@ -322,40 +615,211 @@ export default function LandingPage() {
               <p style={{ marginBottom: 16, color: "var(--text-muted)" }}>
                 {featuredError ?? "No featured properties right now."}
               </p>
-              <Link
-                href="/search"
-                className="btn-primary"
-                style={{ padding: "12px 24px", borderRadius: 12, textDecoration: "none" }}
-              >
+              <Link href="/search" className="btn-primary" style={{ padding: "12px 24px", borderRadius: 12, textDecoration: "none" }}>
                 Explore all properties →
               </Link>
             </div>
           ) : (
-            featuredProperties.map((p) => (
-              <PropertyCard key={p.id} property={p} />
+            featuredProperties.map((p, i) => (
+              <motion.div key={p.id} variants={fadeUp} custom={i}>
+                <PropertyCard property={p} />
+              </motion.div>
             ))
           )}
-        </div>
+        </motion.div>
       </section>
 
-      <section className="score-panel">
-        <div className="reveal">
-          <div className="sec-eyebrow">AI Property Score</div>
-          <h2 className="sec-title">Know <em>Exactly</em><br />What You&apos;re<br />Buying</h2>
-          <p className="sec-sub">Every property on UrbanNest.ai gets a comprehensive AI analysis across 14 dimensions — so you can make data-driven decisions with complete confidence.</p>
-          <div style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 32 }}>
-            {["Livability, safety, appreciation potential scored", "Legal clarity & RERA compliance checked", "Neighbourhood quality, schools, hospitals mapped", "Fair market price validated against 10M+ data points"].map((text, i) => (
-              <div key={i} style={{ display: "flex", gap: 10, alignItems: "center", fontSize: 14, color: "var(--text-muted)" }}>
-                <span style={{ color: "var(--teal)", fontSize: 18 }}>✦</span> {text}
+      {/* ── HOW AI WORKS — BENTO ──────────────────────────────────── */}
+      <section
+        style={{
+          padding: "80px 52px",
+          background: "var(--dark)",
+          borderTop: "1px solid var(--border)",
+          borderBottom: "1px solid var(--border)",
+        }}
+      >
+        <SectionReveal>
+          <div style={{ textAlign: "center", marginBottom: 56 }}>
+            <div className="sec-eyebrow" style={{ justifyContent: "center" }}>Why UrbanNest.ai</div>
+            <h2 className="sec-title" style={{ textAlign: "center" }}>
+              AI That <em>Actually</em> Works for You
+            </h2>
+            <p className="sec-sub" style={{ margin: "14px auto 0", textAlign: "center" }}>
+              Every feature is built around how people actually search, decide and buy homes in India.
+            </p>
+          </div>
+        </SectionReveal>
+
+        <motion.div
+          style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 20 }}
+          variants={stagger}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-60px" }}
+        >
+          {AI_FEATURES.map((f, i) => (
+            <motion.div
+              key={f.title}
+              variants={fadeUp}
+              custom={i}
+              whileHover={{ y: -4 }}
+              className="ai-feature-card"
+              style={{ position: "relative", overflow: "hidden" }}
+            >
+              {/* Subtle glow in card corner */}
+              <div
+                aria-hidden
+                style={{
+                  position: "absolute",
+                  top: -40,
+                  right: -40,
+                  width: 160,
+                  height: 160,
+                  borderRadius: "50%",
+                  background: `radial-gradient(circle, ${f.bg} 0%, transparent 70%)`,
+                  pointerEvents: "none",
+                }}
+              />
+              <div
+                className="ai-feature-icon"
+                style={{ background: f.bg, border: `1px solid ${f.border}` }}
+              >
+                {f.icon}
               </div>
+              <div
+                style={{
+                  fontSize: 40,
+                  fontFamily: "var(--font-playfair), 'Playfair Display', serif",
+                  fontWeight: 700,
+                  color: f.color,
+                  lineHeight: 1,
+                  marginBottom: 4,
+                }}
+              >
+                {f.num}
+              </div>
+              <div style={{ fontSize: 11, color: "var(--text-dim)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 16 }}>
+                {f.numLabel}
+              </div>
+              <h3 style={{ fontFamily: "var(--font-playfair), serif", fontSize: 20, fontWeight: 600, color: "var(--heading)", marginBottom: 10 }}>
+                {f.title}
+              </h3>
+              <p style={{ fontSize: 14, color: "var(--text-muted)", lineHeight: 1.65, fontWeight: 300 }}>
+                {f.desc}
+              </p>
+              <div
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 4,
+                  marginTop: 18,
+                  padding: "4px 12px",
+                  borderRadius: 100,
+                  background: f.bg,
+                  border: `1px solid ${f.border}`,
+                  color: f.color,
+                  fontSize: 11,
+                  fontWeight: 700,
+                }}
+              >
+                ✦ {f.badge}
+              </div>
+            </motion.div>
+          ))}
+        </motion.div>
+
+        {/* Extra features row */}
+        <SectionReveal>
+          <motion.div
+            style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 20, marginTop: 20 }}
+            variants={stagger}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+          >
+            {[
+              { icon: "🔮", title: "Price Forecasting", desc: "ML model predicts 12–36 month appreciation based on infra, RERA data, demand and macro signals.", badge: "89% Accuracy" },
+              { icon: "🤝", title: "Negotiation Coach", desc: "Know the exact right price to offer. Analyzes comparable sales, time on market, and seller motivation.", badge: "Avg. ₹18K Savings" },
+              { icon: "📋", title: "Legal Shield", desc: "Instant RERA compliance, title clarity score, and full document checklist. Know every legal risk.", badge: "100% RERA Checked" },
+            ].map((f, i) => (
+              <motion.div
+                key={f.title}
+                variants={fadeUp}
+                custom={i}
+                className="bento-card"
+                whileHover={{ y: -3 }}
+              >
+                <div className="ai-feature-icon">{f.icon}</div>
+                <h3 style={{ fontFamily: "var(--font-playfair), serif", fontSize: 18, fontWeight: 600, color: "var(--heading)", marginBottom: 8 }}>
+                  {f.title}
+                </h3>
+                <p style={{ fontSize: 13, color: "var(--text-muted)", lineHeight: 1.65 }}>{f.desc}</p>
+                <div
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 4,
+                    marginTop: 14,
+                    padding: "3px 10px",
+                    borderRadius: 100,
+                    background: "var(--teal-dim)",
+                    border: "1px solid rgba(0,212,170,0.2)",
+                    color: "var(--teal)",
+                    fontSize: 11,
+                    fontWeight: 700,
+                  }}
+                >
+                  ✦ {f.badge}
+                </div>
+              </motion.div>
+            ))}
+          </motion.div>
+        </SectionReveal>
+      </section>
+
+      {/* ── AI SCORE PANEL ────────────────────────────────────────── */}
+      <section className="score-panel">
+        <SectionReveal>
+          <div className="sec-eyebrow">AI Property Score</div>
+          <h2 className="sec-title">
+            Know <em>Exactly</em><br />What You&apos;re<br />Buying
+          </h2>
+          <p className="sec-sub">
+            Every property gets a comprehensive AI analysis across 14 dimensions — livability, legal clarity, appreciation potential, and more.
+          </p>
+          <div style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 32 }}>
+            {[
+              "Livability, safety, appreciation potential scored",
+              "Legal clarity & RERA compliance checked",
+              "Neighbourhood quality, schools, hospitals mapped",
+              "Fair market price validated against 10M+ data points",
+            ].map((text, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, x: -16 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.1, duration: 0.45 }}
+                style={{ display: "flex", gap: 10, alignItems: "flex-start", fontSize: 14, color: "var(--text-muted)" }}
+              >
+                <span style={{ color: "var(--teal)", fontSize: 16, marginTop: 1 }}>✦</span>
+                {text}
+              </motion.div>
             ))}
           </div>
-          <Link href="/search" className="btn-nav-primary" style={{ marginTop: 32, padding: "14px 28px", fontSize: 15, borderRadius: 14 }}>See Score for Any Property</Link>
-        </div>
-        {/* Illustrative score example; image is marketing placeholder. */}
+          <Link href="/search" className="btn-primary" style={{ marginTop: 32, padding: "14px 28px", fontSize: 15, borderRadius: 14, textDecoration: "none", display: "inline-block" }}>
+            See Score for Any Property
+          </Link>
+        </SectionReveal>
         <div className="score-visual reveal">
           <div className="score-property-thumb-wrap">
-            <Image src={DEMO_IMAGES.properties["prestige-sunrise-park"].cover} alt="Prestige Sunrise Park" fill className="score-property-thumb" sizes="280px" />
+            <Image
+              src={DEMO_IMAGES.properties["prestige-sunrise-park"].cover}
+              alt="Prestige Sunrise Park"
+              fill
+              className="score-property-thumb"
+              sizes="280px"
+            />
           </div>
           <div className="score-property-name">
             <span>Prestige Sunrise Park, Whitefield</span>
@@ -365,7 +829,7 @@ export default function LandingPage() {
             <div className="big-score">94</div>
             <div className="score-desc">
               <strong>AI Score: Excellent</strong>
-              This property scores in the top 6% of all listings in Whitefield. Strong investment with high appreciation potential.
+              Top 6% in Whitefield. Strong investment with high appreciation potential.
             </div>
           </div>
           <div className="score-bars">
@@ -376,11 +840,18 @@ export default function LandingPage() {
               { label: "Connectivity", w: 78, orange: true },
               { label: "Legal Clarity", w: 100, orange: false },
               { label: "Safety", w: 85, orange: false },
-              { label: "School Access", w: 72, orange: true },
             ].map((r) => (
               <div key={r.label} className="score-row">
                 <span className="score-row-label">{r.label}</span>
-                <div className="score-bar-bg"><div className={`score-bar-fill ${r.orange ? "orange" : ""}`} style={{ width: `${r.w}%` }} /></div>
+                <div className="score-bar-bg">
+                  <motion.div
+                    className={`score-bar-fill ${r.orange ? "orange" : ""}`}
+                    initial={{ width: 0 }}
+                    whileInView={{ width: `${r.w}%` }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 1, delay: 0.2, ease: "easeOut" }}
+                  />
+                </div>
                 <span className="score-val">{r.w === 100 ? "✓" : r.w}</span>
               </div>
             ))}
@@ -388,42 +859,17 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section className="ai-features-section">
-        <div className="reveal">
-          <div className="sec-eyebrow">Why UrbanNest.ai</div>
-          <h2 className="sec-title">AI That <em>Actually</em><br />Works For You</h2>
-          <p className="sec-sub">We&apos;ve rebuilt real estate from first principles — every feature is designed around how people actually search, decide and buy homes in India.</p>
-        </div>
-        <div className="features-grid">
-          {[
-            { icon: "🧠", title: "Conversational AI Search", desc: "Type exactly what you want in plain language. \"3BHK near good school, walkable to metro, quiet neighbourhood under ₹90L in Pune.\" We understand you — not just keywords.", badge: "✦ GPT-4 Powered", cls: "feat-icon-teal" },
-            { icon: "📊", title: "Price Intelligence", desc: "Know instantly if a property is overpriced, undervalued, or fairly priced. Backed by ₹2.4 trillion in verified transaction data across 340 Indian cities.", badge: "✦ 10M+ Data Points", cls: "feat-icon-coral" },
-            { icon: "🗺️", title: "Neighbourhood AI", desc: "Score any locality on safety, commute, schools, hospitals, nightlife, green cover, noise levels and more. Make informed decisions — not gambles.", badge: "✦ 40+ Signals", cls: "feat-icon-gold" },
-            { icon: "🔮", title: "Price Forecasting", desc: "ML model predicts 12–36 month appreciation based on infra projects, RERA data, demand trends, migration patterns and macro-economic signals.", badge: "✦ 89% Accuracy", cls: "feat-icon-teal" },
-            { icon: "🤝", title: "AI Negotiation Coach", desc: "Know the exact right price to offer. Our AI analyzes comparable recent sales, time on market, and seller motivation to give you the optimal bid strategy.", badge: "✦ Avg. ₹18K Savings", cls: "feat-icon-coral" },
-            { icon: "📋", title: "Legal Shield", desc: "Instant RERA compliance check, title clarity score, encumbrance report, and full document checklist. Know every legal risk before you sign anything.", badge: "✦ 100% RERA Checked", cls: "feat-icon-gold" },
-          ].map((f) => (
-            <div key={f.title} className="feat-card reveal">
-              <div className={`feat-icon-wrap ${f.cls}`}>{f.icon}</div>
-              <h3 className="feat-title">{f.title}</h3>
-              <p className="feat-desc">{f.desc}</p>
-              <span className="feat-badge">{f.badge}</span>
-            </div>
-          ))}
-        </div>
-      </section>
-
+      {/* ── MAP SECTION ───────────────────────────────────────────── */}
       <section className="map-section">
         <div className="map-card reveal">
           <div className="map-grid-bg" />
-          <svg className="map-roads" viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }}>
+          <svg className="map-roads" viewBox="0 0 400 400" fill="none" style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }}>
             <path d="M0 200 Q100 180 200 200 Q300 220 400 200" stroke="rgba(0,212,170,0.4)" strokeWidth="2" />
             <path d="M200 0 Q180 100 200 200 Q220 300 200 400" stroke="rgba(0,212,170,0.4)" strokeWidth="2" />
           </svg>
           <div className="map-pulse" style={{ top: "28%", left: "35%" }}><div className="map-pulse-inner" /></div>
           <div className="map-pulse coral" style={{ top: "55%", left: "60%" }}><div className="map-pulse-inner" /></div>
           <div className="map-pulse gold" style={{ top: "42%", left: "20%" }}><div className="map-pulse-inner" /></div>
-          <div className="map-pulse" style={{ top: "72%", left: "45%" }}><div className="map-pulse-inner" /></div>
           <div className="price-tag" style={{ top: "14%", left: "38%" }}>
             <div className="price-tag-price">₹1.2 Cr</div>
             <div className="price-tag-name">Sector 49, Gurgaon</div>
@@ -443,81 +889,103 @@ export default function LandingPage() {
         <div className="map-content-area reveal">
           <div className="sec-eyebrow">AI Heatmaps</div>
           <h2 className="sec-title">Explore India<br />Like Never <em>Before</em></h2>
-          <p className="sec-sub">AI overlays demand trends, price history, future infrastructure and livability data directly on the map. See the full picture — not just pins on a blank map.</p>
+          <p className="sec-sub">AI overlays demand trends, price history, future infrastructure and livability data directly on the map.</p>
           <div className="map-feature-list">
-            <div className="map-feat">
-              <div className="map-feat-icon" style={{ background: "var(--teal-dim)", border: "1px solid rgba(0,212,170,0.2)" }}>🏗️</div>
-              <div>
-                <div className="map-feat-title">Infrastructure Intelligence</div>
-                <div className="map-feat-desc">See planned metro lines, highways, schools and hospitals before they&apos;re built — invest ahead of the curve.</div>
+            {[
+              { icon: "🏗️", bg: "var(--teal-dim)", border: "rgba(0,212,170,0.2)", title: "Infrastructure Intelligence", desc: "See planned metro lines, highways, schools before they're built — invest ahead of the curve." },
+              { icon: "🌡️", bg: "var(--coral-dim)", border: "rgba(255,107,74,0.2)", title: "Live Demand Heatmaps", desc: "Which localities are trending right now? Updated every 6 hours." },
+              { icon: "📈", bg: "var(--gold-dim)", border: "rgba(245,200,66,0.2)", title: "10-Year Price History", desc: "Visualize price movement at street-level granularity. Understand trends before committing." },
+            ].map((f) => (
+              <div key={f.title} className="map-feat">
+                <div className="map-feat-icon" style={{ background: f.bg, border: `1px solid ${f.border}` }}>{f.icon}</div>
+                <div>
+                  <div className="map-feat-title">{f.title}</div>
+                  <div className="map-feat-desc">{f.desc}</div>
+                </div>
               </div>
-            </div>
-            <div className="map-feat">
-              <div className="map-feat-icon" style={{ background: "var(--coral-dim)", border: "1px solid rgba(255,107,74,0.2)" }}>🌡️</div>
-              <div>
-                <div className="map-feat-title">Live Demand Heatmaps</div>
-                <div className="map-feat-desc">Which localities are trending? Where is demand surging right now? Updated every 6 hours.</div>
-              </div>
-            </div>
-            <div className="map-feat">
-              <div className="map-feat-icon" style={{ background: "var(--gold-dim)", border: "1px solid rgba(245,200,66,0.2)" }}>📈</div>
-              <div>
-                <div className="map-feat-title">10-Year Price History</div>
-                <div className="map-feat-desc">Visualize price movement at street-level granularity. Understand trends before committing.</div>
-              </div>
-            </div>
+            ))}
           </div>
-          <Link href="/search" className="btn-nav-primary" style={{ marginTop: 28, padding: "14px 28px", fontSize: 15, borderRadius: 14 }}>Explore the AI Map →</Link>
+          <Link href="/search" className="btn-primary" style={{ marginTop: 28, padding: "14px 28px", fontSize: 15, borderRadius: 14, textDecoration: "none", display: "inline-block" }}>
+            Explore the AI Map →
+          </Link>
         </div>
       </section>
 
+      {/* ── METRICS ROW ───────────────────────────────────────────── */}
       <div className="metrics-section">
         {[
           { num: "2.4", unit: "M", label: "Active Listings", sub: "Growing 12% monthly" },
-          { num: "₹18", unit: "K", sup: true, label: "Average Savings per Deal", sub: "Via AI Price Intelligence" },
+          { num: "₹18", unit: "K", label: "Average Savings per Deal", sub: "Via AI Price Intelligence" },
           { num: "340", unit: "+", label: "Cities Covered", sub: "Tier 1, 2 & 3 India" },
           { num: "4.9", unit: "★", label: "App Store Rating", sub: "1.2L+ reviews" },
-        ].map((m) => (
-          <div key={m.label} className="metric-item reveal">
-            <div className="metric-num">{m.num}{m.sup ? <sup>{m.unit}</sup> : <span className="plus">{m.unit}</span>}</div>
+        ].map((m, i) => (
+          <motion.div
+            key={m.label}
+            className="metric-item"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: i * 0.1, duration: 0.5 }}
+          >
+            <div className="metric-num">{m.num}<span className="plus">{m.unit}</span></div>
             <div className="metric-label">{m.label}</div>
             <div className="metric-sub">{m.sub}</div>
-          </div>
+          </motion.div>
         ))}
       </div>
 
+      {/* ── TESTIMONIALS ──────────────────────────────────────────── */}
       <section className="testimonials-section">
-        <div className="reveal">
+        <SectionReveal>
           <div className="sec-eyebrow">Real Stories</div>
-          <h2 className="sec-title">They Found Their<br />Home with <em>UrbanNest.ai</em></h2>
-        </div>
-        {/* Illustrative testimonials for marketing; not from live user data. */}
-        <div className="testi-grid">
-          {[
-            { quote: "\"The AI search is genuinely magical. I typed a paragraph describing my dream home and it showed me exactly what I wanted. Bought in 3 weeks.\"", savings: "💰 Saved ₹14 lakhs via AI Price Check", name: "Priya Sharma", detail: "Bought 3BHK in Sector 62, Noida · ₹1.1 Cr", avatarIndex: 0 },
-            { quote: "\"The Price Intelligence feature saved me ₹8 lakhs. It told me the asking price was 12% above market — I negotiated down and got the deal.\"", savings: "💰 Saved ₹8 lakhs via Negotiation Coach", name: "Arjun Mehta", detail: "Bought 2BHK in Baner, Pune · ₹76 L", avatarIndex: 1 },
-            { quote: "\"As a first-time buyer moving from Delhi to Bangalore, UrbanNest's neighbourhood AI scores helped me pick the perfect locality risk-free.\"", savings: "🏠 Found ideal home in 11 days", name: "Ananya Singh", detail: "Rented in Koramangala, Bangalore · ₹38K/mo", avatarIndex: 2 },
-          ].map((t) => (
-            <div key={t.name} className="testi-card reveal">
-              <div className="testi-stars">{[1,2,3,4,5].map((i) => <span key={i} className="star">★</span>)}</div>
-              <p className="testi-quote">{t.quote}</p>
-              <div className="testi-savings">{t.savings}</div>
+          <h2 className="sec-title">
+            They Found Their<br />Home with <em>UrbanNest.ai</em>
+          </h2>
+        </SectionReveal>
+        <motion.div
+          className="testi-grid"
+          variants={stagger}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-60px" }}
+        >
+          {TESTIMONIALS.map((t, i) => (
+            <motion.div
+              key={t.name}
+              variants={fadeUp}
+              custom={i}
+              className="testi-card"
+              whileHover={{ y: -4 }}
+            >
+              <div className="testi-stars">
+                {Array.from({ length: t.stars }).map((_, j) => (
+                  <span key={j} className="star">★</span>
+                ))}
+              </div>
+              <p className="testi-quote">&ldquo;{t.quote}&rdquo;</p>
+              <div className="testi-savings">💰 {t.savings}</div>
               <div className="testi-author">
                 <div className="testi-avatar">
-                  <Image src={DEMO_IMAGES.testimonials[t.avatarIndex]} alt="" width={42} height={42} className="testi-avatar-img" />
+                  <Image
+                    src={DEMO_IMAGES.testimonials[t.avatarIndex]}
+                    alt={`${t.name} avatar`}
+                    width={42}
+                    height={42}
+                    className="testi-avatar-img"
+                  />
                 </div>
                 <div>
                   <div className="testi-name">{t.name}</div>
                   <div className="testi-detail">{t.detail}</div>
                 </div>
               </div>
-            </div>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       </section>
 
+      {/* ── APP SECTION ───────────────────────────────────────────── */}
       <section className="app-section">
-        {/* Phone mockup uses illustrative imagery only. */}
         <div className="app-mockup reveal">
           <div className="phone-frame">
             <div className="phone-notch" />
@@ -551,18 +1019,16 @@ export default function LandingPage() {
               <div className="phone-bar med" />
               <div className="phone-bar short" />
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6, flex: 1 }}>
-                <div className="phone-feat-cell" style={{ background: "var(--teal-dim)", border: "1px solid rgba(0,212,170,0.2)" }}>
-                  <Image src={DEMO_IMAGES.properties["prestige-sunrise-park"].cover} alt="" fill className="phone-feat-img" sizes="80px" />
-                </div>
-                <div className="phone-feat-cell" style={{ background: "var(--coral-dim)", border: "1px solid rgba(255,107,74,0.2)" }}>
-                  <Image src={DEMO_IMAGES.properties["m3m-golf-hills"].cover} alt="" fill className="phone-feat-img" sizes="80px" />
-                </div>
-                <div className="phone-feat-cell" style={{ background: "var(--gold-dim)", border: "1px solid rgba(245,200,66,0.2)" }}>
-                  <Image src={DEMO_IMAGES.cities["Delhi NCR"]} alt="" fill className="phone-feat-img" sizes="80px" />
-                </div>
-                <div className="phone-feat-cell" style={{ background: "var(--glass)", border: "1px solid var(--glass-border)" }}>
-                  <Image src={DEMO_IMAGES.properties["godrej-meridian"].cover} alt="" fill className="phone-feat-img" sizes="80px" />
-                </div>
+                {[
+                  { src: DEMO_IMAGES.properties["prestige-sunrise-park"].cover, bg: "var(--teal-dim)", border: "rgba(0,212,170,0.2)" },
+                  { src: DEMO_IMAGES.properties["m3m-golf-hills"].cover, bg: "var(--coral-dim)", border: "rgba(255,107,74,0.2)" },
+                  { src: DEMO_IMAGES.cities["Delhi NCR"], bg: "var(--gold-dim)", border: "rgba(245,200,66,0.2)" },
+                  { src: DEMO_IMAGES.properties["godrej-meridian"].cover, bg: "var(--glass)", border: "var(--glass-border)" },
+                ].map((cell, i) => (
+                  <div key={i} className="phone-feat-cell" style={{ background: cell.bg, border: `1px solid ${cell.border}` }}>
+                    <Image src={cell.src} alt="" fill className="phone-feat-img" sizes="80px" />
+                  </div>
+                ))}
               </div>
             </div>
           </div>
@@ -570,27 +1036,79 @@ export default function LandingPage() {
         <div className="app-cta reveal">
           <div className="sec-eyebrow">Mobile App</div>
           <h2 className="sec-title">Your Pocket<br /><em>Real Estate</em><br />Advisor</h2>
-          <p className="sec-sub" style={{ marginTop: 14 }}>All of UrbanNest.ai&apos;s power in your palm. Search, save, compare and consult your AI Copilot anytime, anywhere.</p>
+          <p className="sec-sub" style={{ marginTop: 14 }}>
+            All of UrbanNest.ai&apos;s power in your palm — search, save, compare and consult your AI Copilot anytime, anywhere.
+          </p>
           <div className="app-features">
-            {["Instant AI property scoring on the go", "Price alerts for saved localities", "Virtual tours & 3D walkthroughs", "Offline neighbourhood maps", "Push alerts when new listings match"].map((f) => (
+            {[
+              "Instant AI property scoring on the go",
+              "Price alerts for saved localities",
+              "Virtual tours & 3D walkthroughs",
+              "Push alerts when new listings match",
+            ].map((f) => (
               <div key={f} className="app-feat">{f}</div>
             ))}
           </div>
           <div className="store-buttons">
-            <a href="#" className="store-btn"><span className="store-icon">🍎</span><div className="store-text"><div className="store-small">Download on the</div><div className="store-name">App Store</div></div></a>
-            <a href="#" className="store-btn"><span className="store-icon">▶️</span><div className="store-text"><div className="store-small">Get it on</div><div className="store-name">Google Play</div></div></a>
+            <a href="#" className="store-btn" aria-label="Download on the App Store">
+              <span className="store-icon">🍎</span>
+              <div className="store-text">
+                <div className="store-small">Download on the</div>
+                <div className="store-name">App Store</div>
+              </div>
+            </a>
+            <a href="#" className="store-btn" aria-label="Get it on Google Play">
+              <span className="store-icon">▶️</span>
+              <div className="store-text">
+                <div className="store-small">Get it on</div>
+                <div className="store-name">Google Play</div>
+              </div>
+            </a>
           </div>
         </div>
       </section>
 
-      <section className="cta-section">
-        <div className="sec-eyebrow">Get Started Today</div>
-        <h2>Your Dream Home<br />is One <em>Smart Search</em> Away</h2>
-        <p>Join 1.2 lakh+ families who found their perfect property with UrbanNest.ai. Free forever — no hidden charges.</p>
-        <div className="cta-btns">
-          <Link href="/search" className="btn-cta-primary">Start Your AI Search — Free →</Link>
-          <Link href="/post-property" className="btn-cta-outline">Post Property Free</Link>
-        </div>
+      {/* ── FINAL CTA ─────────────────────────────────────────────── */}
+      <section
+        className="cta-section"
+        style={{
+          position: "relative",
+          overflow: "hidden",
+          background: "linear-gradient(135deg, rgba(0,212,170,0.12) 0%, var(--night) 40%, rgba(99,102,241,0.1) 100%)",
+          borderTop: "1px solid rgba(0,212,170,0.15)",
+        }}
+      >
+        {/* Glow accents */}
+        <div
+          aria-hidden
+          style={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%,-50%)",
+            width: 600,
+            height: 300,
+            background: "radial-gradient(ellipse, rgba(0,212,170,0.08) 0%, transparent 70%)",
+            pointerEvents: "none",
+          }}
+        />
+        <SectionReveal>
+          <div className="sec-eyebrow" style={{ justifyContent: "center" }}>Get Started Today</div>
+          <h2 style={{ textAlign: "center" }}>
+            Your Dream Home<br />is One <em>Smart Search</em> Away
+          </h2>
+          <p style={{ textAlign: "center", maxWidth: 480, margin: "16px auto 0", color: "var(--text-muted)", fontSize: 16, lineHeight: 1.65 }}>
+            Join 1.2 lakh+ families who found their perfect property with UrbanNest.ai. Free forever — no hidden charges.
+          </p>
+          <div className="cta-btns">
+            <Link href="/search" className="btn-cta-primary" data-testid="landing-cta-search">
+              Start Your AI Search — Free →
+            </Link>
+            <Link href="/post-property" className="btn-cta-outline">
+              Post Property Free
+            </Link>
+          </div>
+        </SectionReveal>
       </section>
     </>
   );
