@@ -12,6 +12,7 @@ import { SavedSearch } from '../entities/saved-search.entity';
 import { SavedSearchRepository } from '../repository/saved-search.repository';
 import { NotificationService } from '@api/modules/notification/services/notification.service';
 import { PropertyService } from '@api/modules/property/services/property.service';
+import { UserService } from '@api/modules/user/services/user.service';
 import { MailService } from '@api/modules/mail/mail.service';
 import { savedSearchAlertHtml, savedSearchAlertText } from '@api/modules/mail/templates/saved-search-alert.template';
 import { CreateSavedSearchInput, UpdateSavedSearchInput } from '../dtos/saved-search.dto';
@@ -27,6 +28,7 @@ export class SavedSearchService {
     private readonly repo: SavedSearchRepository,
     private readonly notificationService: NotificationService,
     private readonly propertyService: PropertyService,
+    private readonly userService: UserService,
     private readonly logger: LoggerService,
     private readonly mail: MailService,
     private readonly config: ConfigService,
@@ -106,19 +108,33 @@ export class SavedSearchService {
 
         const siteUrl = this.config.get<string>('NEXT_PUBLIC_SITE_URL') ?? 'https://urbannest.ai';
         const searchUrl = `${siteUrl}/search?savedSearch=${search.id}`;
-        this.mail
-          .send({
-            to: `user-${search.userId}@placeholder`,
-            subject: `${results.length} new matches for "${search.name}"`,
-            html: savedSearchAlertHtml({
-              name: search.name,
-              locality: typeof filters.location === 'string' ? filters.location : undefined,
-              count: results.length,
-              searchUrl,
-            }),
-            text: savedSearchAlertText({ name: search.name, count: results.length, searchUrl }),
-          })
-          .catch(() => {});
+
+        // Resolve the user's email address. The current auth model is phone-only,
+        // so we check for an optional email field. [SonuRamTODO] Add email column
+        // to User entity and migration when email sign-in is supported.
+        const user = await this.userService.findById(search.userId);
+        const userEmail = (user as unknown as Record<string, unknown>)?.['email'] as string | undefined;
+
+        if (userEmail && userEmail.includes('@')) {
+          this.mail
+            .send({
+              to: userEmail,
+              subject: `${results.length} new matches for "${search.name}"`,
+              html: savedSearchAlertHtml({
+                name: search.name,
+                locality: typeof filters.location === 'string' ? filters.location : undefined,
+                count: results.length,
+                searchUrl,
+              }),
+              text: savedSearchAlertText({ name: search.name, count: results.length, searchUrl }),
+            })
+            .catch(() => {});
+        } else {
+          this.logger.debug('alert email skipped — user has no email address', {
+            savedSearchId: search.id,
+            userId: search.userId,
+          });
+        }
 
         await this.repo.markAlertSent(search.id);
         this.logger.debug('alert sent', {

@@ -17,6 +17,7 @@ import { SavedSearchAlertProcessor, SAVED_SEARCH_QUEUE } from './processors/save
 import { SavedSearchAlertScheduler } from './schedulers/saved-search-alert.scheduler';
 import { NotificationModule } from '@api/modules/notification/notification.module';
 import { PropertyModule } from '@api/modules/property/property.module';
+import { UserModule } from '@api/modules/user/user.module';
 import { LoggerModule } from '@api/shared/logger';
 
 @Module({
@@ -26,6 +27,7 @@ import { LoggerModule } from '@api/shared/logger';
     LoggerModule,
     NotificationModule,
     PropertyModule,
+    UserModule,
   ],
   providers: [
     SavedSearchRepository,

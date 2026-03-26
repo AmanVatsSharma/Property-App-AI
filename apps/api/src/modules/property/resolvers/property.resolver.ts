@@ -11,6 +11,7 @@ import { Int } from '@nestjs/graphql';
 import { UnauthorizedException } from '@nestjs/common';
 import { Property } from '../entities/property.entity';
 import { PropertyService } from '../services/property.service';
+import { Public } from '@api/common/decorators/public.decorator';
 import { SearchParserService } from '@api/modules/search/services/search-parser.service';
 import { CreatePropertyDto } from '../dtos/create-property.dto';
 import { UpdatePropertyDto } from '../dtos/update-property.dto';
@@ -30,6 +31,7 @@ export class PropertyResolver {
     private readonly logger: LoggerService,
   ) {}
 
+  @Public()
   @Query(() => [Property], { name: 'properties' })
   async properties(
     @Args('filter', { nullable: true, defaultValue: {}, type: () => PropertyFilterDto })
@@ -61,6 +63,7 @@ export class PropertyResolver {
     return result;
   }
 
+  @Public()
   @Query(() => PropertiesPage, { name: 'propertiesPage' })
   async propertiesPage(
     @Args('filter', { nullable: true, defaultValue: {}, type: () => PropertyFilterDto })
@@ -69,6 +72,7 @@ export class PropertyResolver {
     return this.propertyService.findAllPage(filter);
   }
 
+  @Public()
   @Query(() => [Property], { name: 'searchPropertiesByQuery' })
   async searchPropertiesByQuery(@Args('query', { type: () => String }) query: string): Promise<Property[]> {
     this.logger.debug('searchPropertiesByQuery entry', { method: 'searchPropertiesByQuery' });
@@ -91,6 +95,7 @@ export class PropertyResolver {
     return result;
   }
 
+  @Public()
   @Query(() => Property, { name: 'property', nullable: true })
   async property(@Args('id', { type: () => String }) id: string): Promise<Property> {
     this.logger.debug('property query entry', { method: 'property', id });
