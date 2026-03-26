@@ -573,7 +573,7 @@ export default function HomeScreen() {
         {/* ── AI FEATURES STRIP ─────────────────────────────── */}
         <View className="px-5 py-4">
           <Text style={{ fontSize: 10, fontWeight: '700', color: teal, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 3 }}>
-            WHY URBANNEST.AI
+            WHY KONKREET
           </Text>
           <Text style={{ fontSize: 20, fontWeight: '800', color: textColor, marginBottom: 16 }}>AI That Actually Works</Text>
           {[
@@ -639,7 +639,7 @@ export default function HomeScreen() {
             Your Dream Home Awaits
           </Text>
           <Text style={{ fontSize: 13, color: textMuted, marginBottom: 18, lineHeight: 19 }}>
-            Join 1.2L+ families who found their perfect property with UrbanNest.ai — free forever.
+            Join 1.2L+ families who found their perfect property with KonKreet — free forever.
           </Text>
           <Pressable
             onPress={() => router.push('/(tabs)/search')}

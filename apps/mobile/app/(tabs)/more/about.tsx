@@ -25,7 +25,7 @@ export default function AboutScreen() {
       <Text className="text-text-muted text-xs uppercase tracking-wider mb-2">Our Mission</Text>
       <Text className="text-white text-xl font-bold mb-2">Make Every Indian a Confident Homebuyer</Text>
       <Text className="text-text-muted text-sm leading-6 mb-4">
-        UrbanNest.ai gives every Indian the same information advantage that insiders have always had.
+        KonKreet gives every Indian the same information advantage that insiders have always had.
       </Text>
 
       {[

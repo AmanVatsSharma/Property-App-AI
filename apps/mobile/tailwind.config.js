@@ -1,7 +1,7 @@
 /**
  * @file tailwind.config.js
  * @module mobile
- * @description NativeWind Tailwind config — UrbanNest design tokens.
+ * @description NativeWind Tailwind config — KonKreet design tokens.
  *              Includes indigo/purple accents, shadow utilities, refined radii,
  *              and full light/* counterparts for every dark token.
  * @author BharatERP

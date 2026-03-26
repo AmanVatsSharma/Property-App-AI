@@ -126,7 +126,7 @@ export default function PostPropertyScreen() {
             <Text className={tealCls}>Reach Millions.</Text>
           </Text>
           <Text className={`${textMuted} text-base leading-6 mb-6 max-w-md`}>
-            2.4 million active buyers on UrbanNest.ai. Verified leads. AI-matched to your property.
+            2.4 million active buyers on KonKreet. Verified leads. AI-matched to your property.
           </Text>
         </View>
 

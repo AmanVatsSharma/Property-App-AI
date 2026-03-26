@@ -26,7 +26,7 @@ export const unstable_settings = {
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
-const UrbanNestDarkTheme = {
+const KonKreetDarkTheme = {
   ...DarkTheme,
   colors: {
     ...DarkTheme.colors,
@@ -52,7 +52,7 @@ const UrbanNestLightTheme = {
 
 function RootLayoutNav() {
   const { theme } = useTheme();
-  const navTheme = theme === 'dark' ? UrbanNestDarkTheme : UrbanNestLightTheme;
+  const navTheme = theme === 'dark' ? KonKreetDarkTheme : KonKreetLightTheme;
   const isDark = theme === 'dark';
 
   return (

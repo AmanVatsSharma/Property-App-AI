@@ -1,7 +1,7 @@
 /**
  * @file ThemeProvider.tsx
  * @module providers
- * @description Theme context with persistence (urbannest-theme); syncs with NativeWind colorScheme.
+ * @description Theme context with persistence (konkreet-theme); syncs with NativeWind colorScheme.
  * @author BharatERP
  * @created 2025-03-14
  */

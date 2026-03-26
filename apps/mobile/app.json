@@ -15,7 +15,7 @@
     "ios": {
       "supportsTablet": true,
       "infoPlist": {
-        "NSLocationWhenInUseUsageDescription": "UrbanNest uses your location to show properties near you when you choose \"Use your current location\"."
+        "NSLocationWhenInUseUsageDescription": "KonKreet uses your location to show properties near you when you choose \"Use your current location\"."
       }
     },
     "android": {
