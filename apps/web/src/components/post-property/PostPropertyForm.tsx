@@ -69,9 +69,11 @@ export default function PostPropertyForm() {
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
-  const graphqlUrl = typeof window !== "undefined"
-    ? (process.env.NEXT_PUBLIC_GRAPHQL_HTTP ?? (process.env.NEXT_PUBLIC_API_URL ? `${process.env.NEXT_PUBLIC_API_URL.replace(/\/$/, "")}/graphql` : ""))
-    : "";
+  const graphqlUrl =
+    process.env.NEXT_PUBLIC_GRAPHQL_HTTP ??
+    (process.env.NEXT_PUBLIC_API_URL
+      ? `${process.env.NEXT_PUBLIC_API_URL.replace(/\/$/, "")}/graphql`
+      : "");
 
   const onSubmit = async (data: PostPropertyFormValues) => {
     if (!graphqlUrl) {

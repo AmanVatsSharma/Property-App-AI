@@ -1,9 +1,12 @@
 /**
  * @file Nav.tsx
  * @module layout
- * @description Main navigation with active state and scroll effect
+ * @description Premium navigation: scroll glass effect, animated Post CTA,
+ *              notification pulse, theme toggle, auth-aware profile menu.
+ *              Full light + dark mode via CSS variable tokens.
  * @author BharatERP
  * @created 2025-03-10
+ * @updated 2026-03-26
  */
 
 "use client";
@@ -11,6 +14,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 import { useTheme } from "next-themes";
 import { NAV_LINKS } from "@property-app-ai/shared";
 import { useAuth } from "@/components/providers/AuthProvider";
@@ -200,9 +204,22 @@ export default function Nav() {
               Sign In
             </button>
           )}
-          <Link href="/post-property" className="nbtn-primary">
-            Post Free ✦
-          </Link>
+          <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
+            <Link href="/post-property" className="nbtn-primary" style={{ position: "relative", overflow: "hidden" }}>
+              <span
+                style={{
+                  position: "absolute",
+                  inset: 0,
+                  background: "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.12) 50%, transparent 100%)",
+                  backgroundSize: "200% auto",
+                  animation: "shimmer 2.5s linear infinite",
+                  pointerEvents: "none",
+                }}
+                aria-hidden
+              />
+              Post Free ✦
+            </Link>
+          </motion.div>
         </div>
         <button
           type="button"
