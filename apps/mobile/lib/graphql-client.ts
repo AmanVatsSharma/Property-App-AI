@@ -10,8 +10,24 @@ import { runGraphQL } from '@property-app-ai/shared';
 
 function getGraphQLUrl(): string {
   const base = process.env.EXPO_PUBLIC_API_URL ?? process.env.EXPO_PUBLIC_GRAPHQL_HTTP;
-  if (base) return base.startsWith('http') ? base.replace(/\/$/, '') + (base.includes('graphql') ? '' : '/graphql') : '';
-  return '';
+  if (!base) {
+    // Both EXPO_PUBLIC_API_URL and EXPO_PUBLIC_GRAPHQL_HTTP are unset.
+    // All GraphQL calls will silently no-op. Set at least EXPO_PUBLIC_API_URL in .env.
+    if (__DEV__) {
+      console.warn('[GraphQL] EXPO_PUBLIC_API_URL is not set. GraphQL calls will fail.');
+    }
+    return '';
+  }
+  if (!base.startsWith('http')) {
+    // URL is set but missing the protocol — e.g. "localhost:3333" instead of "http://localhost:3333".
+    const msg = `[GraphQL] EXPO_PUBLIC_API_URL must start with "http" or "https". Got: "${base}"`;
+    if (__DEV__) {
+      console.warn(msg);
+    }
+    return '';
+  }
+  const cleaned = base.replace(/\/$/, '');
+  return cleaned.includes('graphql') ? cleaned : `${cleaned}/graphql`;
 }
 
 const PROPERTY_FIELDS = `
@@ -88,6 +104,14 @@ const MUTATION_CHANGE_PROPERTY_STATUS = `
   mutation ChangePropertyStatus($id: String!, $status: String!) {
     changePropertyStatus(id: $id, status: $status) {
       id status
+    }
+  }
+`;
+
+const QUERY_SEARCH_BY_QUERY = `
+  query SearchPropertiesByQuery($query: String!) {
+    searchPropertiesByQuery(query: $query) {
+      ${PROPERTY_FIELDS}
     }
   }
 `;
@@ -267,6 +291,20 @@ export async function changePropertyStatus(
     headers,
   });
   return data.changePropertyStatus;
+}
+
+export async function searchPropertiesByQuery(query: string): Promise<ApiProperty[]> {
+  const url = getGraphQLUrl();
+  if (!url) return [];
+  try {
+    const data = await runGraphQL<{ searchPropertiesByQuery: ApiProperty[] }>(url, {
+      query: QUERY_SEARCH_BY_QUERY,
+      variables: { query },
+    });
+    return data.searchPropertiesByQuery ?? [];
+  } catch {
+    return [];
+  }
 }
 
 export async function getMe(headers?: Record<string, string>): Promise<{ id: string; phone: string; displayName: string | null } | null> {
