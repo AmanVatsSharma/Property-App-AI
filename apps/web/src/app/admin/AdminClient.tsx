@@ -13,6 +13,7 @@ import { useAuth } from "@/components/providers/AuthProvider";
 import { useToast } from "@/components/ui/Toast";
 import { SkeletonText } from "@/components/ui/Skeleton";
 import { runGraphQL } from "@property-app-ai/shared";
+import { gqlMe } from "@/lib/graphql-client";
 
 const GQL_URL = () =>
   typeof window !== "undefined"
@@ -118,10 +119,19 @@ export default function AdminClient() {
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(0);
   const [roleChanging, setRoleChanging] = useState<string | null>(null);
+  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const PAGE_SIZE = 20;
 
   const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
   const url = GQL_URL();
+
+  // Verify admin role before rendering sensitive content
+  useEffect(() => {
+    if (!token) { setIsAdmin(false); return; }
+    gqlMe(headers).then((me) => {
+      setIsAdmin(me?.role === "admin");
+    }).catch(() => setIsAdmin(false));
+  }, [token]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const load = useCallback(
     async (p: number) => {
@@ -181,12 +191,21 @@ export default function AdminClient() {
     }
   };
 
-  if (!token) {
+  if (!token || isAdmin === false) {
     return (
       <div style={{ padding: "48px 52px", textAlign: "center" }}>
         <p style={{ color: "var(--text-muted)" }}>
-          Sign in with an admin account.
+          {!token ? "Sign in with an admin account." : "Access denied. Admin role required."}
         </p>
+      </div>
+    );
+  }
+
+  // Still verifying role
+  if (isAdmin === null) {
+    return (
+      <div style={{ padding: "48px 52px", textAlign: "center" }}>
+        <p style={{ color: "var(--text-muted)" }}>Verifying access…</p>
       </div>
     );
   }
