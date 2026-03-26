@@ -8,7 +8,7 @@
     "start": "nx run web:start",
     "dev:api": "nx run api:serve",
     "compile:api": "nx run api:compile",
-    "dev:all": "concurrently -n api,web -c cyan,magenta \"pnpm dev:api\" \"pnpm dev\"",
+    "dev:all": "concurrently -n api,web -c cyan,magenta \"npm run dev:api\" \"npm run dev\"",
     "build:api": "nx run api:build",
     "typecheck:api": "nx run api:typecheck",
     "mobile": "nx run mobile:start",
@@ -21,7 +21,8 @@
     "refactor:verify": "bash scripts/refactor-verify.sh"
   },
   "workspaces": [
-    "apps/*"
+    "apps/*",
+    "libs/*"
   ],
   "devDependencies": {
     "@nestjs/cli": "^11.0.0",
@@ -86,7 +87,7 @@
     "ioredis": "^5.4.1",
     "joi": "^17.13.3",
     "langchain": "^0.3.0",
-    "next": "~15.2.4",
+    "next": "16.1.6",
     "nodemailer": "^8.0.3",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
@@ -94,8 +95,8 @@
     "pino": "^9.5.0",
     "pino-http": "^10.3.0",
     "prom-client": "^15.1.0",
-    "react": "19.0.0",
-    "react-dom": "19.0.0",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
     "react-native": "0.83.2",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.8.0",

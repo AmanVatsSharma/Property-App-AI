@@ -1,4 +1,4 @@
-# Phase 4 — CI: lint/typecheck, API tests (PG+Redis), Docker build.
+# CI: lint/typecheck, API tests (PG+Redis), web tests, madge cycles, Docker builds, migration smoke-test.
 name: CI
 
 on:
@@ -25,14 +25,24 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: "npm"
       - run: npm ci
+
+      - name: Lint (all projects)
+        run: npx nx run-many -t lint --skip-nx-cache
+        env:
+          NODE_OPTIONS: "--max-old-space-size=4096"
+
       - name: Type check API
         run: npx nx run api:typecheck --skip-nx-cache
         env:
           NODE_OPTIONS: "--max-old-space-size=8192"
-      - name: Type check Web
+
+      - name: Type check Web (build)
         run: npx nx run web:build --skip-nx-cache
         env:
           NEXT_TELEMETRY_DISABLED: 1
+
+      - name: Dependency cycle check (madge)
+        run: npx madge --circular --extensions ts,tsx apps/api/src apps/web/src || (echo "Circular dependency detected!" && exit 1)
 
   test-api:
     name: API Tests
@@ -76,12 +86,72 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: "npm"
       - run: npm ci
-      - run: npx nx run api:test -- --passWithNoTests
+      - name: Run API unit tests
+        run: npx nx run api:test -- --passWithNoTests --coverage
+      - name: Upload API coverage
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: api-coverage
+          path: coverage/apps/api/
+
+  migration-smoke:
+    name: Migration Smoke Test
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: test
+        ports:
+          - "5432:5432"
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      NODE_ENV: test
+      DB_HOST: localhost
+      DB_PORT: 5432
+      DB_USER: test
+      DB_PASSWORD: test
+      DB_NAME: test
+      JWT_SECRET: ci-test-secret-min-16-chars
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+      - run: npm ci
+      - name: Run migrations on fresh DB
+        run: npx nx run api:migration:run
+      - name: Verify migrations applied
+        run: |
+          npx -y pg-connection-test postgres://test:test@localhost:5432/test || true
+
+  test-web:
+    name: Web Unit Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+      - run: npm ci
+      - name: Run web unit tests
+        run: npx nx run web:test --passWithNoTests
+        env:
+          NEXT_TELEMETRY_DISABLED: 1
 
   build:
     name: Docker Build
     runs-on: ubuntu-latest
-    needs: [lint-type-check]
+    needs: [lint-type-check, test-api]
     steps:
       - uses: actions/checkout@v4
       - uses: docker/setup-buildx-action@v3

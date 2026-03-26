@@ -5,7 +5,7 @@ Nx monorepo for the UrbanNest.ai property platform. **Web** app in `apps/web` (N
 ## Prerequisites
 
 - Node.js 18+
-- npm (or pnpm/yarn)
+- **npm** (canonical package manager — `package-lock.json` is the source of truth; do **not** use pnpm or yarn)
 - PostgreSQL (for the API)
 - Optional: Redis (for async agent queue when `AGENT_QUEUE_ENABLED=true`)
 
