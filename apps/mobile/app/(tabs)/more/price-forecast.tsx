@@ -1,74 +1,122 @@
 /**
  * @file price-forecast.tsx
  * @module app/(tabs)/more
- * @description Price Forecast — AI-powered property price prediction
+ * @description AI Price Forecast — Coming Soon screen with waitlist CTA.
  * @author BharatERP
  * @created 2025-03-10
+ * @updated 2026-03-26 Added waitlist notification CTA so users can register interest.
  */
 
 import { useState } from 'react';
-import { ScrollView, View, Text, Pressable } from 'react-native';
-
-const HORIZONS = ['12 months', '24 months', '36 months'];
-const FORECAST = [
-  { year: 'Current', price: '₹12,500', gain: '' },
-  { year: '12 mo', price: '₹13,200', gain: '+5.6%' },
-  { year: '24 mo', price: '₹14,100', gain: '+12.8%', highlight: true },
-  { year: '36 mo', price: '₹15,200', gain: '+21.6%' },
-];
+import { ScrollView, View, Text, TextInput, Pressable, Alert } from 'react-native';
+import { useTheme } from '@/components/providers/ThemeProvider';
 
 export default function PriceForecastScreen() {
-  const [horizon, setHorizon] = useState(1);
+  const { isDark } = useTheme();
+  const bgMain = isDark ? 'bg-night' : 'bg-light-night';
+  const bgCard = isDark ? 'bg-dark' : 'bg-light-dark';
+  const bgCard2 = isDark ? 'bg-dark-2' : 'bg-light-dark-2';
+  const borderCls = isDark ? 'border-border' : 'border-light-border';
+  const textCls = isDark ? 'text-white' : 'text-light-heading';
+  const textMuted = isDark ? 'text-text-muted' : 'text-light-text-muted';
+  const tealCls = isDark ? 'text-teal' : 'text-light-teal';
+  const tealBg = isDark ? 'bg-teal' : 'bg-light-teal';
+  const greenCls = isDark ? 'text-green' : 'text-light-green';
+  const btnPrimaryText = isDark ? 'text-night' : 'text-light-btn-primary-text';
+  const placeholderColor = isDark ? 'rgba(255,255,255,0.45)' : '#5c6370';
+
+  const [email, setEmail] = useState('');
+  const [submitted, setSubmitted] = useState(false);
+
+  const handleNotify = () => {
+    if (!email.includes('@')) {
+      Alert.alert('Invalid email', 'Please enter a valid email address.');
+      return;
+    }
+    // [SonuRamTODO] Wire up to a real waitlist/newsletter API endpoint
+    setSubmitted(true);
+  };
+
+  const highlights = [
+    { icon: '📈', label: '12-month outlook', desc: 'Short-term price direction per micro-market' },
+    { icon: '🗓️', label: '36-month projection', desc: 'Mid-term appreciation based on macro signals' },
+    { icon: '🏙️', label: 'City vs locality', desc: 'Compare city-wide vs locality-level trends' },
+    { icon: '🤖', label: 'AI-powered', desc: 'LLM insights backed by market fundamentals' },
+  ];
 
   return (
-    <ScrollView className="flex-1 bg-night" contentContainerStyle={{ padding: 16, paddingBottom: 32 }}>
-      <View className="bg-dark rounded-xl p-4 border border-border mb-4">
-        <Text className="text-white font-bold text-lg mb-3">Select Locality</Text>
-        <View className="mb-3">
-          <Text className="text-text-muted text-sm mb-1">City</Text>
-          <View className="bg-night rounded-lg border border-border px-3 py-2">
-            <Text className="text-white">Bangalore</Text>
-          </View>
+    <ScrollView
+      className={`flex-1 ${bgMain}`}
+      contentContainerStyle={{ padding: 16, paddingBottom: 40 }}
+    >
+      <View className={`${bgCard} rounded-2xl p-6 border ${borderCls} items-center mb-6`}>
+        <View
+          className={`w-20 h-20 rounded-full ${isDark ? 'bg-teal/10' : 'bg-light-teal/10'} items-center justify-center mb-4`}
+        >
+          <Text style={{ fontSize: 40 }}>📊</Text>
         </View>
-        <View className="mb-3">
-          <Text className="text-text-muted text-sm mb-1">Locality</Text>
-          <View className="bg-night rounded-lg border border-border px-3 py-2">
-            <Text className="text-white">Whitefield</Text>
-          </View>
+        <Text className={`${textCls} font-bold text-xl mb-2 text-center`}>
+          AI Price Forecast
+        </Text>
+        <View
+          className={`px-3 py-1 rounded-full mb-3 ${isDark ? 'bg-teal-dim' : 'bg-light-teal-dim'} border ${isDark ? 'border-teal/30' : 'border-light-teal/30'}`}
+        >
+          <Text className={`${tealCls} text-xs font-bold uppercase tracking-wider`}>
+            Coming Soon
+          </Text>
         </View>
-        <Text className="text-text-muted text-sm mb-2">Forecast Horizon</Text>
-        <View className="flex-row gap-2">
-          {HORIZONS.map((h, i) => (
-            <Pressable
-              key={h}
-              onPress={() => setHorizon(i)}
-              className={`flex-1 py-2 rounded-lg ${horizon === i ? 'bg-teal-dim border border-teal/30' : 'bg-night border border-border'}`}
-            >
-              <Text className={`text-center text-sm ${horizon === i ? 'text-teal font-semibold' : 'text-text-muted'}`}>{h}</Text>
-            </Pressable>
-          ))}
-        </View>
+        <Text className={`${textMuted} text-sm text-center leading-6`}>
+          Get AI-driven price forecasts for any locality across major Indian cities — backed by live market data, not guesswork.
+        </Text>
       </View>
 
-      <View className="bg-dark rounded-xl p-4 border border-border">
-        <Text className="text-text-muted text-xs uppercase tracking-wider mb-1">Forecast Result</Text>
-        <Text className="text-white font-bold text-lg mb-1">Whitefield, Bangalore</Text>
-        <Text className="text-text-muted text-sm mb-4">24-month outlook</Text>
-        <View className="flex-row flex-wrap gap-2">
-          {FORECAST.map((r) => (
-            <View
-              key={r.year}
-              className={`flex-1 min-w-[70px] rounded-xl p-3 items-center ${
-                r.highlight ? 'bg-teal-dim border border-teal/30' : 'bg-dark-2 border border-border'
-              }`}
+      {/* Waitlist CTA */}
+      <View className={`${bgCard} rounded-2xl p-5 border ${borderCls} mb-6`}>
+        <Text className={`${textCls} font-bold text-base mb-1`}>Get early access</Text>
+        <Text className={`${textMuted} text-sm mb-3`}>
+          Be first to receive AI price forecasts when we launch.
+        </Text>
+        {submitted ? (
+          <Text className={`${greenCls} font-semibold text-sm`}>
+            ✓ You're on the list! We'll notify you at launch.
+          </Text>
+        ) : (
+          <View className="flex-row gap-2">
+            <TextInput
+              className={`flex-1 ${bgCard2} rounded-xl border ${borderCls} px-3 py-2.5 ${textCls} text-sm`}
+              placeholder="your@email.com"
+              placeholderTextColor={placeholderColor}
+              value={email}
+              onChangeText={setEmail}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              autoCorrect={false}
+              returnKeyType="send"
+              onSubmitEditing={handleNotify}
+            />
+            <Pressable
+              onPress={handleNotify}
+              className={`${tealBg} px-4 rounded-xl items-center justify-center`}
             >
-              <Text className="text-text-muted text-xs uppercase">{r.year}</Text>
-              <Text className={`font-bold text-base mt-1 ${r.highlight ? 'text-teal' : 'text-white'}`}>{r.price}</Text>
-              {r.gain ? <Text className="text-teal text-xs font-semibold mt-1">{r.gain}</Text> : null}
-            </View>
-          ))}
-        </View>
+              <Text className={`${btnPrimaryText} font-semibold text-sm`}>Notify me</Text>
+            </Pressable>
+          </View>
+        )}
       </View>
+
+      <Text className={`${textCls} font-bold text-base mb-3`}>What to expect</Text>
+      {highlights.map((h) => (
+        <View
+          key={h.label}
+          className={`${bgCard2} rounded-xl px-4 py-3 border ${borderCls} flex-row items-start gap-3 mb-3`}
+        >
+          <Text style={{ fontSize: 22, marginTop: 1 }}>{h.icon}</Text>
+          <View className="flex-1">
+            <Text className={`${textCls} font-semibold text-sm mb-0.5`}>{h.label}</Text>
+            <Text className={`${textMuted} text-xs leading-5`}>{h.desc}</Text>
+          </View>
+        </View>
+      ))}
     </ScrollView>
   );
 }
