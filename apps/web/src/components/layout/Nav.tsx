@@ -90,7 +90,7 @@ export default function Nav() {
         <Link href="/" className="logo" onClick={closeMenu}>
           <div className="logo-icon">🏙️</div>
           <span className="logo-text">
-            UrbanNest<span className="ai">.ai</span>
+            KonKreet
           </span>
         </Link>
         <div

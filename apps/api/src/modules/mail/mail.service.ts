@@ -31,7 +31,7 @@ export class MailService {
     const host = config.get<string>('SMTP_HOST');
     const user = config.get<string>('SMTP_USER');
     const pass = config.get<string>('SMTP_PASS');
-    this.from = config.get<string>('SMTP_FROM') ?? 'UrbanNest.ai <noreply@urbannest.ai>';
+    this.from = config.get<string>('SMTP_FROM') ?? 'KonKreet <noreply@urbannest.ai>';
 
     if (host && user && pass) {
       this.transporter = nodemailer.createTransport({

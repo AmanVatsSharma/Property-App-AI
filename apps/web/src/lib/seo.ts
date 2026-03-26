@@ -139,15 +139,15 @@ export const faqJsonLd = {
   mainEntity: [
     {
       "@type": "Question",
-      name: "How does UrbanNest AI property search work?",
+      name: "How does KonKreet AI property search work?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "UrbanNest uses advanced AI to understand natural language queries. Describe what you want — BHK count, budget, preferred locality, proximity to schools or metro — and our AI finds the best matching properties across 340+ Indian cities.",
+        text: "KonKreet uses advanced AI to understand natural language queries. Describe what you want — BHK count, budget, preferred locality, proximity to schools or metro — and our AI finds the best matching properties across 340+ Indian cities.",
       },
     },
     {
       "@type": "Question",
-      name: "Is it free to post a property on UrbanNest?",
+      name: "Is it free to post a property on KonKreet?",
       acceptedAnswer: {
         "@type": "Answer",
         text: "Yes. Individual owners get one free listing. Professional and Builder Pro plans are available for agents and developers who need multiple listings.",

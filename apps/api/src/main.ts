@@ -97,7 +97,7 @@ async function bootstrap() {
   // ── Swagger ──
   if (!isProduction) {
     const swaggerConfig = new DocumentBuilder()
-      .setTitle('UrbanNest.ai API')
+      .setTitle('KonKreet API')
       .setDescription('AI-powered real estate API for Indian markets')
       .setVersion('1.0')
       .addBearerAuth()

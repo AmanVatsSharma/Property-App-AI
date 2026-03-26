@@ -39,8 +39,8 @@ const outfit = Outfit({
 
 export const metadata: Metadata = {
   title: {
-    default: "UrbanNest.ai — India's Smartest Real Estate Platform",
-    template: "%s — UrbanNest.ai",
+    default: "KonKreet — India's Smartest Real Estate Platform",
+    template: "%s — KonKreet",
   },
   description:
     "AI-powered property search, price intelligence and neighbourhood scoring across 340+ Indian cities. Buy, rent and invest smarter.",
@@ -63,7 +63,6 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    site: "@urbannestai",
     images: ["/og-default.jpg"],
   },
   robots: { index: true, follow: true },
