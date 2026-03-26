@@ -1,16 +1,27 @@
 /**
  * @file AuthProvider.tsx
  * @module providers
- * @description Auth state and token for OTP sign-in; token stored in localStorage.
+ * @description Auth state and token for OTP sign-in.
+ *   Token is stored in an httpOnly cookie (set via /api/auth/login) and
+ *   relayed to client state via /api/auth/me on mount.
+ *   localStorage is kept as a legacy fallback for SSR-less environments.
  * @author BharatERP
  * @created 2025-03-12
+ * @updated 2026-03-26 Migrated to httpOnly cookie via Next.js API routes.
  */
 
 "use client";
 
-import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+  type ReactNode,
+} from "react";
 
-const TOKEN_KEY = "urbannest_auth_token";
+const LEGACY_TOKEN_KEY = "urbannest_auth_token";
 
 interface AuthContextValue {
   token: string | null;
@@ -23,20 +34,37 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
-function readToken(): string | null {
-  if (typeof window === "undefined") return null;
+async function fetchTokenFromCookie(): Promise<string | null> {
   try {
-    return localStorage.getItem(TOKEN_KEY);
+    const res = await fetch("/api/auth/me", { credentials: "include" });
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data?.token ?? null;
   } catch {
     return null;
   }
 }
 
-function persistToken(token: string | null): void {
+async function persistTokenToCookie(token: string): Promise<void> {
+  await fetch("/api/auth/login", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ token }),
+    credentials: "include",
+  });
+}
+
+async function clearTokenFromCookie(): Promise<void> {
+  await fetch("/api/auth/logout", {
+    method: "POST",
+    credentials: "include",
+  });
+}
+
+function clearLegacyLocalStorage(): void {
   if (typeof window === "undefined") return;
   try {
-    if (token) localStorage.setItem(TOKEN_KEY, token);
-    else localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(LEGACY_TOKEN_KEY);
   } catch {
     // ignore
   }
@@ -48,20 +76,42 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [openLoginModal, setOpenLoginModal] = useState(false);
 
   useEffect(() => {
-    queueMicrotask(() => {
-      setTokenState(readToken());
+    // Hydrate auth state from httpOnly cookie via server API route
+    fetchTokenFromCookie().then((t) => {
+      setTokenState(t);
       setMounted(true);
+      // Migrate any pre-existing localStorage token to cookie on first load
+      if (!t && typeof window !== "undefined") {
+        try {
+          const legacy = localStorage.getItem(LEGACY_TOKEN_KEY);
+          if (legacy) {
+            persistTokenToCookie(legacy).then(() => {
+              setTokenState(legacy);
+              clearLegacyLocalStorage();
+            });
+          }
+        } catch {
+          // ignore
+        }
+      } else if (t) {
+        clearLegacyLocalStorage();
+      }
     });
   }, []);
 
   const setToken = useCallback((value: string | null) => {
     setTokenState(value);
-    persistToken(value);
+    if (value) {
+      persistTokenToCookie(value).catch(() => {});
+    } else {
+      clearTokenFromCookie().catch(() => {});
+    }
   }, []);
 
   const signOut = useCallback(() => {
     setTokenState(null);
-    persistToken(null);
+    clearTokenFromCookie().catch(() => {});
+    clearLegacyLocalStorage();
   }, []);
 
   const value: AuthContextValue = {
