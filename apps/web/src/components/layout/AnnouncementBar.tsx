@@ -1,7 +1,7 @@
 /**
  * @file AnnouncementBar.tsx
  * @module layout
- * @description Top announcement bar for UrbanNest.ai
+ * @description Top announcement bar for KonKreet
  * @author BharatERP
  * @created 2025-03-10
  */

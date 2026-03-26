@@ -32,14 +32,14 @@ export function savedSearchAlertHtml(opts: {
 <body>
 <div class="wrap">
   <div class="card">
-    <div class="logo">UrbanNest<span>.ai</span></div>
+    <div class="logo">KonKreet</div>
     <span class="pill">🔔 Search Alert</span>
     <h1>${count} new ${count === 1 ? "property" : "properties"} found</h1>
     <p>New listings matching your saved search <strong style="color:#fff">"${name}"</strong>${locality ? ` in <strong style="color:#fff">${locality}</strong>` : ""} are available. Don't miss out.</p>
     <a href="${searchUrl}" class="cta">View Matches →</a>
   </div>
   <div class="footer">
-    You're receiving this because you saved a search on UrbanNest.ai<br>
+    You're receiving this because you saved a search on KonKreet<br>
     <a href="${searchUrl}&unsubscribe=1" style="color:rgba(255,255,255,0.3)">Unsubscribe</a>
   </div>
 </div>
@@ -48,5 +48,5 @@ export function savedSearchAlertHtml(opts: {
 }
 
 export function savedSearchAlertText(opts: { name: string; count: number; searchUrl: string }): string {
-  return `UrbanNest.ai — ${opts.count} new ${opts.count === 1 ? "property" : "properties"} match "${opts.name}".\n\nView: ${opts.searchUrl}`;
+  return `KonKreet — ${opts.count} new ${opts.count === 1 ? "property" : "properties"} match "${opts.name}".\n\nView: ${opts.searchUrl}`;
 }

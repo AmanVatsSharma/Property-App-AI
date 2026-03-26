@@ -55,11 +55,9 @@ export default function Footer() {
       <div className="footer-grid">
         {/* Brand column */}
         <div>
-          <Link href="/" className="logo" aria-label="UrbanNest.ai home">
+          <Link href="/" className="logo" aria-label="KonKreet home">
             <div className="logo-icon" aria-hidden>🏙️</div>
-            <span className="logo-text">
-              UrbanNest<span className="ai">.ai</span>
-            </span>
+            <span className="logo-text">KonKreet</span>
           </Link>
           <p className="footer-desc">
             India&apos;s most intelligent real estate platform. AI-powered search, price intelligence and neighbourhood scoring across 340+ cities.
@@ -178,7 +176,7 @@ export default function Footer() {
 
       {/* Bottom bar */}
       <div className="footer-bottom">
-        <span>© 2026 UrbanNest Technologies Pvt. Ltd. · DPIIT Recognised Startup</span>
+        <span>© 2026 KonKreet Technologies Pvt. Ltd. · DPIIT Recognised Startup</span>
         <span>
           Made with <span className="teal">♥ &amp; AI</span> in India 🇮🇳
         </span>

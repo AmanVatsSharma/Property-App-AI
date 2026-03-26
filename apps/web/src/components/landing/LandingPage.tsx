@@ -339,7 +339,7 @@ export default function LandingPage() {
           </motion.h1>
 
           <motion.p variants={fadeUp} custom={2} className="hero-sub">
-            UrbanNest.ai is powered by AI that understands what you actually want — not just keywords. Verified listings, real price intelligence, and neighbourhood insights across 340+ Indian cities.
+            KonKreet is powered by AI that understands what you actually want — not just keywords. Verified listings, real price intelligence, and neighbourhood insights across 340+ Indian cities.
           </motion.p>
 
           {/* Search card */}
@@ -640,7 +640,7 @@ export default function LandingPage() {
       >
         <SectionReveal>
           <div style={{ textAlign: "center", marginBottom: 56 }}>
-            <div className="sec-eyebrow" style={{ justifyContent: "center" }}>Why UrbanNest.ai</div>
+            <div className="sec-eyebrow" style={{ justifyContent: "center" }}>Why KonKreet</div>
             <h2 className="sec-title" style={{ textAlign: "center" }}>
               AI That <em>Actually</em> Works for You
             </h2>
@@ -939,7 +939,7 @@ export default function LandingPage() {
         <SectionReveal>
           <div className="sec-eyebrow">Real Stories</div>
           <h2 className="sec-title">
-            They Found Their<br />Home with <em>UrbanNest.ai</em>
+            They Found Their<br />Home with <em>KonKreet</em>
           </h2>
         </SectionReveal>
         <motion.div
@@ -1037,7 +1037,7 @@ export default function LandingPage() {
           <div className="sec-eyebrow">Mobile App</div>
           <h2 className="sec-title">Your Pocket<br /><em>Real Estate</em><br />Advisor</h2>
           <p className="sec-sub" style={{ marginTop: 14 }}>
-            All of UrbanNest.ai&apos;s power in your palm — search, save, compare and consult your AI Copilot anytime, anywhere.
+            All of KonKreet&apos;s power in your palm — search, save, compare and consult your AI Copilot anytime, anywhere.
           </p>
           <div className="app-features">
             {[
@@ -1098,7 +1098,7 @@ export default function LandingPage() {
             Your Dream Home<br />is One <em>Smart Search</em> Away
           </h2>
           <p style={{ textAlign: "center", maxWidth: 480, margin: "16px auto 0", color: "var(--text-muted)", fontSize: 16, lineHeight: 1.65 }}>
-            Join 1.2 lakh+ families who found their perfect property with UrbanNest.ai. Free forever — no hidden charges.
+            Join 1.2 lakh+ families who found their perfect property with KonKreet. Free forever — no hidden charges.
           </p>
           <div className="cta-btns">
             <Link href="/search" className="btn-cta-primary" data-testid="landing-cta-search">

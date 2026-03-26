@@ -98,7 +98,7 @@ export default function AIFab() {
         <button
           type="button"
           className="ai-fab-btn"
-          title="Talk to UrbanNest AI — search, compare, or post a listing"
+          title="Talk to KonKreet AI — search, compare, or post a listing"
           aria-label="Open AI assistant"
           onClick={() => setOpen(!isOpen)}
         >
@@ -116,10 +116,10 @@ export default function AIFab() {
           <div
             className="fixed right-0 top-0 bottom-0 w-full max-w-md z-[802] bg-[var(--dark)] border-l border-[var(--border)] shadow-xl flex flex-col"
             role="dialog"
-            aria-label="UrbanNest AI assistant"
+            aria-label="KonKreet AI assistant"
           >
             <div className="flex items-center justify-between p-4 border-b border-[var(--border)]">
-              <h2 className="text-lg font-semibold text-white">Talk to UrbanNest AI</h2>
+              <h2 className="text-lg font-semibold text-white">Talk to KonKreet AI</h2>
               <button
                 type="button"
                 className="text-[var(--text-muted)] hover:text-white p-1"

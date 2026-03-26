@@ -12,7 +12,7 @@ import { buildMetadata } from "@/lib/seo";
 export const metadata: Metadata = buildMetadata({
   title: "About Us & Investors",
   description:
-    "UrbanNest.ai is rebuilding India's ₹30 trillion real estate market with AI, radical transparency, and zero fake listings. Meet the team and our investors.",
+    "KonKreet is rebuilding India's ₹30 trillion real estate market with AI, radical transparency, and zero fake listings. Meet the team and our investors.",
   path: "/about",
   keywords: ["UrbanNest team", "real estate startup India", "proptech India", "Series A"],
 });
