@@ -4,11 +4,15 @@
  * @description Runnable script: loads env (root .env then apps/api/.env), initializes DataSource, runs pending migrations.
  * @author BharatERP
  * @created 2025-03-15
+ * @updated 2026-03-26 Replace console.log/error with NestJS Logger for consistent structured output.
  */
 
+import { Logger } from '@nestjs/common';
 import { config } from 'dotenv';
 import { join } from 'path';
 import { AppDataSource } from './data-source';
+
+const logger = new Logger('Migrations');
 
 const cwd = process.cwd();
 // Same order as ConfigModule: root .env first, then app .env so app overrides.
@@ -23,16 +27,16 @@ async function run(): Promise<void> {
   try {
     const executed = await AppDataSource.runMigrations();
     if (executed.length > 0) {
-      console.log(`Ran ${executed.length} migration(s):`, executed.map((m) => m.name).join(', '));
+      logger.log(`Ran ${executed.length} migration(s): ${executed.map((m) => m.name).join(', ')}`);
     } else {
-      console.log('No pending migrations.');
+      logger.log('No pending migrations.');
     }
   } finally {
     await AppDataSource.destroy();
   }
 }
 
-run().catch((err) => {
-  console.error('Migration failed:', err);
+run().catch((err: unknown) => {
+  logger.error('Migration failed', err instanceof Error ? err.stack : String(err));
   process.exit(1);
 });

@@ -24,10 +24,11 @@
 **Dependencies:** TypeORM (Postgres), GraphQL (Apollo code-first), **LoggerService** (shared), **ConfigService** (Nest) for Mapbox token.
 
 **APIs (GraphQL):**
-- **Query `properties(filter?)`** — List properties. Filter: type, location, price range, bedrooms, area scores, bounds, **sortBy**, **sortOrder**, limit, offset.
-- **Query `propertiesPage(filter)`** — Cursor-paginated list; returns **PropertiesPage** (items, nextCursor, total). Use **after** (ISO date of last item's createdAt) for next page.
-- **Query `searchPropertiesByQuery(query: string)`** — One-shot NL search: parses query (e.g. "3 BHK near school near metro in Bangalore") via SearchParserService, returns properties.
-- **Query `property(id)`** — Get one by id.
+- **Query `properties(filter?)`** — List properties (**@Public** — no JWT). Filter: type, location, price range, bedrooms, area scores, bounds, **sortBy**, **sortOrder**, limit, offset.
+- **Query `propertiesPage(filter)`** — Cursor-paginated list (**@Public**). Returns **PropertiesPage** (items, nextCursor, total). Use **after** (ISO date of last item's createdAt) for next page.
+- **Query `searchPropertiesByQuery(query: string)`** — One-shot NL search (**@Public**): parses query via SearchParserService, returns properties.
+- **Query `property(id)`** — Get one by id (**@Public**).
+- **Query `myListings`** — Current user’s listings; **requires** JWT (not public).
 - **Mutation `createProperty(input)`** — Create listing; requires authenticated user; sets **createdByUserId** from JWT and **isFreeListing** (true for owner’s first listing, false otherwise); geocodes when lat/lng omitted.
 - **Mutation `updateProperty(id, input)`** — Update listing; requires authenticated user; only owner or admin may update; geocodes when location changed and lat/lng omitted.
 - **Mutation `deleteProperty(id)`** — Delete by id; requires authenticated user; only owner or admin may delete.
@@ -44,6 +45,7 @@
 **Error codes:** **PROPERTY_NOT_FOUND** (404), **VALIDATION_ERROR** (400). Unauthenticated create → **UnauthorizedException**. See `common/errors`; GraphQL errors may include `extensions.code` and `extensions.statusCode`.
 
 **Change-log:**
+- 2026-03-26: **Public browse:** `@Public()` on GraphQL queries **properties**, **propertiesPage**, **searchPropertiesByQuery**, **property** so listing/search/detail work without JWT; **myListings** and write mutations remain authenticated.
 - 2026-03-19: **List cache:** findAll() caches public list queries (no createdByUserId, no minLat/maxLat) with CacheService.getOrSet (key props:list:${JSON.stringify(filter)}, TTL 60s). create() and remove() call cache.delByPrefix('props:list:') to invalidate list cache.
 - 2026-03-18: **View count:** viewCount column (migration AddPropertyViewCount); incrementViewCount in findOne (fire-and-forget, only when loaded from DB). **Redis cache:** findOne read-through cache (300s), invalidate on update/remove. **Cursor pagination:** after in filter, PropertiesPage, findPageWithFilters, propertiesPage query. **Metrics:** property_created_total incremented in create(). **Swagger:** SearchRequestBody DTO with @ApiProperty.
 - 2026-03-18: **Property status workflow:** PropertyService.changeStatus(id, status, requestingUserId, requestingUserRole); allowed statuses draft, active, sold, rented; resolver changePropertyStatus(id, status). Migration AddPropertyStatus sets default status 'active'. **Free listing gate:** create() blocks second and subsequent listings with ForbiddenException until payment stub is replaced.

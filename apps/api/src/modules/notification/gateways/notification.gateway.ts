@@ -20,8 +20,12 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { LoggerService } from '@api/shared/logger';
 
+/**
+ * CORS for the WebSocket gateway is inherited from the IoAdapter configured in
+ * main.ts (which reads CORS_ORIGIN / WS_CORS_ORIGIN). We do NOT set cors here
+ * to avoid bypassing the global CORS policy with a hard-coded wildcard.
+ */
 @WebSocketGateway({
-  cors: { origin: '*', credentials: true },
   namespace: '/notifications',
   transports: ['websocket', 'polling'],
 })
