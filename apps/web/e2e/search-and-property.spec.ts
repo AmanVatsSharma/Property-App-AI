@@ -51,7 +51,7 @@ test.describe("AI Fab", () => {
   test("opens AI panel and shows prompt input", async ({ page }) => {
     await page.goto("/");
     await page.getByRole("button", { name: "Open AI assistant", exact: true }).click();
-    const dialog = page.getByRole("dialog", { name: /UrbanNest AI/i });
+    const dialog = page.getByRole("dialog", { name: /KonKreet AI/i });
     await expect(dialog).toBeVisible({ timeout: 5000 });
     await expect(dialog.getByPlaceholder(/3 BHK|Describe your home|e\.g\. 3 BHK under/i)).toBeVisible();
   });
@@ -59,7 +59,7 @@ test.describe("AI Fab", () => {
   test("AI panel has send button", async ({ page }) => {
     await page.goto("/");
     await page.getByRole("button", { name: "Open AI assistant", exact: true }).click();
-    const dialog = page.getByRole("dialog", { name: /UrbanNest AI/i });
+    const dialog = page.getByRole("dialog", { name: /KonKreet AI/i });
     await expect(dialog).toBeVisible({ timeout: 5000 });
     await expect(dialog.getByRole("button", { name: /^Send$/ })).toBeVisible();
   });
@@ -67,7 +67,7 @@ test.describe("AI Fab", () => {
   test("submit prompt shows result or error", async ({ page }) => {
     await page.goto("/");
     await page.getByRole("button", { name: "Open AI assistant", exact: true }).click();
-    const dialog = page.getByRole("dialog", { name: /UrbanNest AI/i });
+    const dialog = page.getByRole("dialog", { name: /KonKreet AI/i });
     await expect(dialog).toBeVisible({ timeout: 5000 });
     await dialog.getByPlaceholder(/3 BHK|Describe your home|e\.g\. 3 BHK under/i).fill("2 BHK in Bangalore under 80 lakh");
     await dialog.getByRole("button", { name: /^Send$/ }).click();

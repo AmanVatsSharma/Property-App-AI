@@ -1,7 +1,7 @@
 /**
  * @file Button.tsx
  * @module components/ui
- * @description Premium button component using CVA, mapped to UrbanNest design tokens
+ * @description Premium button component using CVA, mapped to KonKreet design tokens
  * @author BharatERP
  * @created 2026-03-26
  */

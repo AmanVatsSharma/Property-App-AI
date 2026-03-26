@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
-/* ── SHADCN/UI CSS VAR BRIDGE (maps shadcn vars to UrbanNest tokens) ── */
+/* ── SHADCN/UI CSS VAR BRIDGE (maps shadcn vars to KonKreet tokens) ── */
 :root {
-  /* shadcn base vars → UrbanNest tokens */
+  /* shadcn base vars → KonKreet tokens */
   --background: var(--night);
   --foreground: var(--text);
   --card: var(--dark-2);
@@ -23,7 +23,7 @@
   --input: var(--dark-3);
   --ring: var(--teal);
   --radius: var(--radius);
-  /* New UrbanNest tokens */
+  /* New KonKreet tokens */
   --indigo: #6366f1;
   --indigo-dim: rgba(99,102,241,0.12);
   --indigo-glow: rgba(99,102,241,0.25);
@@ -39,7 +39,7 @@
 }
 
 .light {
-  /* shadcn base vars → UrbanNest light tokens */
+  /* shadcn base vars → KonKreet light tokens */
   --background: var(--night);
   --foreground: var(--text);
   --card: var(--dark-2);
@@ -58,7 +58,7 @@
   --destructive-foreground: #fff;
   --input: var(--dark-3);
   --ring: var(--teal);
-  /* New UrbanNest light tokens */
+  /* New KonKreet light tokens */
   --indigo: #4f46e5;
   --indigo-dim: rgba(79,70,229,0.10);
   --indigo-glow: rgba(79,70,229,0.18);
@@ -291,7 +291,7 @@
   font-size: 24px; margin-bottom: 20px;
 }
 
-/* UrbanNest.ai — design tokens & shared styles (from shared.css) */
+/* KonKreet — design tokens & shared styles (from shared.css) */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 *{-webkit-tap-highlight-color:transparent}
 

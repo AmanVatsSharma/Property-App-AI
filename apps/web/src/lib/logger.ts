@@ -6,7 +6,7 @@
  * @created 2025-03-10
  */
 
-const PREFIX = "[UrbanNest]";
+const PREFIX = "[KonKreet]";
 const isDev = typeof window !== "undefined" && process.env.NODE_ENV !== "production";
 
 export const logger = {

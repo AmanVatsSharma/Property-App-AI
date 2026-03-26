@@ -25,7 +25,7 @@ interface PageProps {
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { id } = await params;
   const property = await getPropertyById(id);
-  if (!property) return { title: "Property Not Found — UrbanNest.ai" };
+  if (!property) return { title: "Property Not Found — KonKreet" };
   const description = `${property.title} in ${property.address}. ${property.price}. ${property.quickSpecs.map((s) => s.val).join(", ")}. View full details, AI score, and contact owner.`;
   return buildMetadata({
     title: property.title,

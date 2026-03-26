@@ -1,7 +1,7 @@
 /**
  * @file Badge.tsx
  * @module components/ui
- * @description Badge component with UrbanNest variants
+ * @description Badge component with KonKreet variants
  * @author BharatERP
  * @created 2026-03-26
  */
