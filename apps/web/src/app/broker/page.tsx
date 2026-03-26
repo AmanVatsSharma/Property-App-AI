@@ -10,7 +10,7 @@ import type { Metadata } from "next";
 import BrokerDashboardClient from "./BrokerDashboardClient";
 
 export const metadata: Metadata = {
-  title: "Broker Dashboard — UrbanNest.ai",
+  title: "Broker Dashboard — KonKreet",
   description:
     "Manage your listings, enquiries, and broker verification status.",
 };

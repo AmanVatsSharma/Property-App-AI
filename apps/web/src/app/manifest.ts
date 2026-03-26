@@ -1,7 +1,7 @@
 /**
  * @file manifest.ts
  * @module app
- * @description Typed PWA manifest route for UrbanNest.ai.
+ * @description Typed PWA manifest route for KonKreet.
  * @author BharatERP
  * @created 2026-03-19
  */
@@ -10,8 +10,8 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "UrbanNest.ai",
-    short_name: "UrbanNest",
+    name: "KonKreet",
+    short_name: "KonKreet",
     description: "India's AI-powered real estate platform",
     start_url: "/",
     display: "standalone",

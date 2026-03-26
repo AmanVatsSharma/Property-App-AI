@@ -14,7 +14,7 @@ export const metadata: Metadata = buildMetadata({
   description:
     "KonKreet is rebuilding India's ₹30 trillion real estate market with AI, radical transparency, and zero fake listings. Meet the team and our investors.",
   path: "/about",
-  keywords: ["UrbanNest team", "real estate startup India", "proptech India", "Series A"],
+  keywords: ["KonKreet team", "real estate startup India", "proptech India", "Series A"],
 });
 
 export default function AboutPage() {
@@ -37,7 +37,7 @@ export default function AboutPage() {
         <div className="reveal">
           <div className="eyebrow">Our Mission</div>
           <h2 className="h2">Make Every Indian a Confident Homebuyer</h2>
-          <p className="sub">For too long, buying a home in India has meant navigating fake prices, suspicious agents, and mountains of paperwork. UrbanNest.ai gives every Indian — whether they&apos;re a first-time buyer or a seasoned investor — the same information advantage that insiders have always had.</p>
+          <p className="sub">For too long, buying a home in India has meant navigating fake prices, suspicious agents, and mountains of paperwork. KonKreet gives every Indian — whether they&apos;re a first-time buyer or a seasoned investor — the same information advantage that insiders have always had.</p>
           <div style={{ display: "flex", flexDirection: "column", gap: 14, marginTop: 28 }}>
             {[
               { title: "Radical Transparency", text: "Every listing shows price history, fair market value and red flags." },
@@ -55,7 +55,7 @@ export default function AboutPage() {
           <div className="mission-quote">Real estate is the largest purchase most Indians will ever make. They deserve perfect information — not guesswork and spam calls.</div>
           <div className="mission-author">
             <div className="mission-avatar">👨</div>
-            <div><div className="mission-name">Rahul Agarwal</div><div className="mission-role">Co-Founder & CEO, UrbanNest.ai</div></div>
+            <div><div className="mission-name">Rahul Agarwal</div><div className="mission-role">Co-Founder & CEO, KonKreet</div></div>
           </div>
         </div>
       </section>
@@ -96,7 +96,7 @@ export default function AboutPage() {
           <h2 className="h2" style={{ marginBottom: 36 }}>Our <em className="teal">Growth Story</em></h2>
           <div className="timeline">
             {[
-              { date: "Jan 2024 · Founding", title: "UrbanNest.ai Founded", desc: "3 co-founders quit big tech to solve India's broken real estate market.", amount: null },
+              { date: "Jan 2024 · Founding", title: "KonKreet Founded", desc: "3 co-founders quit big tech to solve India's broken real estate market.", amount: null },
               { date: "Apr 2024 · Pre-Seed", title: "Pre-Seed Round Closed", desc: "Raised from angels, ex-founders, and YC alumni.", amount: "💰 ₹2.5 Cr" },
               { date: "Oct 2024 · Seed", title: "Seed Round — Surge by Sequoia", desc: "Selected for Surge Cohort 10. Platform launched publicly with 1L listings.", amount: "💰 ₹12 Cr" },
               { date: "Mar 2025 · Milestone", title: "1 Lakh Families Served", desc: "Crossed 2.4M listings across 340 cities. Revenue: ₹1.8 Cr MRR.", amount: null },
@@ -144,12 +144,12 @@ export default function AboutPage() {
 
       <section className="section" style={{ background: "var(--dark)" }}>
         <div className="eyebrow">Press & Media</div>
-        <h2 className="h2" style={{ marginBottom: 48 }}>UrbanNest.ai <em className="teal">in the News</em></h2>
+        <h2 className="h2" style={{ marginBottom: 48 }}>KonKreet <em className="teal">in the News</em></h2>
         <div className="press-grid">
           {[
             { logo: "Economic Times", headline: "\"The AI startup that's making buying a home in India less terrifying\"", date: "February 2025" },
-            { logo: "YourStory", headline: "\"UrbanNest.ai raises ₹12Cr Seed, aims to bring AI transparency to India's opaque property market\"", date: "November 2024" },
-            { logo: "Inc42", headline: "\"How UrbanNest.ai is using GPT-4 to give every Indian buyer institutional-grade data\"", date: "January 2025" },
+            { logo: "YourStory", headline: "\"KonKreet raises ₹12Cr Seed, aims to bring AI transparency to India's opaque property market\"", date: "November 2024" },
+            { logo: "Inc42", headline: "\"How KonKreet is using GPT-4 to give every Indian buyer institutional-grade data\"", date: "January 2025" },
           ].map((p) => (
             <div key={p.logo} className="press-card reveal">
               <div className="press-logo">{p.logo}</div>

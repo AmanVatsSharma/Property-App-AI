@@ -10,7 +10,7 @@ import type { Metadata } from "next";
 import SavedSearchesClient from "./SavedSearchesClient";
 
 export const metadata: Metadata = {
-  title: "Saved Searches — UrbanNest.ai",
+  title: "Saved Searches — KonKreet",
   description: "Manage your saved property searches and alert preferences.",
 };
 

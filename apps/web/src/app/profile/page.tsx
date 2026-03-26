@@ -12,7 +12,7 @@ import ProfileClient from "./ProfileClient";
 
 export const metadata: Metadata = buildMetadata({
   title: "My Profile",
-  description: "Manage your UrbanNest profile and preferences.",
+  description: "Manage your KonKreet profile and preferences.",
   path: "/profile",
   noIndex: true,
 });

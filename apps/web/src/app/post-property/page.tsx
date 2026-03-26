@@ -14,7 +14,7 @@ import PostPropertyAICta from "@/components/post-property/PostPropertyAICta";
 import { DEMO_IMAGES } from "@/lib/demo-images";
 
 export const metadata: Metadata = {
-  title: "Post Property Free — UrbanNest.ai",
+  title: "Post Property Free — KonKreet",
   description: "Post your property. Reach millions of verified buyers. 100% free for owners.",
 };
 
@@ -25,7 +25,7 @@ export default function PostPropertyPage() {
         <div className="post-hero-content">
           <span className="badge badge-teal" style={{ marginBottom: 16 }}>✦ 100% Free for Owners</span>
           <h1 className="h1" style={{ marginBottom: 16 }}>Post Your Property.<br /><em className="teal">Reach Millions.</em></h1>
-          <p style={{ fontSize: 18, color: "var(--text-muted)", lineHeight: 1.65, fontWeight: 300, maxWidth: 500, marginBottom: 32 }}>2.4 million active buyers on UrbanNest.ai. Verified leads. AI-matched to your property. Zero spam.</p>
+          <p style={{ fontSize: 18, color: "var(--text-muted)", lineHeight: 1.65, fontWeight: 300, maxWidth: 500, marginBottom: 32 }}>2.4 million active buyers on KonKreet. Verified leads. AI-matched to your property. Zero spam.</p>
           <div style={{ display: "flex", gap: 12 }}>
             <Link href="#post-form"><button type="button" className="btn-primary lg">Post Property Free →</button></Link>
             <button type="button" className="btn-outline lg" style={{ padding: "15px 28px" }}>View Pricing Plans</button>

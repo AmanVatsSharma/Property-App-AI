@@ -10,7 +10,7 @@ import type { Metadata } from "next";
 import LegalCheckerClient from "./LegalCheckerClient";
 
 export const metadata: Metadata = {
-  title: "Legal Checker & RERA — UrbanNest.ai",
+  title: "Legal Checker & RERA — KonKreet",
   description:
     "Verify RERA project status and get AI-powered legal risk analysis.",
 };

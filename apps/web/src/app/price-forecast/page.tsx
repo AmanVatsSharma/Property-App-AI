@@ -10,7 +10,7 @@ import type { Metadata } from "next";
 import PriceForecastClient from "./PriceForecastClient";
 
 export const metadata: Metadata = {
-  title: "Price Forecast — UrbanNest.ai",
+  title: "Price Forecast — KonKreet",
   description:
     "ML-powered 12–36 month price appreciation forecasts for any locality.",
 };

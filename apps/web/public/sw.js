@@ -1,11 +1,11 @@
 /**
  * @file sw.js
- * @description Stale-while-revalidate PWA service worker; offline fallback for UrbanNest.ai.
+ * @description Stale-while-revalidate PWA service worker; offline fallback for KonKreet.
  * @author BharatERP
  * @created 2026-03-19
  */
 
-const CACHE = "urbannest-v1";
+const CACHE = "konkreet-v1";
 const PRECACHE = ["/", "/search", "/offline.html"];
 
 self.addEventListener("install", (e) => {
