@@ -6,7 +6,9 @@
     "dev": "nx next:dev",
     "build": "nx next:build",
     "start": "nx next:start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "next": "16.1.6",
@@ -21,6 +23,7 @@
     "eslint-config-next": "16.1.6",
     "tailwindcss": "^4",
     "@tailwindcss/postcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^2.1.6"
   }
 }

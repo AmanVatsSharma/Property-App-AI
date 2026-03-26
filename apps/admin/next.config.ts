@@ -69,16 +69,27 @@ const nextConfig: NextConfig = {
   async rewrites() {
     const apiBase =
       process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3333";
-    return [
-      {
-        source: "/graphql",
-        destination: `${apiBase}/graphql`,
-      },
-      {
-        source: "/api/:path*",
-        destination: `${apiBase}/api/:path*`,
-      },
-    ];
+    return {
+      // afterFiles rewrites run after Next.js filesystem routes are matched.
+      // /api/auth/* resolves to the local App Router route handlers first;
+      // all other /api/* paths proxy to the Nest backend.
+      beforeFiles: [],
+      afterFiles: [
+        {
+          source: "/api/auth/:path*",
+          destination: "/api/auth/:path*",
+        },
+        {
+          source: "/api/:path*",
+          destination: `${apiBase}/api/:path*`,
+        },
+        {
+          source: "/graphql",
+          destination: `${apiBase}/graphql`,
+        },
+      ],
+      fallback: [],
+    };
   },
 };
 
