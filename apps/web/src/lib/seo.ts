@@ -9,7 +9,7 @@
 import type { Metadata } from "next";
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://urbannest.ai";
-const SITE_NAME = "UrbanNest.ai";
+const SITE_NAME = "KonKreet";
 const DEFAULT_IMAGE = `${BASE_URL}/og-default.jpg`;
 
 export interface PageSeoProps {
@@ -30,7 +30,7 @@ export function buildMetadata({
   keywords = [],
 }: PageSeoProps): Metadata {
   const url = `${BASE_URL}${path}`;
-  const fullTitle = title.includes("UrbanNest") ? title : `${title} — ${SITE_NAME}`;
+  const fullTitle = title.includes("KonKreet") ? title : `${title} — ${SITE_NAME}`;
 
   return {
     title: fullTitle,
@@ -60,7 +60,7 @@ export function buildMetadata({
       title: fullTitle,
       description,
       images: [image],
-      site: "@urbannestai",
+      // Add @handle when KonKreet social profiles are live
     },
   };
 }
@@ -112,10 +112,7 @@ export const organizationJsonLd = {
   logo: `${BASE_URL}/logo.png`,
   description:
     "India's AI-powered real estate platform. Search, buy, rent, and invest with intelligence.",
-  sameAs: [
-    "https://twitter.com/urbannestai",
-    "https://www.linkedin.com/company/urbannestai",
-  ],
+  sameAs: [] as string[],
   contactPoint: {
     "@type": "ContactPoint",
     contactType: "customer support",

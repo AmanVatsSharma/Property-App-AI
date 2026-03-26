@@ -10,7 +10,7 @@
 
 import { type NextRequest, NextResponse } from "next/server";
 
-const COOKIE_NAME = "urbannest_token";
+const COOKIE_NAME = "konkreet_token";
 
 export async function GET(req: NextRequest) {
   const token = req.cookies.get(COOKIE_NAME)?.value ?? null;

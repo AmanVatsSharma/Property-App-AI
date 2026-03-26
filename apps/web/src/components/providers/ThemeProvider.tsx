@@ -17,7 +17,7 @@ export default function ThemeProvider({ children }: { children: ReactNode }) {
       attribute="class"
       defaultTheme="dark"
       enableSystem={false}
-      storageKey="urbannest-theme"
+      storageKey="konkreet-theme"
     >
       {children}
     </NextThemesProvider>

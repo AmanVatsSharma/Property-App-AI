@@ -8,7 +8,7 @@
 
 import { NextResponse } from "next/server";
 
-const COOKIE_NAME = "urbannest_token";
+const COOKIE_NAME = "konkreet_token";
 
 export async function POST() {
   const res = NextResponse.json({ ok: true });

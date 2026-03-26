@@ -1,14 +1,14 @@
 /**
  * @file theme-storage.ts
  * @module lib
- * @description Persists theme preference (light/dark) to AsyncStorage; key matches web (urbannest-theme).
+ * @description Persists theme preference (light/dark) to AsyncStorage; key matches web (konkreet-theme).
  * @author BharatERP
  * @created 2025-03-14
  */
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const THEME_STORAGE_KEY = 'urbannest-theme';
+const THEME_STORAGE_KEY = 'konkreet-theme';
 
 export type ThemeMode = 'light' | 'dark';
 

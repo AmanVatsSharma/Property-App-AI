@@ -8,7 +8,7 @@
 
 import * as SecureStore from 'expo-secure-store';
 
-const TOKEN_KEY = 'urbannest_auth_token';
+const TOKEN_KEY = 'konkreet_auth_token';
 
 export async function getToken(): Promise<string | null> {
   try {

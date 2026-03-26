@@ -11,7 +11,7 @@
 import { useEffect, useState } from "react";
 import { MOBILE_PROMPT_COPY, APP_STORE_URL, PLAY_STORE_URL } from "@/lib/copy";
 
-const STORAGE_KEY = "urbannest_mobile_prompt_dismissed";
+const STORAGE_KEY = "konkreet_mobile_prompt_dismissed";
 const MOBILE_BREAKPOINT_PX = 768;
 
 export default function MobileAppPrompt() {
