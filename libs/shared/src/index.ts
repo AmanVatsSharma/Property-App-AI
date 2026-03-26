@@ -6,7 +6,7 @@
  * @created 2025-03-10
  */
 
-export { colors, radius, theme } from './tokens/theme';
+export { colors, colorsLight, radius, theme, themeLight } from './tokens/theme';
 export { NAV_LINKS, FOOTER_LINKS } from './types/navigation';
 export type { PropertyCard } from './types/property';
 export { SEARCH_TABS } from './types/property';

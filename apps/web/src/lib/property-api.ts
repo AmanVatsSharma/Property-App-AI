@@ -37,7 +37,6 @@ function apiPropertyToDetail(p: ApiProperty): PropertyDetail {
     pricePerSqft,
     badges: [
       ...(p.aiScore && p.aiScore >= 90 ? [{ label: "✦ AI Pick", variant: "badge-teal" as const }] : []),
-      { label: "✓ RERA Verified", variant: "badge-green" as const },
     ],
     quickSpecs: [
       { icon: "🛏", val: `${p.bedrooms} BHK`, label: "Bedrooms" },
@@ -48,7 +47,7 @@ function apiPropertyToDetail(p: ApiProperty): PropertyDetail {
     overview: [
       { label: "Project", val: p.title },
       { label: "Location", val: p.location },
-      { label: "RERA No.", val: "—", green: false },
+      { label: "Type", val: p.type ?? "—" },
     ],
     aiScore: p.aiScore ?? 0,
     aiScoreLabel: p.aiTip ?? "—",
