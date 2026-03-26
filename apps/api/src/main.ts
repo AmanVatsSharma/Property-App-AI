@@ -124,6 +124,12 @@ async function bootstrap() {
 }
 
 bootstrap().catch((err) => {
-  console.error('Bootstrap failed:', err);
+  logger.error(
+    {
+      err: err instanceof Error ? err.message : String(err),
+      stack: err instanceof Error ? err.stack : undefined,
+    },
+    'Bootstrap failed',
+  );
   process.exit(1);
 });

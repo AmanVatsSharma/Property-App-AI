@@ -9,7 +9,7 @@
 import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
-import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { ThrottlerModule } from '@nestjs/throttler';
 import { BullModule } from '@nestjs/bullmq';
 import { ScheduleModule } from '@nestjs/schedule';
 import { APP_GUARD } from '@nestjs/core';
@@ -43,6 +43,7 @@ import { LoggingInterceptor } from '@api/common/interceptors/logging.interceptor
 import { TimeoutInterceptor } from '@api/common/interceptors/timeout.interceptor';
 import { AuthGuard } from '@api/common/guards/auth.guard';
 import { RedisThrottlerStorage } from '@api/common/throttler/redis-throttler.storage';
+import { GraphqlThrottlerGuard } from '@api/common/guards/graphql-throttler.guard';
 import { RateLimitModule } from '@api/app/rate-limit.module';
 import { CacheModule } from '@api/shared/cache/cache.module';
 
@@ -91,7 +92,11 @@ import { CacheModule } from '@api/shared/cache/cache.module';
           autoSchemaFile: true,
           sortSchema: true,
           playground: !isProduction,
-          context: ({ req }: { req: { requestId?: string } }) => ({ req, requestId: req?.requestId }),
+          context: ({ req, res }: { req: { requestId?: string }; res: unknown }) => ({
+            req,
+            res,
+            requestId: req?.requestId,
+          }),
           formatError: (formatted: { message: string; extensions?: Record<string, unknown>; originalError?: unknown }, error?: unknown) => {
             const raw = (formatted?.originalError ?? error) as unknown;
             const base = { message: formatted?.message ?? 'Internal server error' };
@@ -161,7 +166,7 @@ import { CacheModule } from '@api/shared/cache/cache.module';
       inject: [ConfigService],
     },
     { provide: APP_GUARD, useClass: AuthGuard },
-    { provide: APP_GUARD, useClass: ThrottlerGuard },
+    { provide: APP_GUARD, useClass: GraphqlThrottlerGuard },
   ],
 })
 export class AppModule implements NestModule {
