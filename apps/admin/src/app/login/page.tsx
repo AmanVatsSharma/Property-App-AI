@@ -12,6 +12,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { gqlSendOtp, gqlVerifyOtp } from "@/lib/graphql-client";
 import { setToken } from "@/lib/auth";
+import { COPY } from "@/lib/copy";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -25,7 +26,7 @@ export default function LoginPage() {
     e.preventDefault();
     const normalized = phone.replace(/\D/g, "");
     if (normalized.length < 10) {
-      setError("Enter a valid 10-digit Indian mobile number");
+      setError(COPY.auth.errorInvalidPhone);
       return;
     }
     setError(null);
@@ -35,7 +36,7 @@ export default function LoginPage() {
       setStep("code");
       setCode("");
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Failed to send OTP");
+      setError(e instanceof Error ? e.message : COPY.auth.errorSendFailed);
     } finally {
       setLoading(false);
     }
@@ -44,7 +45,7 @@ export default function LoginPage() {
   const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!code || code.length !== 6) {
-      setError("Enter the 6-digit code");
+      setError(COPY.auth.errorInvalidOtp);
       return;
     }
     setError(null);
@@ -52,15 +53,15 @@ export default function LoginPage() {
     try {
       const { token: newToken, user } = await gqlVerifyOtp(phone.trim(), code.trim());
       if (user.role !== "admin") {
-        setError("Access denied. Admin only.");
+        setError(COPY.auth.errorAccessDenied);
         setLoading(false);
         return;
       }
-      setToken(newToken);
+      await setToken(newToken);
       router.replace("/");
       router.refresh();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Invalid or expired OTP");
+      setError(e instanceof Error ? e.message : COPY.auth.errorVerifyFailed);
     } finally {
       setLoading(false);
     }
@@ -69,19 +70,19 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
       <div className="w-full max-w-sm rounded-lg border border-[var(--admin-border)] bg-[var(--admin-sidebar)] p-6 shadow-xl">
-        <h1 className="text-xl font-semibold text-center mb-6">Admin sign in</h1>
+        <h1 className="text-xl font-semibold text-center mb-6">{COPY.auth.title}</h1>
         {step === "phone" ? (
           <form onSubmit={handleSendOtp} className="space-y-4">
             <div>
               <label htmlFor="phone" className="block text-sm text-[var(--admin-muted)] mb-1">
-                Phone
+                {COPY.auth.phoneLabel}
               </label>
               <input
                 id="phone"
                 type="tel"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                placeholder="10-digit mobile"
+                placeholder={COPY.auth.phonePlaceholder}
                 className="w-full rounded border border-[var(--admin-border)] bg-[var(--admin-bg)] px-3 py-2 text-[var(--admin-text)] placeholder:text-[var(--admin-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--admin-accent)]"
                 autoComplete="tel"
               />
@@ -92,17 +93,17 @@ export default function LoginPage() {
               disabled={loading}
               className="w-full rounded py-2 bg-[var(--admin-accent)] text-white font-medium hover:bg-[var(--admin-accent-hover)] disabled:opacity-50"
             >
-              {loading ? "Sending…" : "Send OTP"}
+              {loading ? COPY.auth.sendingOtp : COPY.auth.sendOtp}
             </button>
           </form>
         ) : (
           <form onSubmit={handleVerify} className="space-y-4">
             <p className="text-sm text-[var(--admin-muted)]">
-              Code sent to {phone}
+              {COPY.auth.codeSentTo(phone)}
             </p>
             <div>
               <label htmlFor="code" className="block text-sm text-[var(--admin-muted)] mb-1">
-                OTP code
+                {COPY.auth.otpCodeLabel}
               </label>
               <input
                 id="code"
@@ -111,7 +112,7 @@ export default function LoginPage() {
                 maxLength={6}
                 value={code}
                 onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
-                placeholder="6-digit code"
+                placeholder={COPY.auth.otpCodePlaceholder}
                 className="w-full rounded border border-[var(--admin-border)] bg-[var(--admin-bg)] px-3 py-2 text-[var(--admin-text)] placeholder:text-[var(--admin-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--admin-accent)]"
               />
             </div>
@@ -121,7 +122,7 @@ export default function LoginPage() {
               disabled={loading}
               className="w-full rounded py-2 bg-[var(--admin-accent)] text-white font-medium hover:bg-[var(--admin-accent-hover)] disabled:opacity-50"
             >
-              {loading ? "Verifying…" : "Verify"}
+              {loading ? COPY.auth.verifying : COPY.auth.verify}
             </button>
             <button
               type="button"
@@ -132,7 +133,7 @@ export default function LoginPage() {
               }}
               className="w-full text-sm text-[var(--admin-muted)] hover:text-[var(--admin-text)]"
             >
-              Change number
+              {COPY.auth.changeNumber}
             </button>
           </form>
         )}
