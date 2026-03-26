@@ -7,6 +7,7 @@
  */
 
 import type { Metadata, Viewport } from "next";
+import type { ReactNode } from "react";
 import { Playfair_Display, Outfit } from "next/font/google";
 import "./globals.css";
 import AnnouncementBar from "@/components/layout/AnnouncementBar";
@@ -18,10 +19,7 @@ import MobileBottomNav from "@/components/layout/MobileBottomNav";
 import ServiceWorkerInit from "@/components/layout/ServiceWorkerInit";
 import RevealObserver from "@/components/ui/RevealObserver";
 import { SkipToContent, MAIN_CONTENT_ID } from "@/components/ui/SkipToContent";
-import ThemeProvider from "@/components/providers/ThemeProvider";
-import { AuthProvider } from "@/components/providers/AuthProvider";
-import { AIFabProvider } from "@/components/providers/AIFabProvider";
-import { ToastProvider } from "@/components/ui/Toast";
+import { AppProviders } from "@/components/providers/AppProviders";
 import { organizationJsonLd, searchActionJsonLd } from "@/lib/seo";
 
 const playfair = Playfair_Display({
@@ -93,7 +91,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({
   children,
-}: Readonly<{ children: React.ReactNode }>) {
+}: Readonly<{ children: ReactNode }>) {
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -105,25 +103,19 @@ export default function RootLayout({
       <body
         className={`${outfit.variable} ${playfair.variable} ${outfit.className} antialiased`}
       >
-        <ThemeProvider>
-          <AuthProvider>
-            <AIFabProvider>
-              <ToastProvider>
-                <SkipToContent />
-                <AnnouncementBar />
-                <Nav />
-                <main id={MAIN_CONTENT_ID} tabIndex={-1}>
-                  <MobileAppPrompt />
-                  {children}
-                </main>
-                <Footer />
-                <MobileBottomNav />
-                <AIFab />
-                <RevealObserver />
-              </ToastProvider>
-            </AIFabProvider>
-          </AuthProvider>
-        </ThemeProvider>
+        <AppProviders>
+          <SkipToContent />
+          <AnnouncementBar />
+          <Nav />
+          <main id={MAIN_CONTENT_ID} tabIndex={-1}>
+            <MobileAppPrompt />
+            {children}
+          </main>
+          <Footer />
+          <MobileBottomNav />
+          <AIFab />
+          <RevealObserver />
+        </AppProviders>
 
         {/* JSON-LD structured data */}
         <script

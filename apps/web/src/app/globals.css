@@ -1,5 +1,296 @@
 @import "tailwindcss";
 
+/* ── SHADCN/UI CSS VAR BRIDGE (maps shadcn vars to UrbanNest tokens) ── */
+:root {
+  /* shadcn base vars → UrbanNest tokens */
+  --background: var(--night);
+  --foreground: var(--text);
+  --card: var(--dark-2);
+  --card-foreground: var(--text);
+  --popover: var(--dark-2);
+  --popover-foreground: var(--text);
+  --primary: var(--teal);
+  --primary-foreground: var(--btn-primary-text);
+  --secondary: var(--dark-3);
+  --secondary-foreground: var(--text);
+  --muted: var(--dark-3);
+  --muted-foreground: var(--text-muted);
+  --accent: var(--dark-3);
+  --accent-foreground: var(--text);
+  --destructive: var(--coral);
+  --destructive-foreground: #fff;
+  --border: var(--border);
+  --input: var(--dark-3);
+  --ring: var(--teal);
+  --radius: var(--radius);
+  /* New UrbanNest tokens */
+  --indigo: #6366f1;
+  --indigo-dim: rgba(99,102,241,0.12);
+  --indigo-glow: rgba(99,102,241,0.25);
+  --purple: #a855f7;
+  --purple-dim: rgba(168,85,247,0.12);
+  --gradient-hero: radial-gradient(ellipse 80% 60% at 30% 60%, rgba(0,212,170,0.18) 0%, transparent 60%), radial-gradient(ellipse 60% 50% at 75% 20%, rgba(99,102,241,0.12) 0%, transparent 55%);
+  --glow-teal: 0 0 40px rgba(0,212,170,0.25), 0 0 80px rgba(0,212,170,0.1);
+  --shadow-card: 0 4px 24px rgba(0,0,0,0.4), 0 1px 0 rgba(255,255,255,0.04) inset;
+  --shadow-card-hover: 0 20px 60px rgba(0,0,0,0.55), 0 0 0 1px rgba(0,212,170,0.12), 0 1px 0 rgba(255,255,255,0.06) inset;
+  --shadow-glow-teal: 0 8px 32px rgba(0,212,170,0.3);
+  --surface-glass-strong: rgba(255,255,255,0.07);
+  --noise-opacity: 0.025;
+}
+
+.light {
+  /* shadcn base vars → UrbanNest light tokens */
+  --background: var(--night);
+  --foreground: var(--text);
+  --card: var(--dark-2);
+  --card-foreground: var(--text);
+  --popover: var(--dark-2);
+  --popover-foreground: var(--text);
+  --primary: var(--teal);
+  --primary-foreground: var(--btn-primary-text);
+  --secondary: var(--dark-3);
+  --secondary-foreground: var(--text);
+  --muted: var(--dark-3);
+  --muted-foreground: var(--text-muted);
+  --accent: var(--dark-3);
+  --accent-foreground: var(--text);
+  --destructive: var(--coral);
+  --destructive-foreground: #fff;
+  --input: var(--dark-3);
+  --ring: var(--teal);
+  /* New UrbanNest light tokens */
+  --indigo: #4f46e5;
+  --indigo-dim: rgba(79,70,229,0.10);
+  --indigo-glow: rgba(79,70,229,0.18);
+  --purple: #9333ea;
+  --purple-dim: rgba(147,51,234,0.10);
+  --gradient-hero: radial-gradient(ellipse 80% 60% at 30% 60%, rgba(0,184,148,0.10) 0%, transparent 60%), radial-gradient(ellipse 60% 50% at 75% 20%, rgba(79,70,229,0.07) 0%, transparent 55%);
+  --glow-teal: 0 0 30px rgba(0,184,148,0.15), 0 0 60px rgba(0,184,148,0.07);
+  --shadow-card: 0 4px 24px rgba(0,0,0,0.08), 0 1px 0 rgba(0,0,0,0.04) inset;
+  --shadow-card-hover: 0 16px 48px rgba(0,0,0,0.14), 0 0 0 1px rgba(0,184,148,0.12);
+  --shadow-glow-teal: 0 6px 24px rgba(0,184,148,0.2);
+  --surface-glass-strong: rgba(0,0,0,0.06);
+  --noise-opacity: 0.015;
+}
+
+/* ── NEW KEYFRAMES ── */
+@keyframes shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+@keyframes cardLift {
+  from { transform: translateY(0); box-shadow: var(--shadow-card); }
+  to { transform: translateY(-4px); box-shadow: var(--shadow-card-hover); }
+}
+@keyframes glowPulse {
+  0%, 100% { box-shadow: 0 0 8px rgba(0,212,170,0.3); }
+  50% { box-shadow: 0 0 24px rgba(0,212,170,0.6), 0 0 48px rgba(0,212,170,0.2); }
+}
+@keyframes floatY {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-12px); }
+}
+@keyframes countUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes borderGlow {
+  0%, 100% { border-color: rgba(0,212,170,0.2); }
+  50% { border-color: rgba(0,212,170,0.6); }
+}
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* ── UTILITY ANIMATIONS ── */
+.animate-shimmer {
+  background: linear-gradient(90deg, transparent 0%, var(--surface-glass-strong) 50%, transparent 100%);
+  background-size: 200% auto;
+  animation: shimmer 2s linear infinite;
+}
+.animate-float { animation: floatY 4s ease-in-out infinite; }
+.animate-glow-pulse { animation: glowPulse 2.5s ease-in-out infinite; }
+.animate-slide-up { animation: slideUp 0.4s ease both; }
+.animate-scale-in { animation: scaleIn 0.3s ease both; }
+
+/* ── GRADIENT TEXT ── */
+.gradient-text-teal {
+  background: linear-gradient(135deg, var(--teal), #00f5d4);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.gradient-text-hero {
+  background: linear-gradient(135deg, #ffffff 0%, var(--teal) 60%, #00f5d4 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.light .gradient-text-hero {
+  background: linear-gradient(135deg, #1a1d24 0%, var(--teal) 60%, #00b894 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.gradient-text-indigo {
+  background: linear-gradient(135deg, var(--indigo), var(--purple));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ── GLASS MORPHISM UPGRADES ── */
+.glass-card {
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(20px) saturate(180%);
+  border-radius: var(--radius);
+}
+.glass-card-strong {
+  background: var(--surface-glass-strong);
+  border: 1px solid rgba(255,255,255,0.1);
+  backdrop-filter: blur(32px) saturate(200%);
+  border-radius: var(--radius);
+}
+.light .glass-card-strong {
+  background: rgba(255,255,255,0.7);
+  border: 1px solid rgba(0,0,0,0.08);
+}
+
+/* ── BENTO GRID ── */
+.bento-grid { display: grid; gap: 16px; }
+.bento-card {
+  background: var(--dark-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 28px;
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  position: relative;
+  overflow: hidden;
+}
+.bento-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--gradient-hero);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.bento-card:hover { border-color: rgba(0,212,170,0.2); box-shadow: var(--shadow-card-hover); transform: translateY(-2px); }
+.bento-card:hover::before { opacity: 0.5; }
+
+/* ── STICKY SCROLL HEADER ── */
+.sticky-detail-bar {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 997;
+  background: var(--nav-bg-scrolled);
+  backdrop-filter: blur(24px) saturate(180%);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 52px;
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  transform: translateY(-100%);
+  transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+.sticky-detail-bar.visible { transform: translateY(0); }
+
+/* ── PROPERTY CARD UPGRADES ── */
+.pc-root { position: relative; }
+.pc-quick-actions {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  background: linear-gradient(transparent, rgba(8,12,20,0.95));
+  padding: 20px 16px 14px;
+  display: flex; gap: 8px; justify-content: flex-end;
+  transform: translateY(100%);
+  transition: transform 0.25s ease;
+  border-bottom-left-radius: var(--radius);
+  border-bottom-right-radius: var(--radius);
+}
+.pc-root:hover .pc-quick-actions { transform: translateY(0); }
+.pc-viewing {
+  position: absolute; bottom: 8px; left: 12px; z-index: 3;
+  background: rgba(8,12,20,0.85); backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  border-radius: 100px; padding: 3px 10px;
+  font-size: 11px; font-weight: 500; color: var(--text-muted);
+  display: flex; align-items: center; gap: 5px;
+}
+.pc-viewing-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--teal); animation: blink 1.5s infinite; }
+
+/* ── FILTER SIDEBAR ── */
+.filter-chip {
+  padding: 5px 14px; border: 1px solid var(--border); border-radius: 100px;
+  font-size: 12px; font-weight: 500; color: var(--text-muted);
+  background: var(--glass); cursor: pointer; transition: all 0.2s;
+}
+.filter-chip:hover, .filter-chip.active { border-color: var(--teal); color: var(--teal); background: var(--teal-dim); }
+.filter-chip.active { font-weight: 700; }
+
+/* ── SORT PILLS ── */
+.sort-pills { display: flex; gap: 6px; flex-wrap: wrap; }
+.sort-pill {
+  padding: 6px 14px; border: 1px solid var(--border); border-radius: 100px;
+  font-size: 12px; font-weight: 500; color: var(--text-muted);
+  background: transparent; cursor: pointer; transition: all 0.2s;
+}
+.sort-pill.active { border-color: var(--teal); color: var(--teal); background: var(--teal-dim); font-weight: 700; }
+.sort-pill:hover:not(.active) { border-color: var(--glass-border); color: var(--text); }
+
+/* ── AI INSIGHTS CARD ── */
+.ai-insights-card {
+  background: linear-gradient(135deg, rgba(0,212,170,0.06), rgba(99,102,241,0.04));
+  border: 1px solid rgba(0,212,170,0.2);
+  border-radius: var(--radius);
+  padding: 24px;
+}
+.light .ai-insights-card {
+  background: linear-gradient(135deg, rgba(0,184,148,0.06), rgba(79,70,229,0.04));
+  border: 1px solid rgba(0,184,148,0.2);
+}
+
+/* ── PROPERTY DETAIL TABS ── */
+.detail-tab-list {
+  display: flex; gap: 0; border-bottom: 1px solid var(--border);
+  overflow-x: auto; scrollbar-width: none;
+}
+.detail-tab-list::-webkit-scrollbar { display: none; }
+.detail-tab-trigger {
+  padding: 14px 20px; font-size: 14px; font-weight: 500; color: var(--text-muted);
+  border-bottom: 2px solid transparent; cursor: pointer; transition: all 0.2s;
+  white-space: nowrap; background: none; border-top: none; border-left: none; border-right: none;
+  font-family: inherit;
+}
+.detail-tab-trigger.active { color: var(--teal); border-bottom-color: var(--teal); }
+.detail-tab-trigger:hover:not(.active) { color: var(--text); }
+
+/* ── EMI BADGE ── */
+.emi-hint { font-size: 11px; color: var(--text-muted); margin-top: 3px; }
+
+/* ── FOMO BADGE ── */
+.pc-badge--price-drop { background: rgba(255,107,74,0.15); border: 1px solid rgba(255,107,74,0.3); color: var(--coral); }
+
+/* ── TRUST / PARTNER LOGOS ── */
+.partner-logos { display: flex; align-items: center; gap: 32px; flex-wrap: wrap; }
+.partner-logo { opacity: 0.5; transition: opacity 0.2s; font-size: 13px; font-weight: 700; color: var(--text-muted); letter-spacing: 0.05em; }
+.partner-logo:hover { opacity: 1; color: var(--text); }
+
+/* ── HOW AI WORKS BENTO ── */
+.ai-feature-card {
+  background: var(--dark-2); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 32px;
+  transition: all 0.3s;
+}
+.ai-feature-card:hover { border-color: rgba(0,212,170,0.2); transform: translateY(-3px); box-shadow: var(--shadow-card-hover); }
+.ai-feature-icon {
+  width: 52px; height: 52px; border-radius: 14px;
+  background: var(--teal-dim); border: 1px solid rgba(0,212,170,0.2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 24px; margin-bottom: 20px;
+}
+
 /* UrbanNest.ai — design tokens & shared styles (from shared.css) */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 *{-webkit-tap-highlight-color:transparent}
