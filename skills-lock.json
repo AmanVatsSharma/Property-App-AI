@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "skills": {
+    "ai-agent": {
+      "source": "zavudev/zavu-skills",
+      "sourceType": "github",
+      "computedHash": "9804d9a6fd23c0ab410e4cd3d9d56991d664569e688156db0fe6217b40418a1a"
+    },
+    "broadcast-campaign": {
+      "source": "zavudev/zavu-skills",
+      "sourceType": "github",
+      "computedHash": "f019faa70b9452d84b84f971c15aced5379425044a1463da5a642ac9becb8c59"
+    },
+    "contacts-management": {
+      "source": "zavudev/zavu-skills",
+      "sourceType": "github",
+      "computedHash": "cf47d0487d274bbb121c141987740ae258d1fc2d38fbbb7db423eb2133be4002"
+    },
+    "send-message": {
+      "source": "zavudev/zavu-skills",
+      "sourceType": "github",
+      "computedHash": "6e6bc895089d7ff688c7c2e9d6f5e742ee572489461b080cc8d7de9360ebe186"
+    },
+    "zavu-rules": {
+      "source": "zavudev/zavu-skills",
+      "sourceType": "github",
+      "computedHash": "ea157938b759f5f8235ebdd2e73a00a10a7b3d16e182d006a3990aa1e0dc0512"
+    }
+  }
+}
