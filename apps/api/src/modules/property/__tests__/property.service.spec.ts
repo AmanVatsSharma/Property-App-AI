@@ -53,7 +53,7 @@ describe('PropertyService', () => {
     updatedAt: new Date(),
   };
 
-  let cache: jest.Mocked<Pick<CacheService, 'get' | 'set' | 'del'>>;
+  let cache: jest.Mocked<Pick<CacheService, 'get' | 'set' | 'del' | 'getOrSet' | 'delByPrefix'>>;
 
   beforeEach(async () => {
     const mockRepo = {
@@ -70,6 +70,8 @@ describe('PropertyService', () => {
       get: jest.fn().mockResolvedValue(null),
       set: jest.fn().mockResolvedValue(undefined),
       del: jest.fn().mockResolvedValue(undefined),
+      getOrSet: jest.fn((_key: string, factory: () => Promise<unknown>) => factory()),
+      delByPrefix: jest.fn().mockResolvedValue(undefined),
     };
     const mockMetrics = { recordPropertyCreated: jest.fn() };
     const mockLogger = { debug: jest.fn(), log: jest.fn(), error: jest.fn(), warn: jest.fn(), info: jest.fn(), trace: jest.fn() };
@@ -153,12 +155,17 @@ describe('PropertyService', () => {
       );
     });
 
-    it('should throw ForbiddenException when free listing limit reached', async () => {
+    it('should mark second listing as not free', async () => {
       repo.countByUserId.mockResolvedValue(1);
+      repo.create.mockResolvedValue(mockProperty);
       const dto = { title: 'New', location: 'City', price: 500000 };
-      await expect(service.create(dto as any, 'user-1')).rejects.toThrow(ForbiddenException);
-      await expect(service.create(dto as any, 'user-1')).rejects.toThrow(/Free listing limit reached/);
-      expect(repo.create).not.toHaveBeenCalled();
+      const result = await service.create(dto as any, 'user-1');
+      expect(result).toEqual(mockProperty);
+      expect(repo.create).toHaveBeenCalledWith(
+        expect.objectContaining({ title: 'New', location: 'City', price: 500000 }),
+        'user-1',
+        false,
+      );
     });
   });
 

@@ -1,9 +1,10 @@
 /**
  * @file otp.service.ts
  * @module auth
- * @description OTP storage and validation (Redis or in-memory via OtpStoreService); sends via SmsService (Twilio/MSG91 in prod).
+ * @description OTP storage and validation (Redis or in-memory via OtpStoreService); sends via SmsService (Twilio, MSG91, Zavu, or stub).
  * @author BharatERP
  * @created 2025-03-12
+ * @updated 2026-03-28
  */
 
 import { Injectable } from '@nestjs/common';
@@ -50,10 +51,10 @@ export class OtpService {
     return normalized.length === 10 && /^[6-9]/.test(normalized);
   }
 
-  /** Sends OTP via SmsService (Twilio, MSG91, or stub when not configured). */
+  /** Sends OTP via SmsService (Twilio, MSG91, Zavu, or stub when not configured). */
   async sendOtpToProvider(phone: string, code: string): Promise<void> {
     const normalized = this.normalizePhone(phone);
     const message = `Your UrbanNest.ai verification code is ${code}. Valid for 5 minutes.`;
-    await this.sms.send(normalized, message);
+    await this.sms.send(normalized, message, code);
   }
 }

@@ -8,10 +8,21 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { gqlAskAgent } from "@/lib/graphql-client";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { AIThinkingChain } from "@/components/agent/AIThinkingChain";
+
+const ALLOWED_DOC_TYPES = ["application/pdf", "image/jpeg", "image/png"] as const;
+const MAX_DOC_SIZE_MB = 10;
+const MAX_DOC_SIZE_BYTES = MAX_DOC_SIZE_MB * 1024 * 1024;
+
+interface UploadedDoc {
+  name: string;
+  base64: string;
+  mimeType: string;
+  size: number;
+}
 
 const QUICK_PROMPTS = [
   {

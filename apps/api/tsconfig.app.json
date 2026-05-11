@@ -13,6 +13,7 @@
     "target": "es2021",
     "lib": ["ES2021"],
     "strictPropertyInitialization": false,
+    "skipLibCheck": true,
     "paths": {
       "@api/shared/*": ["src/shared/*"],
       "@api/common/*": ["src/common/*"],

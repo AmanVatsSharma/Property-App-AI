@@ -24,6 +24,16 @@ export interface PropertyDetail {
   galleryImages?: string[];
   createdByUserId?: string | null;
   status?: string | null;
+  nearbyAmenities?: string[] | null;
+  ownerName?: string | null;
+  ownerPhone?: string | null;
+  areaScores?: {
+    livabilityScore?: number | null;
+    connectivityScore?: number | null;
+    schoolsScore?: number | null;
+    safetyScore?: number | null;
+    priceTrendPctAnnual?: number | null;
+  } | null;
 }
 
 function apiPropertyToDetail(p: ApiProperty): PropertyDetail {
@@ -55,6 +65,10 @@ function apiPropertyToDetail(p: ApiProperty): PropertyDetail {
     galleryImages: p.imageUrls ?? undefined,
     createdByUserId: p.createdByUserId ?? undefined,
     status: p.status ?? undefined,
+    nearbyAmenities: p.nearbyAmenities ?? null,
+    ownerName: p.ownerName ?? null,
+    ownerPhone: p.ownerPhone ?? null,
+    areaScores: p.areaScores ?? null,
   };
 }
 

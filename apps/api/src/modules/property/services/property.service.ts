@@ -58,8 +58,9 @@ export class PropertyService {
   async findAllPage(filter: PropertyFilterDto): Promise<PropertiesPage> {
     this.logger.debug('findAllPage entry', { method: 'findAllPage' });
     const { items, nextCursor, total } = await this.propertyRepo.findPageWithFilters(filter);
+    const hasMore = nextCursor != null;
     this.logger.debug('findAllPage exit', { method: 'findAllPage', count: items.length, total });
-    return { items, nextCursor, total };
+    return { items, cursor: nextCursor, total, hasMore };
   }
 
   async findOne(id: string): Promise<Property> {

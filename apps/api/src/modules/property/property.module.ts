@@ -18,9 +18,10 @@ import { AreaModule } from '@api/modules/area/area.module';
 import { SearchModule } from '@api/modules/search/search.module';
 import { SearchController } from './controllers/search.controller';
 import { MetricsModule } from '@api/modules/metrics/metrics.module';
+import { UserModule } from '@api/modules/user/user.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Property]), AreaModule, SearchModule, MetricsModule],
+  imports: [TypeOrmModule.forFeature([Property]), AreaModule, SearchModule, MetricsModule, UserModule],
   controllers: [SearchController],
   providers: [PropertyRepository, GeocodingService, NearbyService, PropertyService, PropertyResolver],
   exports: [PropertyService],

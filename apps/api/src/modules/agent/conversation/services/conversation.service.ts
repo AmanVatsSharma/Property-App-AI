@@ -26,7 +26,15 @@ export class ConversationService {
     return this.repo.findById(id);
   }
 
-  async myConversations(userId: string): Promise<AgentConversation[]> {
-    return this.repo.findByUserId(userId);
+  async myConversations(userId: string, includeArchived = false): Promise<AgentConversation[]> {
+    return this.repo.findByUserId(userId, includeArchived);
+  }
+
+  async archiveConversation(id: string): Promise<AgentConversation | null> {
+    return this.repo.archive(id, true);
+  }
+
+  async searchConversations(userId: string, query: string): Promise<AgentConversation[]> {
+    return this.repo.searchByContent(userId, query);
   }
 }

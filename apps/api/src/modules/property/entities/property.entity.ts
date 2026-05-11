@@ -95,11 +95,11 @@ export class Property {
   coverImageUrl: string | null;
 
   @Field(() => [String], { nullable: true })
-  @Column({ type: 'jsonb', nullable: true })
+  @Column({ type: 'simple-json', nullable: true })
   imageUrls: string[] | null;
 
   @Field(() => [String], { nullable: true, description: 'Nearby amenities e.g. ["metro:1.2km", "school:800m"]' })
-  @Column({ type: 'jsonb', nullable: true })
+  @Column({ type: 'simple-json', nullable: true })
   nearbyAmenities: string[] | null;
 
   @Field(() => String, { nullable: true })
@@ -113,6 +113,14 @@ export class Property {
   @Field(() => Int)
   @Column({ type: 'int', default: 0 })
   viewCount: number;
+
+  @Field(() => Boolean)
+  @Column({ type: 'boolean', default: false })
+  isVerified: boolean;
+
+  @Field(() => Float, { nullable: true })
+  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
+  priceDropPercent: number | null;
 
   @Field(() => Date)
   @CreateDateColumn()

@@ -40,6 +40,11 @@ test-results/
 !.env.example
 *.pem
 
+# SQLite dev database
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+
 # Logs and debug
 npm-debug.log*
 yarn-debug.log*

@@ -18,6 +18,8 @@ const STATIC_ROUTES: MetadataRoute.Sitemap = [
   { url: `${BASE_URL}/price-forecast`, lastModified: new Date(), changeFrequency: "daily", priority: 0.7 },
   { url: `${BASE_URL}/emi-calculator`, lastModified: new Date(), changeFrequency: "monthly", priority: 0.6 },
   { url: `${BASE_URL}/legal-checker`, lastModified: new Date(), changeFrequency: "monthly", priority: 0.6 },
+  { url: `${BASE_URL}/compare`, lastModified: new Date(), changeFrequency: "monthly", priority: 0.6 },
+  { url: `${BASE_URL}/trust`, lastModified: new Date(), changeFrequency: "monthly", priority: 0.6 },
   { url: `${BASE_URL}/about`, lastModified: new Date(), changeFrequency: "monthly", priority: 0.5 },
 ];
 

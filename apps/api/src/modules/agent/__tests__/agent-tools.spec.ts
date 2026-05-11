@@ -10,6 +10,10 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { AgentToolsService } from '../services/agent-tools.service';
 import { PropertyService } from '@api/modules/property/services/property.service';
 import { AreaService } from '@api/modules/area/services/area.service';
+import { PriceForecastService } from '@api/modules/area/services/price-forecast.service';
+import { ReraCheckService } from '@api/modules/area/services/rera-check.service';
+import { DocumentAnalysisService } from '@api/modules/area/services/document-analysis.service';
+import { NegotiationAdvisorService } from '@api/modules/area/services/negotiation-advisor.service';
 import { LoggerService } from '@api/shared/logger';
 import { PropertyNotFoundError } from '@api/common/errors';
 import { Property } from '@api/modules/property/entities/property.entity';
@@ -73,6 +77,7 @@ describe('AgentToolsService', () => {
       findAll: jest.fn(),
       findOne: jest.fn(),
       update: jest.fn(),
+      updateAiScoresFromAgent: jest.fn(),
     };
     const mockAreaService = {
       getOrCreate: jest.fn().mockResolvedValue(mockArea),
@@ -80,11 +85,80 @@ describe('AgentToolsService', () => {
     };
     const mockLogger = { debug: jest.fn(), log: jest.fn(), error: jest.fn(), warn: jest.fn() };
 
+    const mockPriceForecast = { getForecast: jest.fn().mockResolvedValue({}) };
+
+    const mockReraCheck = {
+      check: jest.fn().mockResolvedValue({
+        query: '',
+        status: 'unknown',
+        projectName: null,
+        builderName: null,
+        state: null,
+        rationale: 'stub',
+        portalUrl: 'https://rera.gov.in',
+        nextStep: 'stub',
+        confidence: 'low',
+        lastChecked: new Date().toISOString(),
+      }),
+      formatForAgent: jest.fn().mockReturnValue('RERA check stub'),
+    };
+
+    const mockDocumentAnalysis = {
+      analyze: jest.fn().mockResolvedValue({
+        documentType: 'Unknown',
+        overallRisk: 'yellow',
+        summary: 'stub',
+        flags: [],
+        positives: [],
+        recommendedActions: [],
+        disclaimer: 'stub',
+        confidence: 'low',
+        lastAnalyzed: new Date().toISOString(),
+      }),
+      formatForAgent: jest.fn().mockReturnValue('Document analysis stub'),
+    };
+
+    const mockNegotiationAdvisor = {
+      advise: jest.fn().mockResolvedValue({
+        propertyId: 'uuid-1',
+        found: true,
+        askPrice: 10000000,
+        pricePerSqft: null,
+        suggestedOfferInr: 9500000,
+        marginPctBelowAsk: 5,
+        strategy: 'stub strategy',
+        signals: [],
+        walkAwayIf: [],
+        confidence: 'low',
+        source: 'baseline',
+        lastAdvised: new Date().toISOString(),
+      }),
+      notFound: jest.fn().mockReturnValue({
+        propertyId: 'missing',
+        found: false,
+        askPrice: null,
+        pricePerSqft: null,
+        suggestedOfferInr: null,
+        marginPctBelowAsk: null,
+        strategy: 'Property missing not found.',
+        signals: [],
+        walkAwayIf: [],
+        confidence: 'low',
+        source: 'not_found',
+        lastAdvised: new Date().toISOString(),
+      }),
+      formatForAgent: jest.fn().mockReturnValue('Negotiation advice stub'),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AgentToolsService,
         { provide: PropertyService, useValue: mockPropertyService },
         { provide: AreaService, useValue: mockAreaService },
+        { provide: PriceForecastService, useValue: mockPriceForecast },
+        { provide: ReraCheckService, useValue: mockReraCheck },
+        { provide: DocumentAnalysisService, useValue: mockDocumentAnalysis },
+        { provide: NegotiationAdvisorService, useValue: mockNegotiationAdvisor },
         { provide: LoggerService, useValue: mockLogger },
       ],
     }).compile();
@@ -147,18 +221,16 @@ describe('AgentToolsService', () => {
   describe('scoreAndPersistProperty', () => {
     it('should update property with aiScore and aiTip', async () => {
       propertyService.findOne.mockResolvedValue(mockProperty);
-      propertyService.update.mockResolvedValue({
+      propertyService.updateAiScoresFromAgent.mockResolvedValue({
         ...mockProperty,
         aiScore: 85,
         aiTip: 'Good value for the locality.',
       });
       const result = await service.scoreAndPersistProperty('uuid-1');
-      expect(propertyService.update).toHaveBeenCalledWith(
+      expect(propertyService.updateAiScoresFromAgent).toHaveBeenCalledWith(
         'uuid-1',
-        expect.objectContaining({
-          aiScore: expect.any(Number),
-          aiTip: expect.any(String),
-        }),
+        expect.any(Number),
+        expect.any(String),
       );
       expect(result.aiScore).toBe(85);
       expect(result.aiTip).toContain('Good value');

@@ -129,9 +129,25 @@ export class PropertyFilterDto {
 
   @Field(() => String, {
     nullable: true,
+    description: 'Cursor for cursor-based pagination; UUID of last item from previous page',
+  })
+  @IsOptional()
+  @IsString()
+  cursor?: string;
+
+  @Field(() => String, {
+    nullable: true,
     description: 'Cursor for pagination; ISO date string of last item\'s createdAt',
   })
   @IsOptional()
   @IsString()
   after?: string;
+
+  @Field(() => String, {
+    nullable: true,
+    description: 'Filter by property status (draft, active, sold, rented). Public search defaults to active when unset.',
+  })
+  @IsOptional()
+  @IsString()
+  status?: string;
 }

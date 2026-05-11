@@ -26,7 +26,7 @@ export class BrokerRequest {
   status: string;
 
   @Field(() => GraphQLJSON, { nullable: true })
-  @Column({ type: 'jsonb', nullable: true })
+  @Column({ type: 'simple-json', nullable: true })
   documents: Record<string, unknown> | null;
 
   @Field(() => String, { nullable: true })
@@ -34,7 +34,7 @@ export class BrokerRequest {
   adminNote: string | null;
 
   @Field(() => Date, { nullable: true })
-  @Column({ type: 'timestamp', nullable: true })
+  @Column({ type: 'datetime', nullable: true })
   reviewedAt: Date | null;
 
   @Field(() => String, { nullable: true })

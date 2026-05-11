@@ -31,8 +31,16 @@ export class AgentConversation {
   title: string | null;
 
   @Field(() => GraphQLJSON, { description: 'Conversation messages as JSON array' })
-  @Column({ type: 'jsonb', default: [] })
+  @Column({ type: 'simple-json', default: [] })
   messages: ConversationMessage[];
+
+  @Field(() => String, { nullable: true, description: 'Full-text concatenation of all message content for search' })
+  @Column({ type: 'text', nullable: true })
+  search: string | null;
+
+  @Field(() => Boolean, { defaultValue: false })
+  @Column({ type: 'boolean', default: false })
+  archived: boolean;
 
   @Field(() => Date)
   @CreateDateColumn()

@@ -32,7 +32,7 @@ export class SavedSearch {
   name: string;
 
   @Field(() => GraphQLJSON)
-  @Column({ type: 'jsonb', default: () => "'{}'" })
+  @Column({ type: 'simple-json', nullable: true })
   filters: Record<string, unknown>;
 
   @Field(() => Boolean)
@@ -40,7 +40,7 @@ export class SavedSearch {
   alertEnabled: boolean;
 
   @Field(() => Date, { nullable: true })
-  @Column({ type: 'timestamp', nullable: true })
+  @Column({ type: 'datetime', nullable: true })
   lastAlertSentAt: Date | null;
 
   @Field(() => Date)

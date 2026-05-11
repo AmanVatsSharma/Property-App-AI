@@ -4,6 +4,7 @@
  * @description Send OTP, verify OTP, issue JWT; get-or-create User by phone; set admin/broker from ADMIN_PHONES/BROKER_PHONES.
  * @author BharatERP
  * @created 2025-03-12
+ * @updated 2026-03-28
  */
 
 import { Injectable, BadRequestException } from '@nestjs/common';
@@ -45,14 +46,23 @@ export class AuthService {
     if (!(await this.otp.verify(normalized, code))) {
       throw new BadRequestException('Invalid or expired OTP');
     }
-    let user = await this.userService.getOrCreateByPhone(normalized);
+    return this.finalizeMobileLogin(normalized);
+  }
+
+  /**
+   * Issue JWT after OTP already validated (GraphQL OtpStore or REST bcrypt session).
+   */
+  async finalizeMobileLogin(
+    normalizedPhone10: string,
+  ): Promise<{ token: string; user: { id: string; phone: string; displayName: string | null; role: UserRole } }> {
+    let user = await this.userService.getOrCreateByPhone(normalizedPhone10);
     const adminPhonesRaw = this.config.get<string>('ADMIN_PHONES') ?? '';
     const adminPhones = adminPhonesRaw.split(',').map((p) => p.replace(/\D/g, '').trim()).filter(Boolean);
     const brokerPhonesRaw = this.config.get<string>('BROKER_PHONES') ?? '';
     const brokerPhones = brokerPhonesRaw.split(',').map((p) => p.replace(/\D/g, '').trim()).filter(Boolean);
-    if (adminPhones.includes(normalized)) {
+    if (adminPhones.includes(normalizedPhone10)) {
       user = await this.userService.setRole(user.id, UserRole.ADMIN);
-    } else if (brokerPhones.includes(normalized)) {
+    } else if (brokerPhones.includes(normalizedPhone10)) {
       user = await this.userService.setRole(user.id, UserRole.BROKER);
     }
     const secret = this.config.get<string>('JWT_SECRET') ?? 'default-secret-min-16-chars';
@@ -61,7 +71,7 @@ export class AuthService {
       { sub: user.id, phone: user.phone, role: user.role },
       { secret, expiresIn },
     );
-    this.logger.debug('verifyOtp', { userId: user.id, phone: normalized, role: user.role });
+    this.logger.debug('finalizeMobileLogin', { userId: user.id, phone: normalizedPhone10, role: user.role });
     return {
       token,
       user: { id: user.id, phone: user.phone, displayName: user.displayName, role: user.role },

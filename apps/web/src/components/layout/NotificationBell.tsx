@@ -8,24 +8,65 @@
 
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useAuth } from "@/components/providers/AuthProvider";
-import { useRealtimeNotifications } from "@/hooks/useRealtimeNotifications";
 import {
   gqlMyNotifications,
   gqlMarkAllNotificationsRead,
   type NotificationItem,
 } from "@/lib/graphql-client";
+import { useToast } from "@/components/ui/Toast";
 
 export default function NotificationBell() {
   const { token, isAuthenticated } = useAuth();
   const [open, setOpen] = useState(false);
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [loading, setLoading] = useState(false);
+  const { showToast } = useToast();
 
   const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
 
-  useRealtimeNotifications(token);
+  /* Real-time: listen for push notifications and prepend to list */
+  useEffect(() => {
+    if (!token) return;
+
+    const wsUrl = (process.env.NEXT_PUBLIC_API_URL ?? "").replace(/\/$/, "");
+    if (!wsUrl) return;
+
+    let mounted = true;
+    let socket: { disconnect: () => void } | null = null;
+
+    (async () => {
+      try {
+        const { io } = await import("socket.io-client");
+        if (!mounted) return;
+
+        socket = io(`${wsUrl}/notifications`, {
+          auth: { token },
+          transports: ["websocket", "polling"],
+          reconnectionAttempts: 3,
+          reconnectionDelay: 3000,
+          timeout: 5000,
+        }) as typeof socket;
+
+        socket.on("notification", (payload: { id: string; type: string; title: string; body: string; createdAt: string }) => {
+          if (!mounted) return;
+          showToast(payload.body, "info");
+          setNotifications((prev) => [
+            { id: payload.id, title: payload.title, body: payload.body, readAt: null, createdAt: payload.createdAt ?? new Date().toISOString() },
+            ...prev,
+          ]);
+        });
+      } catch {
+        // socket.io-client not installed — silently skip
+      }
+    })();
+
+    return () => {
+      mounted = false;
+      socket?.disconnect();
+    };
+  }, [token, showToast]);
 
   const unread = notifications.filter((n) => !n.readAt).length;
 
@@ -50,6 +91,12 @@ export default function NotificationBell() {
     if (!token) return;
     await gqlMarkAllNotificationsRead(headers).catch(() => {});
     setNotifications((prev) => prev.map((n) => ({ ...n, readAt: new Date().toISOString() })));
+  };
+
+  const handleMarkOneRead = async (id: string) => {
+    setNotifications((prev) =>
+      prev.map((n) => n.id === id ? { ...n, readAt: n.readAt ?? new Date().toISOString() } : n),
+    );
   };
 
   if (!isAuthenticated) return null;
@@ -128,22 +175,30 @@ export default function NotificationBell() {
               <span style={{ fontWeight: 600, fontSize: 14, color: "var(--heading)" }}>
                 Notifications
               </span>
-              {unread > 0 && (
-                <button
-                  type="button"
-                  onClick={handleMarkAllRead}
-                  style={{
-                    fontSize: 11,
-                    color: "var(--teal)",
-                    background: "none",
-                    border: "none",
-                    cursor: "pointer",
-                    fontWeight: 600,
-                  }}
+              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                <a
+                  href="/notifications"
+                  style={{ fontSize: 11, color: "var(--teal)", textDecoration: "none", fontWeight: 600 }}
                 >
-                  Mark all read
-                </button>
-              )}
+                  View all
+                </a>
+                {unread > 0 && (
+                  <button
+                    type="button"
+                    onClick={handleMarkAllRead}
+                    style={{
+                      fontSize: 11,
+                      color: "var(--teal)",
+                      background: "none",
+                      border: "none",
+                      cursor: "pointer",
+                      fontWeight: 600,
+                    }}
+                  >
+                    Mark all read
+                  </button>
+                )}
+              </div>
             </div>
             <div style={{ maxHeight: 380, overflowY: "auto" }}>
               {loading ? (
@@ -168,10 +223,15 @@ export default function NotificationBell() {
                 notifications.map((n) => (
                   <div
                     key={n.id}
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => handleMarkOneRead(n.id)}
+                    onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") handleMarkOneRead(n.id); }}
                     style={{
                       padding: "12px 16px",
                       borderBottom: "1px solid var(--border)",
                       background: n.readAt ? "transparent" : "rgba(0,212,170,0.04)",
+                      cursor: "pointer",
                     }}
                   >
                     <div

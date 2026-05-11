@@ -122,6 +122,90 @@ const QUERY_ME = `
   }
 `;
 
+const QUERY_MY_SAVED_SEARCHES = `
+  query MySavedSearches {
+    mySavedSearches {
+      id userId name filtersJson alertEnabled createdAt updatedAt
+    }
+  }
+`;
+
+const MUTATION_UPDATE_SAVED_SEARCH = `
+  mutation UpdateSavedSearch($id: String!, $input: UpdateSavedSearchInput!) {
+    updateSavedSearch(id: $id, input: $input) {
+      id name alertEnabled
+    }
+  }
+`;
+
+const MUTATION_DELETE_SAVED_SEARCH = `
+  mutation DeleteSavedSearch($id: String!) {
+    deleteSavedSearch(id: $id) {
+      success
+    }
+  }
+`;
+
+const QUERY_MY_LISTINGS = `
+  query MyListings {
+    myListings {
+      id title location price type status bedrooms bathrooms areaSqft aiScore createdAt
+    }
+  }
+`;
+
+const QUERY_MY_RECEIVED_ENQUIRIES = `
+  query MyReceivedEnquiries {
+    myReceivedEnquiries {
+      id propertyId fromUserId message status createdAt
+      property { id title location price }
+      enquirer { id displayName phone }
+    }
+  }
+`;
+
+const MUTATION_UPDATE_PROFILE = `
+  mutation UpdateProfile($input: UpdateProfileInput!) {
+    updateProfile(input: $input) {
+      id displayName
+    }
+  }
+`;
+
+const MUTATION_ASK_AGENT = `
+  mutation AskAgent($input: AskAgentInput!) {
+    askAgent(input: $input) {
+      answer sources { id title type }
+      suggestedActions { label action }
+    }
+  }
+`;
+
+const MUTATION_CREATE_SAVED_SEARCH = `
+  mutation CreateSavedSearch($input: CreateSavedSearchInput!) {
+    createSavedSearch(input: $input) {
+      id name alertEnabled
+    }
+  }
+`;
+
+const QUERY_NEIGHBOURHOOD_SCORE = `
+  query NeighbourhoodScore($locality: String!, $city: String!) {
+    neighbourhoodScore(locality: $locality, city: $city) {
+      locality city overallScore livability connectivity schools safety
+    }
+  }
+`;
+
+const QUERY_PRICE_FORECAST = `
+  query PriceForecast($locality: String!, $city: String!, $propertyType: String!) {
+    priceForecast(locality: $locality, city: $city, propertyType: $propertyType) {
+      locality city propertyType currentPrice forecast12m forecast24m forecast36m
+      demandSignal confidenceLevel lastUpdated
+    }
+  }
+`;
+
 export interface CreatePropertyInput {
   title: string;
   location: string;
@@ -316,6 +400,286 @@ export async function getMe(headers?: Record<string, string>): Promise<{ id: str
       headers,
     });
     return data.me;
+  } catch {
+    return null;
+  }
+}
+
+/* ── Saved Searches ──────────────────────────────────────────────── */
+
+export interface SavedSearch {
+  id: string;
+  userId: string;
+  name: string;
+  filtersJson: string;
+  alertEnabled: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export async function fetchMySavedSearches(headers?: Record<string, string>): Promise<SavedSearch[]> {
+  const url = getGraphQLUrl();
+  if (!url) return [];
+  try {
+    const data = await runGraphQL<{ mySavedSearches: SavedSearch[] }>(url, {
+      query: QUERY_MY_SAVED_SEARCHES,
+      headers,
+    });
+    return data.mySavedSearches ?? [];
+  } catch {
+    return [];
+  }
+}
+
+export async function updateSavedSearch(
+  id: string,
+  input: { name?: string; alertEnabled?: boolean },
+  headers?: Record<string, string>,
+): Promise<{ id: string; name: string; alertEnabled: boolean }> {
+  const url = getGraphQLUrl();
+  if (!url) throw new Error('GraphQL URL not configured');
+  const data = await runGraphQL<{ updateSavedSearch: { id: string; name: string; alertEnabled: boolean } }>(url, {
+    query: MUTATION_UPDATE_SAVED_SEARCH,
+    variables: { id, input },
+    headers,
+  });
+  return data.updateSavedSearch;
+}
+
+export async function deleteSavedSearch(id: string, headers?: Record<string, string>): Promise<boolean> {
+  const url = getGraphQLUrl();
+  if (!url) throw new Error('GraphQL URL not configured');
+  try {
+    const data = await runGraphQL<{ deleteSavedSearch: { success: boolean } }>(url, {
+      query: MUTATION_DELETE_SAVED_SEARCH,
+      variables: { id },
+      headers,
+    });
+    return data.deleteSavedSearch?.success ?? false;
+  } catch {
+    return false;
+  }
+}
+
+export async function createSavedSearch(
+  input: { name: string; filtersJson: string; alertEnabled?: boolean },
+  headers?: Record<string, string>,
+): Promise<{ id: string; name: string; alertEnabled: boolean }> {
+  const url = getGraphQLUrl();
+  if (!url) throw new Error('GraphQL URL not configured');
+  const data = await runGraphQL<{ createSavedSearch: { id: string; name: string; alertEnabled: boolean } }>(url, {
+    query: MUTATION_CREATE_SAVED_SEARCH,
+    variables: { input },
+    headers,
+  });
+  return data.createSavedSearch;
+}
+
+/* ── My Listings (broker) ───────────────────────────────────────── */
+
+export interface BrokerListing {
+  id: string;
+  title: string;
+  location: string;
+  price: number;
+  type: string;
+  status: string | null;
+  bedrooms: number;
+  bathrooms: number;
+  areaSqft: number | null;
+  aiScore: number | null;
+  createdAt: string;
+}
+
+export async function fetchMyListings(headers?: Record<string, string>): Promise<BrokerListing[]> {
+  const url = getGraphQLUrl();
+  if (!url) return [];
+  try {
+    const data = await runGraphQL<{ myListings: BrokerListing[] }>(url, {
+      query: QUERY_MY_LISTINGS,
+      headers,
+    });
+    return data.myListings ?? [];
+  } catch {
+    return [];
+  }
+}
+
+/* ── Received Enquiries (broker) ─────────────────────────────────── */
+
+export interface ReceivedEnquiry {
+  id: string;
+  propertyId: string;
+  fromUserId: string;
+  message: string;
+  status: string | null;
+  createdAt: string;
+  property: { id: string; title: string; location: string; price: number };
+  enquirer: { id: string; displayName: string | null; phone: string };
+}
+
+export async function fetchMyReceivedEnquiries(headers?: Record<string, string>): Promise<ReceivedEnquiry[]> {
+  const url = getGraphQLUrl();
+  if (!url) return [];
+  try {
+    const data = await runGraphQL<{ myReceivedEnquiries: ReceivedEnquiry[] }>(url, {
+      query: QUERY_MY_RECEIVED_ENQUIRIES,
+      headers,
+    });
+    return data.myReceivedEnquiries ?? [];
+  } catch {
+    return [];
+  }
+}
+
+/* ── Profile ────────────────────────────────────────────────────── */
+
+export async function updateProfile(
+  input: { displayName?: string },
+  headers?: Record<string, string>,
+): Promise<{ id: string; displayName: string }> {
+  const url = getGraphQLUrl();
+  if (!url) throw new Error('GraphQL URL not configured');
+  const data = await runGraphQL<{ updateProfile: { id: string; displayName: string } }>(url, {
+    query: MUTATION_UPDATE_PROFILE,
+    variables: { input },
+    headers,
+  });
+  return data.updateProfile;
+}
+
+/* ── AI Agent ───────────────────────────────────────────────────── */
+
+export interface AskAgentResult {
+  answer: string;
+  sources: { id: string; title: string; type: string }[];
+  suggestedActions: { label: string; action: string }[];
+}
+
+export async function askAgent(
+  input: { question: string; context?: string },
+  headers?: Record<string, string>,
+): Promise<AskAgentResult | null> {
+  const url = getGraphQLUrl();
+  if (!url) return null;
+  try {
+    const data = await runGraphQL<{ askAgent: AskAgentResult }>(url, {
+      query: MUTATION_ASK_AGENT,
+      variables: { input },
+      headers,
+    });
+    return data.askAgent;
+  } catch {
+    return null;
+  }
+}
+
+/* ── Neighbourhood Score (REST) ──────────────────────────────────── */
+
+function getRestUrl(): string {
+  const base = process.env.EXPO_PUBLIC_API_URL ?? process.env.NEXT_PUBLIC_API_URL ?? '';
+  if (!base.startsWith('http')) return '';
+  return base.replace(/\/$/, '');
+}
+
+export interface NeighbourhoodScoreData {
+  locality: string;
+  city: string;
+  overallScore: number;
+  livability: number;
+  connectivity: number;
+  schools: number;
+  safety: number;
+}
+
+export async function fetchNeighbourhoodScore(
+  locality: string,
+  city: string,
+): Promise<NeighbourhoodScoreData | null> {
+  const base = getRestUrl();
+  if (!base) return null;
+  try {
+    const res = await fetch(`${base}/api/v1/neighbourhood?locality=${encodeURIComponent(locality)}&city=${encodeURIComponent(city)}`);
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data as NeighbourhoodScoreData;
+  } catch {
+    return null;
+  }
+}
+
+/* ── Price Forecast (REST) ──────────────────────────────────────── */
+
+export interface PriceForecastData {
+  locality: string;
+  city: string;
+  propertyType: string;
+  currentPrice: number;
+  forecast12m: number;
+  forecast24m: number;
+  forecast36m: number;
+  demandSignal: string;
+  confidenceLevel: string;
+  lastUpdated: string;
+}
+
+export async function fetchPriceForecast(
+  locality: string,
+  city: string,
+  propertyType: string = 'apartment',
+): Promise<PriceForecastData | null> {
+  const base = getRestUrl();
+  if (!base) return null;
+  try {
+    const res = await fetch(
+      `${base}/api/v1/price-forecast?locality=${encodeURIComponent(locality)}&city=${encodeURIComponent(city)}&propertyType=${encodeURIComponent(propertyType)}`,
+    );
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data as PriceForecastData;
+  } catch {
+    return null;
+  }
+}
+
+/* ── Neighbourhood Score (GraphQL) ───────────────────────────────── */
+
+export async function fetchNeighbourhoodScoreGQL(
+  locality: string,
+  city: string,
+  headers?: Record<string, string>,
+): Promise<NeighbourhoodScoreData | null> {
+  const url = getGraphQLUrl();
+  if (!url) return null;
+  try {
+    const data = await runGraphQL<{ neighbourhoodScore: NeighbourhoodScoreData | null }>(url, {
+      query: QUERY_NEIGHBOURHOOD_SCORE,
+      variables: { locality, city },
+      headers,
+    });
+    return data.neighbourhoodScore;
+  } catch {
+    return null;
+  }
+}
+
+/* ── Price Forecast (GraphQL) ───────────────────────────────────── */
+
+export async function fetchPriceForecastGQL(
+  locality: string,
+  city: string,
+  propertyType: string = 'apartment',
+  headers?: Record<string, string>,
+): Promise<PriceForecastData | null> {
+  const url = getGraphQLUrl();
+  if (!url) return null;
+  try {
+    const data = await runGraphQL<{ priceForecast: PriceForecastData | null }>(url, {
+      query: QUERY_PRICE_FORECAST,
+      variables: { locality, city, propertyType },
+      headers,
+    });
+    return data.priceForecast;
   } catch {
     return null;
   }

@@ -22,8 +22,10 @@ describe('AgentOrchestratorService', () => {
     const mockConfig = {
       get: jest.fn((key: string) => {
         if (key === 'OPENAI_API_KEY') return '';
-        if (key === 'AGENT_PROVIDER') return 'openai';
+        if (key === 'GOOGLE_API_KEY') return '';
+        if (key === 'AGENT_PROVIDER') return 'google';
         if (key === 'ANTHROPIC_API_KEY') return '';
+        if (key === 'AGENT_GOOGLE_MODEL') return 'gemini-2.0-flash';
         if (key === 'AGENT_MODEL') return 'gpt-4o';
         if (key === 'AGENT_MAX_STEPS') return 10;
         if (key === 'AGENT_PLAN_FIRST') return false;
@@ -64,10 +66,12 @@ describe('AgentOrchestratorService', () => {
   });
 
   describe('ask', () => {
-    it('should return stub when OPENAI_API_KEY is missing', async () => {
-      (config.get as jest.Mock).mockImplementation((key: string) =>
-        key === 'OPENAI_API_KEY' ? '' : undefined,
-      );
+    it('should return stub when OPENAI_API_KEY is missing and provider is openai', async () => {
+      (config.get as jest.Mock).mockImplementation((key: string) => {
+        if (key === 'AGENT_PROVIDER') return 'openai';
+        if (key === 'OPENAI_API_KEY') return '';
+        return undefined;
+      });
       const result = await service.ask({ prompt: 'Hello' });
       expect(result.answer).toContain('OPENAI_API_KEY');
       expect(result.sources).toEqual([]);
@@ -94,6 +98,18 @@ describe('AgentOrchestratorService', () => {
       });
       const result = await service.ask({ prompt: 'Hello' });
       expect(result.answer).toContain('ANTHROPIC_API_KEY');
+      expect(result.sources).toEqual([]);
+    });
+
+    it('should return stub when AGENT_PROVIDER is google and GOOGLE_API_KEY is missing', async () => {
+      (config.get as jest.Mock).mockImplementation((key: string) => {
+        if (key === 'AGENT_PROVIDER') return 'google';
+        if (key === 'GOOGLE_API_KEY') return '';
+        if (key === 'AGENT_GOOGLE_MODEL') return 'gemini-2.0-flash';
+        return undefined;
+      });
+      const result = await service.ask({ prompt: 'Hello' });
+      expect(result.answer).toContain('GOOGLE_API_KEY');
       expect(result.sources).toEqual([]);
     });
   });

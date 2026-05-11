@@ -18,13 +18,13 @@ export class UserService {
     private readonly logger: LoggerService,
   ) {}
 
-  async getOrCreateByPhone(phone: string): Promise<User> {
+  async getOrCreateByPhone(phone: string, email?: string): Promise<User> {
     const existing = await this.userRepo.findByPhone(phone);
     if (existing) {
       this.logger.debug('getOrCreateByPhone found', { userId: existing.id, phone });
       return existing;
     }
-    const created = await this.userRepo.create(phone);
+    const created = await this.userRepo.create(phone, email);
     this.logger.debug('getOrCreateByPhone created', { userId: created.id, phone });
     return created;
   }

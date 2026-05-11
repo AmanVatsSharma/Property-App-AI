@@ -34,11 +34,11 @@ export class Notification {
   body: string;
 
   @Field(() => GraphQLJSON, { nullable: true })
-  @Column({ type: 'jsonb', nullable: true })
+  @Column({ type: 'simple-json', nullable: true })
   data: Record<string, unknown> | null;
 
   @Field(() => Date, { nullable: true })
-  @Column({ type: 'timestamp', nullable: true })
+  @Column({ type: 'datetime', nullable: true })
   readAt: Date | null;
 
   @Field(() => Date)

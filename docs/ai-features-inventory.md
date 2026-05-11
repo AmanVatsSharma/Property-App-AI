@@ -1,7 +1,7 @@
 # AI Features Inventory
 
 **Purpose:** Reference for which agent tools are live vs "coming soon" and where AI is exposed in web and mobile.  
-**Last updated:** 2026-03-17.
+**Last updated:** 2026-05-07.
 
 ---
 
@@ -9,7 +9,7 @@
 
 Defined in `apps/api/src/modules/agent/services/agent-tools.service.ts`.
 
-### Live tools (7)
+### Live tools (11)
 
 | Tool | Description |
 |------|-------------|
@@ -20,15 +20,14 @@ Defined in `apps/api/src/modules/agent/services/agent-tools.service.ts`.
 | assess_region | Load/assess locality summary. |
 | compare_properties | Compare 2–5 properties. |
 | create_listing | Create listing for signed-in user. |
+| get_price_forecast | LLM-backed locality price forecast (12/24/36-month appreciation %, demand signal, rationale). Backed by `PriceForecastService`. Deterministic fallback when no AI provider key. |
+| check_rera | RERA registration check for a project / builder. Returns status, project & builder name, state, deep-link to the relevant state RERA portal, and next-step guidance. **Never fabricates registration numbers** — when uncertain, status is `unknown` and the user is pointed at the official portal. Backed by `ReraCheckService`. |
+| analyze_document | Buyer-side legal document review (Sale Deed, Title Report, NOC, Encumbrance Certificate, Agreement to Sell). Surfaces red/yellow/green flags by category, positives, and recommended next actions. Always returns the disclaimer that this is not legal advice. Backed by `DocumentAnalysisService`. |
+| get_negotiation_advice | Suggests an offer (₹) and bid strategy for a property using listing data + locality intelligence + price forecast. Suggested offer is clamped to **[ask × 0.85, ask × 1.00]** as a defence against bad LLM output. Returns negotiation script + walk-away conditions. Backed by `NegotiationAdvisorService`. |
 
-### Coming soon (4)
+### Coming soon (0)
 
-| Tool | Placeholder response |
-|------|----------------------|
-| get_price_forecast | "Price forecast for localities is coming soon..." |
-| check_rera | "RERA verification is coming soon..." |
-| analyze_document | "Document and legal risk analysis is coming soon..." |
-| get_negotiation_advice | "Coming soon. Comparables and bid strategy..." |
+All previously placeholder agent tools have shipped real implementations as of 2026-05-07. Future work tracked under "Listing enrichment" below (AI text + image analysis on create/update).
 
 ---
 

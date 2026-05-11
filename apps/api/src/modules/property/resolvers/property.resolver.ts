@@ -6,8 +6,8 @@
  * @created 2025-03-10
  */
 
-import { Resolver, Query, Mutation, Args, Context } from '@nestjs/graphql';
-import { Int } from '@nestjs/graphql';
+import { Resolver, Query, Mutation, Args, Context, ResolveField, Parent } from '@nestjs/graphql';
+import { Int, Float, ObjectType, Field } from '@nestjs/graphql';
 import { UnauthorizedException } from '@nestjs/common';
 import { Property } from '../entities/property.entity';
 import { PropertyService } from '../services/property.service';
@@ -18,6 +18,32 @@ import { UpdatePropertyDto } from '../dtos/update-property.dto';
 import { PropertyFilterDto } from '../dtos/property-filter.dto';
 import { PropertiesPage } from '../dtos/properties-page.dto';
 import { LoggerService } from '@api/shared/logger';
+import { UserService } from '@api/modules/user/services/user.service';
+import { AreaService } from '@api/modules/area/services/area.service';
+import { PriceForecastService, PriceForecastResult } from '@api/modules/area/services/price-forecast.service';
+
+@ObjectType()
+class AreaScoresType {
+  @Field(() => Float, { nullable: true }) livabilityScore?: number | null;
+  @Field(() => Float, { nullable: true }) connectivityScore?: number | null;
+  @Field(() => Float, { nullable: true }) schoolsScore?: number | null;
+  @Field(() => Float, { nullable: true }) safetyScore?: number | null;
+  @Field(() => Float, { nullable: true }) priceTrendPctAnnual?: number | null;
+}
+
+@ObjectType()
+class PriceForecastResultType {
+  @Field(() => String) locality: string;
+  @Field(() => String) city: string;
+  @Field(() => Float, { nullable: true }) currentPricePerSqft?: number | null;
+  @Field(() => Float) forecast12m: number;
+  @Field(() => Float) forecast24m: number;
+  @Field(() => Float) forecast36m: number;
+  @Field(() => String) demandSignal: string;
+  @Field(() => String) rationale: string;
+  @Field(() => String) confidence: string;
+  @Field(() => String) lastUpdated: string;
+}
 
 interface GqlContext {
   req?: { user?: { sub: string; role: string } };
@@ -29,6 +55,9 @@ export class PropertyResolver {
     private readonly propertyService: PropertyService,
     private readonly searchParser: SearchParserService,
     private readonly logger: LoggerService,
+    private readonly userService: UserService,
+    private readonly areaService: AreaService,
+    private readonly priceForecast: PriceForecastService,
   ) {}
 
   @Public()
@@ -70,6 +99,19 @@ export class PropertyResolver {
     filter: PropertyFilterDto,
   ): Promise<PropertiesPage> {
     return this.propertyService.findAllPage(filter);
+  }
+
+  @Public()
+  @Query(() => PropertiesPage, { name: 'propertiesCursor' })
+  async propertiesCursor(
+    @Args('cursor', { nullable: true }) cursor: string | undefined,
+    @Args('limit', { type: () => Int, nullable: true, defaultValue: 20 }) limit: number | undefined,
+    @Args('filter', { nullable: true, defaultValue: {}, type: () => PropertyFilterDto })
+    filter: PropertyFilterDto,
+  ): Promise<PropertiesPage> {
+    const effectiveLimit = Math.min(limit ?? 20, 100);
+    const pageFilter = { ...filter, cursor, limit: effectiveLimit };
+    return this.propertyService.findAllPage(pageFilter);
   }
 
   @Public()
@@ -155,5 +197,47 @@ export class PropertyResolver {
     const role = ctx.req?.user?.role ?? 'user';
     if (!userId) throw new UnauthorizedException('Sign in required');
     return this.propertyService.changeStatus(id, status as 'draft' | 'active' | 'sold' | 'rented', userId, role);
+  }
+
+  @ResolveField(() => String, { nullable: true })
+  async ownerName(@Parent() property: Property): Promise<string | null> {
+    if (!property.createdByUserId) return null;
+    const user = await this.userService.findById(property.createdByUserId);
+    return user?.displayName ?? null;
+  }
+
+  @ResolveField(() => String, { nullable: true })
+  async ownerPhone(@Parent() property: Property): Promise<string | null> {
+    if (!property.createdByUserId) return null;
+    const user = await this.userService.findById(property.createdByUserId);
+    if (!user?.phone) return null;
+    const last4 = user.phone.slice(-4);
+    return `+91 XXXXXX${last4}`;
+  }
+
+  @Public()
+  @Query(() => PriceForecastResultType, { name: 'propertyPriceForecast', nullable: true })
+  async propertyPriceForecast(
+    @Args('propertyId', { type: () => String }) propertyId: string,
+  ): Promise<PriceForecastResult | null> {
+    const property = await this.propertyService.findOne(propertyId);
+    if (!property) return null;
+    const locality = property.locality ?? property.location ?? '';
+    const city = property.city ?? '';
+    return this.priceForecast.getForecast(locality, city);
+  }
+
+  @ResolveField(() => AreaScoresType, { nullable: true })
+  async areaScores(@Parent() property: Property): Promise<AreaScoresType | null> {
+    if (!property.areaId) return null;
+    const area = await this.areaService.findById(property.areaId);
+    if (!area) return null;
+    return {
+      livabilityScore: area.livabilityScore,
+      connectivityScore: area.connectivityScore,
+      schoolsScore: area.schoolsScore,
+      safetyScore: area.safetyScore,
+      priceTrendPctAnnual: area.priceTrendPctAnnual,
+    };
   }
 }

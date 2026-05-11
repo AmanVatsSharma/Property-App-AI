@@ -1,9 +1,25 @@
 /**
- * @file data-source.ts
- * @module database
- * @description TypeORM DataSource for CLI/migrations. Loads .ts in dev and .js when compiled.
- * @author BharatERP
- * @created 2025-03-15
+ * File:        apps/api/src/database/data-source.ts
+ * Module:      database
+ * Purpose:     TypeORM DataSource for the CLI migration tool (`npx nx run api:migration:*`).
+ *              Always targets PostgreSQL — migrations are production artifacts and should never
+ *              be authored against SQLite. Dev SQLite uses `synchronize: true` instead.
+ *
+ * Exports:
+ *   - AppDataSource — DataSource instance for TypeORM CLI
+ *
+ * Side-effects:   none at import time; connects only when `.initialize()` is called by CLI
+ *
+ * Key invariants:
+ *   - This file is ONLY used by the TypeORM CLI, not by the running NestJS app.
+ *   - NestJS app uses TypeOrmModule.forRootAsync() in app.module.ts (supports sqlite + postgres).
+ *   - Migrations are always PostgreSQL DDL — never run them against SQLite.
+ *
+ * Read order:
+ *   1. AppDataSource constructor — connection params + globs for entities/migrations
+ *
+ * Author:       BharatERP
+ * Last-updated: 2026-05-07
  */
 
 import { DataSource } from 'typeorm';

@@ -4,6 +4,7 @@
  * @description NestJS bootstrap; compression, CORS, Helmet, validation, WS adapter.
  * @author BharatERP
  * @created 2025-03-10
+ * @updated 2026-03-28
  */
 
 import { ValidationPipe } from '@nestjs/common';
@@ -114,7 +115,29 @@ async function bootstrap() {
     }
     const smsProvider = (config.get<string>('SMS_PROVIDER') ?? '').trim();
     if (!smsProvider || smsProvider === 'stub') {
-      throw new Error('Production requires SMS_PROVIDER=twilio or msg91.');
+      throw new Error('Production requires SMS_PROVIDER=twilio, msg91, or zavu.');
+    }
+    if (smsProvider === 'zavu') {
+      const zavuKey = (config.get<string>('ZAVUDEV_API_KEY') ?? '').trim();
+      if (!zavuKey) {
+        throw new Error('Production requires ZAVUDEV_API_KEY when SMS_PROVIDER=zavu.');
+      }
+    }
+    if (smsProvider === 'msg91') {
+      const msgKey = (config.get<string>('MSG91_AUTH_KEY') ?? '').trim();
+      if (!msgKey) {
+        throw new Error('Production requires MSG91_AUTH_KEY when SMS_PROVIDER=msg91.');
+      }
+    }
+    if (smsProvider === 'twilio') {
+      const sid = (config.get<string>('TWILIO_ACCOUNT_SID') ?? '').trim();
+      const token = (config.get<string>('TWILIO_AUTH_TOKEN') ?? '').trim();
+      const from = (config.get<string>('TWILIO_FROM') ?? '').trim();
+      if (!sid || !token || !from) {
+        throw new Error(
+          'Production requires TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, and TWILIO_FROM when SMS_PROVIDER=twilio.',
+        );
+      }
     }
   }
 

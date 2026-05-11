@@ -24,6 +24,7 @@ export const FOOTER_LINKS = {
   ],
   tools: [
     { href: '/search', label: 'AI Copilot' },
+    { href: '/compare', label: 'Compare Properties' },
     { href: '/emi-calculator', label: 'EMI Calculator' },
     { href: '/neighbourhood', label: 'Neighbourhood Score' },
     { href: '/price-forecast', label: 'Price Forecast' },
@@ -31,6 +32,7 @@ export const FOOTER_LINKS = {
   ],
   company: [
     { href: '/about', label: 'About Us' },
+    { href: '/trust', label: 'Trust & Verification' },
     { href: '/about#investors', label: 'Investors' },
     { href: '/post-property', label: 'For Builders' },
   ],

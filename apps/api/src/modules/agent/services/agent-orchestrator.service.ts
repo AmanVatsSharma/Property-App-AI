@@ -1,7 +1,7 @@
 /**
  * @file agent-orchestrator.service.ts
  * @module agent
- * @description LangGraph/LangChain agent loop; model factory (OpenAI/Claude), extended thinking, plan-first, tools.
+ * @description LangGraph/LangChain agent loop; model factory (OpenAI/Claude/Gemini), extended thinking, plan-first, tools.
  * @author BharatERP
  * @created 2025-03-11
  */
@@ -10,6 +10,7 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ChatOpenAI } from '@langchain/openai';
 import { ChatAnthropic } from '@langchain/anthropic';
+import { ChatGoogleGenerativeAI } from '@langchain/google-genai';
 import { HumanMessage, AIMessage, SystemMessage, ToolMessage } from '@langchain/core/messages';
 import type { BaseMessage } from '@langchain/core/messages';
 import type { BaseChatModel } from '@langchain/core/language_models/chat_models';
@@ -18,7 +19,7 @@ import { MetricsService } from '@api/modules/metrics/services/metrics.service';
 import { AgentToolsService } from './agent-tools.service';
 import type { AskAgentResult } from '../dtos/ask-agent-result.dto';
 import type { AskAgentInput } from '../dtos/ask-agent-input.dto';
-import { AGENT_CONFIG_KEYS } from '../config/agent-config';
+import { AGENT_CONFIG_KEYS, type AgentProvider } from '../config/agent-config';
 import { DOMAIN_SYSTEM_PROMPT, PLAN_FIRST_INSTRUCTION } from '../prompts/domain-system.prompt';
 @Injectable()
 export class AgentOrchestratorService {
@@ -45,10 +46,14 @@ export class AgentOrchestratorService {
 
   private async askInternal(input: AskAgentInput, requestId?: string): Promise<AskAgentResult> {
     const startMs = Date.now();
-    const provider = this.config.get<'openai' | 'anthropic'>(AGENT_CONFIG_KEYS.AGENT_PROVIDER) ?? 'openai';
-    const model = provider === 'anthropic'
-      ? this.config.get<string>(AGENT_CONFIG_KEYS.AGENT_ANTHROPIC_MODEL) ?? 'claude-sonnet'
-      : this.config.get<string>(AGENT_CONFIG_KEYS.AGENT_MODEL) ?? 'gpt-4o';
+    const provider =
+      this.config.get<AgentProvider>(AGENT_CONFIG_KEYS.AGENT_PROVIDER) ?? 'google';
+    const model =
+      provider === 'anthropic'
+        ? this.config.get<string>(AGENT_CONFIG_KEYS.AGENT_ANTHROPIC_MODEL) ?? 'claude-sonnet'
+        : provider === 'google'
+          ? this.config.get<string>(AGENT_CONFIG_KEYS.AGENT_GOOGLE_MODEL) ?? 'gemini-2.0-flash'
+          : this.config.get<string>(AGENT_CONFIG_KEYS.AGENT_MODEL) ?? 'gpt-4o';
     this.logger.debug('ask entry', {
       method: 'ask',
       requestId,
@@ -65,6 +70,18 @@ export class AgentOrchestratorService {
         return {
           answer:
             'AI agent is not configured (missing ANTHROPIC_API_KEY). Set it in the environment to use Claude.',
+          sources: [],
+          suggestedActions: [],
+        };
+      }
+    } else if (provider === 'google') {
+      const googleKey = this.config.get<string>(AGENT_CONFIG_KEYS.GOOGLE_API_KEY);
+      if (!googleKey || googleKey.trim() === '') {
+        this.logger.debug('ask exit (no Google API key)', { method: 'ask', requestId });
+        this.metrics.recordAgentCall(provider, 'stub', (Date.now() - startMs) / 1000);
+        return {
+          answer:
+            'AI agent is not configured (missing GOOGLE_API_KEY). Set it in the environment to use Google Gemini.',
           sources: [],
           suggestedActions: [],
         };
@@ -226,10 +243,11 @@ export class AgentOrchestratorService {
   }
 
   /**
-   * Creates the LLM instance based on AGENT_PROVIDER; supports OpenAI and Anthropic (Claude) with optional extended thinking.
+   * Creates the LLM instance based on AGENT_PROVIDER; supports OpenAI, Google Gemini, and Anthropic (Claude) with optional extended thinking.
    */
   private createLlm(): BaseChatModel {
-    const provider = this.config.get<'openai' | 'anthropic'>(AGENT_CONFIG_KEYS.AGENT_PROVIDER) ?? 'openai';
+    const provider =
+      this.config.get<AgentProvider>(AGENT_CONFIG_KEYS.AGENT_PROVIDER) ?? 'google';
 
     if (provider === 'anthropic') {
       const apiKey = this.config.get<string>(AGENT_CONFIG_KEYS.ANTHROPIC_API_KEY);
@@ -249,6 +267,18 @@ export class AgentOrchestratorService {
       }
 
       return new ChatAnthropic(options);
+    }
+
+    if (provider === 'google') {
+      const apiKey = this.config.get<string>(AGENT_CONFIG_KEYS.GOOGLE_API_KEY);
+      const model =
+        this.config.get<string>(AGENT_CONFIG_KEYS.AGENT_GOOGLE_MODEL) ?? 'gemini-2.0-flash';
+      return new ChatGoogleGenerativeAI({
+        apiKey,
+        model,
+        temperature: 0.2,
+        maxOutputTokens: 8192,
+      });
     }
 
     const openaiKey = this.config.get<string>(AGENT_CONFIG_KEYS.OPENAI_API_KEY);

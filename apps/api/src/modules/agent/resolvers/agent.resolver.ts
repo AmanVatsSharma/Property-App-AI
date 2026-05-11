@@ -94,10 +94,33 @@ export class AgentResolver {
   }
 
   @Query(() => [AgentConversation], { name: 'myAgentConversations' })
-  async myAgentConversations(@Context() ctx?: GraphQLContext): Promise<AgentConversation[]> {
+  async myAgentConversations(
+    @Args('includeArchived', { type: () => Boolean, nullable: true }) includeArchived?: boolean,
+    @Context() ctx?: GraphQLContext,
+  ): Promise<AgentConversation[]> {
     const userId = ctx?.req?.user?.sub;
     if (!userId) return [];
-    return this.conversationService.myConversations(userId);
+    return this.conversationService.myConversations(userId, includeArchived ?? false);
+  }
+
+  @Query(() => [AgentConversation], { name: 'searchConversations' })
+  async searchConversations(
+    @Args('query', { type: () => String }) query: string,
+    @Context() ctx?: GraphQLContext,
+  ): Promise<AgentConversation[]> {
+    const userId = ctx?.req?.user?.sub;
+    if (!userId) return [];
+    return this.conversationService.searchConversations(userId, query);
+  }
+
+  @Mutation(() => AgentConversation, { name: 'archiveConversation', nullable: true })
+  async archiveConversation(
+    @Args('id', { type: () => String }) id: string,
+    @Context() ctx?: GraphQLContext,
+  ): Promise<AgentConversation | null> {
+    const userId = ctx?.req?.user?.sub;
+    if (!userId) return null;
+    return this.conversationService.archiveConversation(id);
   }
 
   @Mutation(() => Property, { name: 'scoreProperty', nullable: true })

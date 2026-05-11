@@ -1,9 +1,33 @@
 /**
- * @file app.module.ts
- * @module api
- * @description Root module: GraphQL (Apollo code-first), TypeORM, and feature modules.
- * @author BharatERP
- * @created 2025-03-10
+ * File:        apps/api/src/app/app.module.ts
+ * Module:      api · Root Module
+ * Purpose:     Bootstraps all NestJS modules: GraphQL (Apollo code-first), TypeORM (SQLite in
+ *              dev / PostgreSQL in prod), BullMQ, throttler, JWT, and all feature modules.
+ *
+ * Exports:
+ *   - AppModule — root NestJS module
+ *
+ * Depends on:
+ *   - @nestjs/typeorm — ORM wiring (SQLite or PostgreSQL selected by DB_TYPE env var)
+ *   - @api/shared/config (AppConfigModule) — Joi-validated env
+ *   - @api/common/* — global guards, filters, interceptors, middleware
+ *
+ * Side-effects:
+ *   - Connects to database (file-based SQLite in dev, PostgreSQL in prod)
+ *   - Registers global JWT guard, HTTP filter, logging + timeout interceptors
+ *   - Applies RequestIdMiddleware to all routes
+ *
+ * Key invariants:
+ *   - DB_TYPE=sqlite  → better-sqlite3 (dev only); synchronize always true; no pool config
+ *   - DB_TYPE=postgres → standard PG connection; synchronize true in dev, false in prod
+ *   - DB_PATH defaults to ./dev.sqlite (relative to CWD = repo root when running via Nx)
+ *
+ * Read order:
+ *   1. TypeOrmModule.forRootAsync — DB branching logic (sqlite vs postgres)
+ *   2. AppModule class — full module wiring
+ *
+ * Author:       BharatERP
+ * Last-updated: 2026-05-07
  */
 
 import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
@@ -121,20 +145,34 @@ import { CacheModule } from '@api/shared/cache/cache.module';
     }),
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
-      useFactory: (config: ConfigService) => ({
-        type: 'postgres',
-        host: config.get<string>('DB_HOST'),
-        port: config.get<number>('DB_PORT'),
-        username: config.get<string>('DB_USER'),
-        password: config.get<string>('DB_PASSWORD'),
-        database: config.get<string>('DB_NAME'),
-        autoLoadEntities: true,
-        synchronize: config.get<string>('NODE_ENV') !== 'production',
-        extra: {
-          max: config.get<number>('DB_POOL_MAX') ?? 20,
-          idleTimeoutMillis: config.get<number>('DB_POOL_IDLE_TIMEOUT_MS') ?? 30000,
-        },
-      }),
+      useFactory: (config: ConfigService) => {
+        const dbType = config.get<string>('DB_TYPE') ?? 'postgres';
+        const isSqlite = dbType === 'sqlite';
+
+        if (isSqlite) {
+          return {
+            type: 'better-sqlite3' as const,
+            database: config.get<string>('DB_PATH') ?? './dev.sqlite',
+            autoLoadEntities: true,
+            synchronize: true,
+          };
+        }
+
+        return {
+          type: 'postgres' as const,
+          host: config.get<string>('DB_HOST'),
+          port: config.get<number>('DB_PORT'),
+          username: config.get<string>('DB_USER'),
+          password: config.get<string>('DB_PASSWORD'),
+          database: config.get<string>('DB_NAME'),
+          autoLoadEntities: true,
+          synchronize: config.get<string>('NODE_ENV') !== 'production',
+          extra: {
+            max: config.get<number>('DB_POOL_MAX') ?? 20,
+            idleTimeoutMillis: config.get<number>('DB_POOL_IDLE_TIMEOUT_MS') ?? 30000,
+          },
+        };
+      },
     }),
     HealthModule,
     MetricsModule,

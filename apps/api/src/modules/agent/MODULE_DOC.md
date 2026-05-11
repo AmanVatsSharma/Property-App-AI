@@ -1,8 +1,8 @@
 # Module: agent
 
-**Short:** Single LangChain/LangGraph AI agent for all property-platform AI tasks; supports **OpenAI** and **Claude** with extended thinking and domain-expert behaviour.
+**Short:** Single LangChain/LangGraph AI agent for all property-platform AI tasks; supports **Google Gemini**, **OpenAI**, and **Claude** with extended thinking and domain-expert behaviour.
 
-**Purpose:** Orchestrate conversational search, property scoring, neighbourhood insight, price narrative, legal check, negotiation advice, and property comparison via one agent with tools. Expose **askAgent** and **scoreProperty** over GraphQL; when queue is enabled, **askAgent** returns a job ID and callers poll **agentJobStatus**. Provider-selectable (OpenAI or Anthropic Claude); optional Claude extended thinking and plan-first reasoning.
+**Purpose:** Orchestrate conversational search, property scoring, neighbourhood insight, price narrative, legal check, negotiation advice, and property comparison via one agent with tools. Expose **askAgent** and **scoreProperty** over GraphQL; when queue is enabled, **askAgent** returns a job ID and callers poll **agentJobStatus**. Provider-selectable (`google` default, or `openai` / `anthropic`); optional Claude extended thinking and plan-first reasoning.
 
 **Files:**
 - `agent.module.ts` — Nest module; imports PropertyModule, AreaModule, BullMQ queue; exports AgentOrchestratorService, AgentQueueService
@@ -32,7 +32,9 @@
 - **scoreProperty(propertyId: ID!): Property** — Mutation; runs scoring (area + property) and persists aiScore/aiTip on the property entity; returns updated Property.
 
 **Env vars:**
-- **AGENT_PROVIDER** — `openai` (default) or `anthropic`
+- **AGENT_PROVIDER** — `google` (default), `openai`, or `anthropic`
+- **GOOGLE_API_KEY** — required when provider is google (Gemini / Google AI Studio)
+- **AGENT_GOOGLE_MODEL** — Gemini model id (default gemini-2.0-flash)
 - **OPENAI_API_KEY** — required when provider is openai
 - **AGENT_MODEL** — OpenAI model (default gpt-4o)
 - **ANTHROPIC_API_KEY** — required when provider is anthropic
@@ -44,18 +46,18 @@
 - **REDIS_URL** — optional; required for BullMQ queue
 - **AGENT_RATE_LIMIT_PER_MIN** — per-IP limit for agent mutations (default 10)
 
-**Flow:** Client calls **askAgent(input)** → Resolver (if queue enabled: add job, return jobId; else) → Orchestrator.ask() → createLlm() (OpenAI or Claude, optional extended thinking) → domain system prompt (+ plan-first instruction if enabled) → ReAct loop (invoke → tool_calls → ToolMessages → repeat until no tool calls or max steps) → AskAgentResult. For **scoreProperty(propertyId)** → AgentToolsService.scoreAndPersistProperty → PropertyService.findOne, AreaService.getOrCreate (assess if missing), compute score/tip, PropertyService.update.
+**Flow:** Client calls **askAgent(input)** → Resolver (if queue enabled: add job, return jobId; else) → Orchestrator.ask() → createLlm() (Gemini, OpenAI, or Claude, optional extended thinking on Claude) → domain system prompt (+ plan-first instruction if enabled) → ReAct loop (invoke → tool_calls → ToolMessages → repeat until no tool calls or max steps) → AskAgentResult. For **scoreProperty(propertyId)** → AgentToolsService.scoreAndPersistProperty → PropertyService.findOne, AreaService.getOrCreate (assess if missing), compute score/tip, PropertyService.update.
 
 **Observability (LLM billing):** Each model step in the agent loop records tokens to Prometheus (`llm_tokens_total{feature="agent_ask",...}`). Completion logs (`ask completed` / `ask completed (max steps)`) include cumulative `llmInputTokens`, `llmOutputTokens`, and for Anthropic `llmEstimatedUsdSonnet4Base` (rough USD at published Sonnet 4 base rates). See `docs/llm-token-billing.md`.
 
 **Scoring and long-thinking:** For "is this a good deal" or property scoring flows, recommend setting **AGENT_THINKING_BUDGET_TOKENS** (e.g. 4096) and **AGENT_PLAN_FIRST=true** so the model can plan multi-step (e.g. assess_region → score_property) and reason over locality and listing details.
 
-**MVP/deploy:** Set OPENAI_API_KEY or ANTHROPIC_API_KEY per AGENT_PROVIDER; when keys are missing the orchestrator returns a stub message (no mock listing or user data). No fake responses in production when configured.
+**MVP/deploy:** Set GOOGLE_API_KEY, OPENAI_API_KEY, or ANTHROPIC_API_KEY per AGENT_PROVIDER; when keys are missing the orchestrator returns a stub message (no mock listing or user data). No fake responses in production when configured.
 
 ---
 
 **Stub when API keys missing:** If the configured provider’s API key is missing or empty, the orchestrator does **not** call the LLM. It returns immediately with:
-- **answer:** A single message string: for OpenAI, `"AI agent is not configured (missing OPENAI_API_KEY). Set it in the environment to use the assistant."`; for Anthropic, `"AI agent is not configured (missing ANTHROPIC_API_KEY). Set it in the environment to use Claude."`
+- **answer:** A single message string: for OpenAI, missing-key message for `OPENAI_API_KEY`; for Anthropic, for `ANTHROPIC_API_KEY`; for Google Gemini, `"AI agent is not configured (missing GOOGLE_API_KEY). Set it in the environment to use Google Gemini."`
 - **sources:** `[]`
 - **suggestedActions:** `[]`
 No mock listing data, no fake property or user data, and no tool execution.
@@ -71,6 +73,8 @@ No mock listing data, no fake property or user data, and no tool execution.
 ---
 
 **Change-log:**
+- 2026-03-28: **Google Gemini:** `AGENT_PROVIDER=google` (default), `GOOGLE_API_KEY`, `AGENT_GOOGLE_MODEL` (default gemini-2.0-flash); LangChain `ChatGoogleGenerativeAI`. Shared `tryCreateAgentChatModel` in `shared/llm` for search parse, area assess, price forecast.
+
 - 2026-03-20: **LLM token usage:** Per-step token parse from LangChain messages; cumulative totals and optional Anthropic USD estimate on agent completion logs; `llm_tokens_total` Prometheus counter.
 
 - 2026-03-18: **Conversation persistence:** AgentConversation entity (messages JSONB); ConversationService (startConversation, appendMessages, getConversation, myConversations); askAgent accepts optional **conversationId**; when provided loads conversation history and passes to orchestrator; after sync result appends user + assistant messages and returns **conversationId** in AskAgentResult; **myAgentConversations** query; `GraphQLJSON` from graphql-type-json for messages; migration CreateAgentConversation.

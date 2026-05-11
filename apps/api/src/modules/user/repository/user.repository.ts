@@ -27,9 +27,27 @@ export class UserRepository {
     return this.repo.findOne({ where: { id } });
   }
 
-  async create(phone: string, displayName?: string | null): Promise<User> {
-    const entity = this.repo.create({ phone, displayName: displayName ?? null });
+  async create(phone: string, email?: string | null, displayName?: string | null): Promise<User> {
+    const entity = this.repo.create({
+      phone,
+      email: email ?? null,
+      displayName: displayName ?? null,
+    });
     return this.repo.save(entity);
+  }
+
+  async updateEmail(id: string, email: string | null): Promise<User> {
+    const user = await this.findById(id);
+    if (!user) throw new Error('User not found');
+    user.email = email;
+    return this.repo.save(user);
+  }
+
+  async updateRefreshToken(id: string, refreshToken: string | null): Promise<User> {
+    const user = await this.findById(id);
+    if (!user) throw new Error('User not found');
+    user.refreshToken = refreshToken;
+    return this.repo.save(user);
   }
 
   async updateDisplayName(id: string, displayName: string | null): Promise<User> {

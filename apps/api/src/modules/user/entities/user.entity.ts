@@ -32,6 +32,14 @@ export class User {
   @Column({ type: 'varchar', length: 200, nullable: true })
   displayName: string | null;
 
+  @Field(() => String, { nullable: true })
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  email: string | null;
+
+  @Field(() => String, { nullable: true, deprecationReason: 'Opaque token stored directly; use /auth/refresh endpoint' })
+  @Column({ type: 'text', nullable: true })
+  refreshToken: string | null;
+
   @Field(() => UserRole)
   @Column({ type: 'varchar', length: 20, default: UserRole.USER })
   role: UserRole;

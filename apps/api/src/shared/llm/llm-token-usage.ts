@@ -76,7 +76,7 @@ export function addLlmUsage(totals: LlmTokenTotals, step: LlmTokenTotals | null)
 
 export function buildLlmUsageLogFields(
   feature: string,
-  provider: 'openai' | 'anthropic',
+  provider: 'openai' | 'anthropic' | 'google',
   inputTokens: number,
   outputTokens: number,
 ): Record<string, string | number | boolean> {

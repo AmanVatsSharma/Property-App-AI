@@ -43,7 +43,7 @@ function getGraphQLUrl(): string {
 }
 
 const PROPERTY_FIELDS = `
-  id title location areaId locality city latitude longitude price type bedrooms bathrooms areaSqft status listingFor specs aiTip aiScore coverImageUrl imageUrls nearbyAmenities createdByUserId isFreeListing viewCount createdAt updatedAt
+  id title location areaId locality city latitude longitude price type bedrooms bathrooms areaSqft status listingFor specs aiTip aiScore coverImageUrl imageUrls nearbyAmenities createdByUserId isFreeListing viewCount isVerified priceDropPercent ownerName ownerPhone createdAt updatedAt
 `;
 
 export const QUERY_PROPERTIES = `
@@ -51,6 +51,7 @@ export const QUERY_PROPERTIES = `
     properties(filter: $filter) {
       ${PROPERTY_FIELDS}
     }
+    propertiesTotalCount
   }
 `;
 
@@ -66,6 +67,7 @@ export const QUERY_PROPERTY = `
   query Property($id: String!) {
     property(id: $id) {
       ${PROPERTY_FIELDS}
+      areaScores { livabilityScore connectivityScore schoolsScore safetyScore priceTrendPctAnnual }
     }
   }
 `;
@@ -270,6 +272,29 @@ export interface CreatePropertyInput {
   imageUrls?: string[];
 }
 
+export const QUERY_PROPERTY_PRICE_FORECAST = `
+  query PropertyPriceForecast($propertyId: String!) {
+    propertyPriceForecast(propertyId: $propertyId) {
+      locality city currentPricePerSqft
+      forecast12m forecast24m forecast36m
+      demandSignal rationale confidence lastUpdated
+    }
+  }
+`;
+
+export interface PriceForecastResult {
+  locality: string;
+  city: string;
+  currentPricePerSqft?: number | null;
+  forecast12m: number;
+  forecast24m: number;
+  forecast36m: number;
+  demandSignal: string;
+  rationale: string;
+  confidence: string;
+  lastUpdated: string;
+}
+
 export const QUERY_AGENT_JOB_STATUS = `
   query AgentJobStatus($jobId: String!) {
     agentJobStatus(jobId: $jobId) {
@@ -294,6 +319,7 @@ export interface PropertyFilter {
   sortOrder?: "asc" | "desc" | "ASC" | "DESC";
   limit?: number;
   offset?: number;
+  status?: string;
 }
 
 /** Matches API Property entity (GraphQL ObjectType). */
@@ -322,6 +348,17 @@ export interface ApiProperty {
   createdByUserId: string | null;
   isFreeListing: boolean;
   viewCount?: number;
+  isVerified?: boolean;
+  priceDropPercent?: number | null;
+  ownerName?: string | null;
+  ownerPhone?: string | null;
+  areaScores?: {
+    livabilityScore?: number | null;
+    connectivityScore?: number | null;
+    schoolsScore?: number | null;
+    safetyScore?: number | null;
+    priceTrendPctAnnual?: number | null;
+  } | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -375,14 +412,17 @@ export interface EnquiryItem {
   updatedAt: string;
 }
 
-export async function gqlProperties(filter?: PropertyFilter): Promise<ApiProperty[]> {
+export async function gqlProperties(filter?: PropertyFilter): Promise<{ properties: ApiProperty[]; totalCount: number }> {
   const url = getGraphQLUrl();
   if (!url) throw new Error('GraphQL URL not configured (NEXT_PUBLIC_GRAPHQL_HTTP or NEXT_PUBLIC_API_URL)');
-  const data = await runGraphQL<{ properties: ApiProperty[] }>(url, {
+  const data = await runGraphQL<{ properties: ApiProperty[]; propertiesTotalCount: number }>(url, {
     query: QUERY_PROPERTIES,
     variables: { filter: filter ?? {} },
   });
-  return data.properties ?? [];
+  return {
+    properties: data.properties ?? [],
+    totalCount: data.propertiesTotalCount ?? 0,
+  };
 }
 
 /** One-shot NL search: parses query (e.g. "3 BHK near school near metro in Bangalore") and returns matching properties. */
@@ -404,6 +444,20 @@ export async function gqlProperty(id: string): Promise<ApiProperty | null> {
     variables: { id },
   });
   return data.property ?? null;
+}
+
+export async function gqlPropertyPriceForecast(propertyId: string): Promise<PriceForecastResult | null> {
+  const url = getGraphQLUrl();
+  if (!url) return null;
+  try {
+    const data = await runGraphQL<{ propertyPriceForecast: PriceForecastResult | null }>(url, {
+      query: QUERY_PROPERTY_PRICE_FORECAST,
+      variables: { propertyId },
+    });
+    return data.propertyPriceForecast ?? null;
+  } catch {
+    return null;
+  }
 }
 
 export async function gqlAgentJobStatus(jobId: string): Promise<{ status: string; result?: AskAgentResult }> {

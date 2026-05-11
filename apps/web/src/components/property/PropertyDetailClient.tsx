@@ -17,7 +17,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { PropertyDetailActions } from "./PropertyDetailActions";
 import { PropertyCard } from "@/components/search/PropertyCard";
 import { SkeletonCard } from "@/components/ui/Skeleton";
-import { gqlProperties, type ApiProperty } from "@/lib/graphql-client";
+import { gqlProperties, gqlSendEnquiry, gqlPropertyPriceForecast, type ApiProperty, type PriceForecastResult } from "@/lib/graphql-client";
 import type { PropertyDetail } from "@/lib/property-api";
 
 /* ── helpers ──────────────────────────────────────────────────────── */
@@ -253,41 +253,7 @@ export function PropertyDetailClient({ property: p }: Props) {
               )}
 
               {activeTab === "amenities" && (
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: 12 }}>
-                  {[
-                    { icon: "🏊", label: "Swimming Pool" },
-                    { icon: "🏋️", label: "Gym" },
-                    { icon: "🌳", label: "Garden" },
-                    { icon: "🛡️", label: "Security" },
-                    { icon: "🅿️", label: "Parking" },
-                    { icon: "🏪", label: "Clubhouse" },
-                    { icon: "👶", label: "Play Area" },
-                    { icon: "⚡", label: "Power Backup" },
-                  ].map((a) => (
-                    <motion.div
-                      key={a.label}
-                      initial={{ opacity: 0, scale: 0.9 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ duration: 0.3 }}
-                      style={{
-                        display: "flex",
-                        flexDirection: "column",
-                        alignItems: "center",
-                        gap: 8,
-                        padding: "16px 12px",
-                        background: "var(--dark-2)",
-                        border: "1px solid var(--border)",
-                        borderRadius: 12,
-                        fontSize: 12,
-                        color: "var(--text-muted)",
-                        textAlign: "center",
-                      }}
-                    >
-                      <span style={{ fontSize: 24 }}>{a.icon}</span>
-                      {a.label}
-                    </motion.div>
-                  ))}
-                </div>
+                <AmenitiesTab nearbyAmenities={p.nearbyAmenities} />
               )}
 
               {activeTab === "ai-insights" && (
@@ -332,16 +298,19 @@ export function PropertyDetailClient({ property: p }: Props) {
               padding: 24,
             }}
           >
-            {/* Agent placeholder */}
+            {/* Owner info */}
             <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
               <div style={{ width: 44, height: 44, borderRadius: "50%", background: "var(--teal-dim)", border: "2px solid rgba(0,212,170,0.3)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}>
                 🏠
               </div>
               <div>
-                <div style={{ fontWeight: 600, color: "var(--heading)", fontSize: 14 }}>Property Owner</div>
-                <div style={{ fontSize: 11, color: "var(--teal)", display: "flex", alignItems: "center", gap: 4 }}>
+                <div style={{ fontWeight: 600, color: "var(--heading)", fontSize: 14 }}>{p.ownerName ?? "Property Owner"}</div>
+                {p.ownerPhone && (
+                  <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 2 }}>{p.ownerPhone}</div>
+                )}
+                <div style={{ fontSize: 11, color: "var(--teal)", display: "flex", alignItems: "center", gap: 4, marginTop: 2 }}>
                   <div style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--teal)" }} aria-hidden />
-                  Verified Owner
+                  {p.ownerName ? "Listed by Owner" : "Owner Listing"}
                 </div>
               </div>
             </div>
@@ -363,17 +332,36 @@ export function PropertyDetailClient({ property: p }: Props) {
                 className="call-btn"
                 style={{ width: "100%" }}
                 aria-label="Request a callback"
+                onClick={() => {
+                  gqlSendEnquiry({ propertyId: p.id, message: "Callback requested" }).catch(() => null);
+                }}
               >
                 📞 Request Callback
               </button>
-              <button
-                type="button"
-                className="whatsapp-btn"
-                style={{ width: "100%" }}
-                aria-label="Chat on WhatsApp"
-              >
-                💬 WhatsApp
-              </button>
+              {p.ownerPhone ? (
+                <a
+                  href={`https://wa.me/91${p.ownerPhone.replace(/\D/g, "").slice(-10)}?text=${encodeURIComponent(`Hi, I'm interested in your property: ${p.title}`)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="whatsapp-btn"
+                  style={{ width: "100%", display: "block", textAlign: "center" }}
+                  aria-label="Chat on WhatsApp"
+                >
+                  💬 WhatsApp
+                </a>
+              ) : (
+                <button
+                  type="button"
+                  className="whatsapp-btn"
+                  style={{ width: "100%" }}
+                  aria-label="Chat on WhatsApp"
+                  onClick={() => {
+                    gqlSendEnquiry({ propertyId: p.id, message: "WhatsApp contact requested" }).catch(() => null);
+                  }}
+                >
+                  💬 WhatsApp
+                </button>
+              )}
             </div>
 
             <div style={{ marginTop: 16, padding: "12px 0", borderTop: "1px solid var(--border)", fontSize: 11, color: "var(--text-dim)", textAlign: "center" }}>
@@ -453,10 +441,99 @@ export function PropertyDetailClient({ property: p }: Props) {
   );
 }
 
+/* ── Amenities tab ────────────────────────────────────────────────── */
+
+const AMENITY_ICONS: Record<string, string> = {
+  metro: "🚇", school: "🏫", hospital: "🏥", mall: "🏬", park: "🌳",
+  gym: "🏋️", pool: "🏊", parking: "🅿️", security: "🛡️", clubhouse: "🏪",
+  playground: "👶", power: "⚡", garden: "🌿", market: "🛒", bus: "🚌",
+};
+
+const FALLBACK_AMENITIES = [
+  { icon: "🏊", label: "Swimming Pool", detail: "" },
+  { icon: "🏋️", label: "Gym", detail: "" },
+  { icon: "🌳", label: "Garden", detail: "" },
+  { icon: "🛡️", label: "Security", detail: "" },
+  { icon: "🅿️", label: "Parking", detail: "" },
+  { icon: "🏪", label: "Clubhouse", detail: "" },
+  { icon: "👶", label: "Play Area", detail: "" },
+  { icon: "⚡", label: "Power Backup", detail: "" },
+];
+
+function AmenitiesTab({ nearbyAmenities }: { nearbyAmenities?: string[] | null }) {
+  const amenities = nearbyAmenities?.length
+    ? nearbyAmenities.map((a) => {
+        const [name, dist] = a.split(":");
+        const key = (name ?? "").toLowerCase().trim();
+        const icon = AMENITY_ICONS[key] ?? "📍";
+        return { icon, label: name ?? a, detail: dist ?? "" };
+      })
+    : FALLBACK_AMENITIES;
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+      {nearbyAmenities?.length ? (
+        <div style={{ fontSize: 12, color: "var(--text-muted)", marginBottom: 4 }}>
+          Nearby amenities and distances from this property:
+        </div>
+      ) : null}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: 12 }}>
+        {amenities.map((a, i) => (
+          <motion.div
+            key={`${a.label}-${i}`}
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.3, delay: i * 0.04 }}
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: 6,
+              padding: "16px 12px",
+              background: "var(--dark-2)",
+              border: "1px solid var(--border)",
+              borderRadius: 12,
+              fontSize: 12,
+              color: "var(--text-muted)",
+              textAlign: "center",
+            }}
+          >
+            <span style={{ fontSize: 24 }}>{a.icon}</span>
+            <span style={{ fontWeight: 600, color: "var(--heading)" }}>{a.label}</span>
+            {a.detail && <span style={{ fontSize: 11, color: "var(--teal)" }}>{a.detail}</span>}
+          </motion.div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 /* ── AI insights panel ────────────────────────────────────────────── */
 
 function AIInsightsPanel({ property }: { property: PropertyDetail }) {
-  const dimensions = [
+  const [forecast, setForecast] = useState<PriceForecastResult | null>(null);
+  const [forecastLoading, setForecastLoading] = useState(false);
+  const hasFetched = useRef(false);
+
+  useEffect(() => {
+    if (hasFetched.current) return;
+    hasFetched.current = true;
+    setForecastLoading(true);
+    gqlPropertyPriceForecast(property.id)
+      .then((f) => setForecast(f))
+      .catch(() => null)
+      .finally(() => setForecastLoading(false));
+  }, [property.id]);
+
+  const s = property.areaScores;
+  const dimensions = s ? [
+    { label: "Livability", score: s.livabilityScore ?? 0, color: "var(--teal)" },
+    { label: "Connectivity", score: s.connectivityScore ?? 0, color: "var(--teal)" },
+    { label: "Schools & Education", score: s.schoolsScore ?? 0, color: "var(--gold)" },
+    { label: "Safety", score: s.safetyScore ?? 0, color: "var(--green)" },
+    { label: "Price Appreciation", score: Math.min(100, Math.round((s.priceTrendPctAnnual ?? 0) * 5)), color: "var(--gold)" },
+    { label: "Overall AI Score", score: property.aiScore, color: "var(--teal)" },
+  ] : [
     { label: "Livability", score: Math.min(100, (property.aiScore + 2) % 100 + 70), color: "var(--teal)" },
     { label: "Price Fairness", score: Math.min(100, (property.aiScore - 5 + 100) % 40 + 60), color: "var(--green)" },
     { label: "Appreciation Potential", score: Math.min(100, property.aiScore + 3), color: "var(--gold)" },
@@ -517,19 +594,51 @@ function AIInsightsPanel({ property }: { property: PropertyDetail }) {
       {/* Investment potential */}
       <div className="bento-card" style={{ marginTop: 4 }}>
         <h4 style={{ color: "var(--heading)", marginBottom: 12, fontSize: 15, fontWeight: 600 }}>📈 Investment Potential</h4>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-          {[
-            { label: "12-Month Forecast", val: "+8-12%", color: "var(--green)" },
-            { label: "36-Month Forecast", val: "+22-30%", color: "var(--teal)" },
-            { label: "Rental Yield", val: "3.2-4.1%", color: "var(--gold)" },
-            { label: "Market Demand", val: "High", color: "var(--teal)" },
-          ].map((item) => (
-            <div key={item.label} style={{ padding: "10px 0", borderBottom: "1px solid var(--border)" }}>
-              <div style={{ fontSize: 11, color: "var(--text-dim)", marginBottom: 4 }}>{item.label}</div>
-              <div style={{ fontSize: 16, fontWeight: 700, color: item.color }}>{item.val}</div>
+        {forecastLoading ? (
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} style={{ padding: "10px 0", borderBottom: "1px solid var(--border)" }}>
+                <div style={{ height: 10, width: "60%", background: "var(--dark-3)", borderRadius: 4, marginBottom: 8 }} />
+                <div style={{ height: 20, width: "40%", background: "var(--dark-3)", borderRadius: 4 }} />
+              </div>
+            ))}
+          </div>
+        ) : forecast ? (
+          <>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+              {[
+                { label: "12-Month Forecast", val: `+${forecast.forecast12m.toFixed(1)}%`, color: "var(--green)" },
+                { label: "36-Month Forecast", val: `+${forecast.forecast36m.toFixed(1)}%`, color: "var(--teal)" },
+                { label: "Market Demand", val: forecast.demandSignal.charAt(0).toUpperCase() + forecast.demandSignal.slice(1), color: "var(--teal)" },
+                { label: "Confidence", val: forecast.confidence.charAt(0).toUpperCase() + forecast.confidence.slice(1), color: "var(--gold)" },
+              ].map((item) => (
+                <div key={item.label} style={{ padding: "10px 0", borderBottom: "1px solid var(--border)" }}>
+                  <div style={{ fontSize: 11, color: "var(--text-dim)", marginBottom: 4 }}>{item.label}</div>
+                  <div style={{ fontSize: 16, fontWeight: 700, color: item.color }}>{item.val}</div>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
+            {forecast.rationale && (
+              <div style={{ marginTop: 12, padding: "10px 12px", background: "rgba(0,212,170,0.06)", borderRadius: 8, fontSize: 12, color: "var(--text-muted)", lineHeight: 1.6 }}>
+                {forecast.rationale}
+              </div>
+            )}
+          </>
+        ) : (
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+            {[
+              { label: "12-Month Forecast", val: "+8-12%", color: "var(--green)" },
+              { label: "36-Month Forecast", val: "+22-30%", color: "var(--teal)" },
+              { label: "Rental Yield", val: "3.2-4.1%", color: "var(--gold)" },
+              { label: "Market Demand", val: "High", color: "var(--teal)" },
+            ].map((item) => (
+              <div key={item.label} style={{ padding: "10px 0", borderBottom: "1px solid var(--border)" }}>
+                <div style={{ fontSize: 11, color: "var(--text-dim)", marginBottom: 4 }}>{item.label}</div>
+                <div style={{ fontSize: 16, fontWeight: 700, color: item.color }}>{item.val}</div>
+              </div>
+            ))}
+          </div>
+        )}
         <div style={{ marginTop: 12, fontSize: 11, color: "var(--text-dim)" }}>
           * Forecasts are AI estimates based on historical data. Not financial advice.
         </div>

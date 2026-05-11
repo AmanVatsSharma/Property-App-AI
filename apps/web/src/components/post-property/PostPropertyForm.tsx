@@ -27,6 +27,11 @@ const postPropertySchema = z.object({
   propertyType: z.enum(["apartment", "villa", "plot", "builder-floor", "office"], { required_error: "Select property type" }),
   address: z.string().min(5, "Address must be at least 5 characters").max(500, "Address too long"),
   price: z.coerce.number().min(0, "Price must be 0 or more"),
+  bedrooms: z.coerce.number().int("Bedrooms must be a whole number").min(0, "Bedrooms cannot be negative").max(20, "Bedrooms must be 20 or fewer"),
+  bathrooms: z.coerce.number().int("Bathrooms must be a whole number").min(0, "Bathrooms cannot be negative").max(15, "Bathrooms must be 15 or fewer"),
+  areaSqft: z.coerce.number().min(1, "Area must be greater than 0").max(100000, "Area seems unrealistic"),
+  locality: z.string().min(2, "Locality must be at least 2 characters").max(200, "Locality too long").optional().or(z.literal("")),
+  city: z.string().min(2, "City must be at least 2 characters").max(100, "City too long"),
 });
 
 export type PostPropertyFormValues = z.infer<typeof postPropertySchema>;
@@ -46,7 +51,7 @@ export default function PostPropertyForm() {
     formState: { errors },
   } = useForm<PostPropertyFormValues>({
     resolver: zodResolver(postPropertySchema),
-    defaultValues: { title: "", listingFor: "sell", propertyType: "apartment", address: "", price: 0 },
+    defaultValues: { title: "", listingFor: "sell", propertyType: "apartment", address: "", price: 0, bedrooms: 0, bathrooms: 0, areaSqft: 0, locality: "", city: "" },
   });
 
   const onFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -108,6 +113,11 @@ export default function PostPropertyForm() {
           listingFor: data.listingFor,
           coverImageUrl,
           imageUrls: imageUrls ?? (coverImageUrl ? [coverImageUrl] : undefined),
+          bedrooms: data.bedrooms > 0 ? data.bedrooms : undefined,
+          bathrooms: data.bathrooms > 0 ? data.bathrooms : undefined,
+          areaSqft: data.areaSqft > 0 ? data.areaSqft : undefined,
+          locality: data.locality || undefined,
+          city: data.city || undefined,
         },
         headers,
       );
@@ -232,6 +242,118 @@ export default function PostPropertyForm() {
           {errors.address && (
             <span id="address-error" style={{ fontSize: 12, color: "var(--coral)", marginTop: 4, display: "block" }}>
               {errors.address.message}
+            </span>
+          )}
+        </div>
+        <div className="form-grid-2" style={{ marginBottom: 16 }}>
+          <div className="form-field">
+            <label className="label" htmlFor="bedrooms">
+              Bedrooms
+            </label>
+            <select
+              id="bedrooms"
+              className="select"
+              aria-invalid={!!errors.bedrooms}
+              aria-describedby={errors.bedrooms ? "bedrooms-error" : undefined}
+              {...register("bedrooms")}
+            >
+              <option value={0}>Studio / 0 BHK</option>
+              <option value={1}>1 BHK</option>
+              <option value={2}>2 BHK</option>
+              <option value={3}>3 BHK</option>
+              <option value={4}>4 BHK</option>
+              <option value={5}>5 BHK</option>
+              <option value={6}>6+ BHK</option>
+            </select>
+            {errors.bedrooms && (
+              <span id="bedrooms-error" style={{ fontSize: 12, color: "var(--coral)", marginTop: 4, display: "block" }}>
+                {errors.bedrooms.message}
+              </span>
+            )}
+          </div>
+          <div className="form-field">
+            <label className="label" htmlFor="bathrooms">
+              Bathrooms
+            </label>
+            <select
+              id="bathrooms"
+              className="select"
+              aria-invalid={!!errors.bathrooms}
+              aria-describedby={errors.bathrooms ? "bathrooms-error" : undefined}
+              {...register("bathrooms")}
+            >
+              <option value={0}>0</option>
+              <option value={1}>1</option>
+              <option value={2}>2</option>
+              <option value={3}>3</option>
+              <option value={4}>4</option>
+              <option value={5}>5+</option>
+            </select>
+            {errors.bathrooms && (
+              <span id="bathrooms-error" style={{ fontSize: 12, color: "var(--coral)", marginTop: 4, display: "block" }}>
+                {errors.bathrooms.message}
+              </span>
+            )}
+          </div>
+        </div>
+        <div className="form-grid-2" style={{ marginBottom: 16 }}>
+          <div className="form-field">
+            <label className="label" htmlFor="areaSqft">
+              Area (sq ft)
+            </label>
+            <input
+              id="areaSqft"
+              type="number"
+              min={1}
+              step={50}
+              className="input"
+              placeholder="e.g. 1200"
+              aria-invalid={!!errors.areaSqft}
+              aria-describedby={errors.areaSqft ? "areaSqft-error" : undefined}
+              {...register("areaSqft")}
+            />
+            {errors.areaSqft && (
+              <span id="areaSqft-error" style={{ fontSize: 12, color: "var(--coral)", marginTop: 4, display: "block" }}>
+                {errors.areaSqft.message}
+              </span>
+            )}
+          </div>
+          <div className="form-field">
+            <label className="label" htmlFor="city">
+              City
+            </label>
+            <input
+              id="city"
+              type="text"
+              className="input"
+              placeholder="e.g. Gurgaon"
+              aria-invalid={!!errors.city}
+              aria-describedby={errors.city ? "city-error" : undefined}
+              {...register("city")}
+            />
+            {errors.city && (
+              <span id="city-error" style={{ fontSize: 12, color: "var(--coral)", marginTop: 4, display: "block" }}>
+                {errors.city.message}
+              </span>
+            )}
+          </div>
+        </div>
+        <div className="form-field" style={{ marginBottom: 16 }}>
+          <label className="label" htmlFor="locality">
+            Locality <span style={{ fontSize: 11, color: "var(--text-dim)" }}>(optional)</span>
+          </label>
+          <input
+            id="locality"
+            type="text"
+            className="input"
+            placeholder="e.g. Sector 56, Whitefield"
+            aria-invalid={!!errors.locality}
+            aria-describedby={errors.locality ? "locality-error" : undefined}
+            {...register("locality")}
+          />
+          {errors.locality && (
+            <span id="locality-error" style={{ fontSize: 12, color: "var(--coral)", marginTop: 4, display: "block" }}>
+              {errors.locality.message}
             </span>
           )}
         </div>

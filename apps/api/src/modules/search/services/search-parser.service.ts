@@ -8,11 +8,10 @@
 
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { ChatOpenAI } from '@langchain/openai';
-import { ChatAnthropic } from '@langchain/anthropic';
 import { LoggerService } from '@api/shared/logger';
 import { MetricsService } from '@api/modules/metrics/services/metrics.service';
 import { AGENT_CONFIG_KEYS } from '@api/modules/agent/config/agent-config';
+import { tryCreateAgentChatModel } from '@api/shared/llm/create-agent-chat-model';
 import { getSearchParsePrompt } from '../prompts/search-parse.prompt';
 import {
   buildLlmUsageLogFields,
@@ -47,47 +46,30 @@ export class SearchParserService {
       this.logger.debug('search parse: empty query', { method: 'parse' });
       return {};
     }
-    const provider = this.config.get<'openai' | 'anthropic'>(AGENT_CONFIG_KEYS.AGENT_PROVIDER) ?? 'openai';
+    const configuredProvider =
+      this.config.get<string>(AGENT_CONFIG_KEYS.AGENT_PROVIDER) ?? 'google';
     const prompt = getSearchParsePrompt(trimmed);
     try {
-      if (provider === 'anthropic') {
-        const apiKey = this.config.get<string>(AGENT_CONFIG_KEYS.ANTHROPIC_API_KEY);
-        if (!apiKey?.trim()) {
-          this.logger.debug('search parse: ANTHROPIC_API_KEY not set', { method: 'parse' });
-          return this.fallbackFromQuery(trimmed);
-        }
-        const model = this.config.get<string>(AGENT_CONFIG_KEYS.AGENT_ANTHROPIC_MODEL) ?? 'claude-sonnet-4-20250514';
-        const llm = new ChatAnthropic({ anthropicApiKey: apiKey, model, temperature: 0.2, maxTokens: 512 });
-        const response = await llm.invoke(prompt);
-        const usage = parseLlmUsageFromLlmMessage(response);
-        if (usage) {
-          this.metrics.recordLlmTokens('search_parse', 'anthropic', usage.inputTokens, usage.outputTokens);
-          this.logger.info('search parse LLM usage', {
-            method: 'parse',
-            queryPrefix: trimmed.substring(0, 80),
-            ...buildLlmUsageLogFields('search_parse', 'anthropic', usage.inputTokens, usage.outputTokens),
-          });
-        } else {
-          this.logger.debug('search parse LLM usage missing', { method: 'parse' });
-        }
-        const text = typeof response.content === 'string' ? response.content : String(response.content);
-        return this.parseJsonToParams(text);
-      }
-      const apiKey = this.config.get<string>(AGENT_CONFIG_KEYS.OPENAI_API_KEY);
-      if (!apiKey?.trim()) {
-        this.logger.debug('search parse: OPENAI_API_KEY not set', { method: 'parse' });
+      const created = tryCreateAgentChatModel(this.config, {
+        temperature: 0.2,
+        maxOutputTokens: 512,
+      });
+      if (!created) {
+        this.logger.debug('search parse: API key not set for agent provider', {
+          method: 'parse',
+          provider: configuredProvider,
+        });
         return this.fallbackFromQuery(trimmed);
       }
-      const model = this.config.get<string>(AGENT_CONFIG_KEYS.AGENT_MODEL) ?? 'gpt-4o';
-      const llm = new ChatOpenAI({ modelName: model, temperature: 0.2, openAIApiKey: apiKey });
+      const { llm, provider } = created;
       const response = await llm.invoke(prompt);
       const usage = parseLlmUsageFromLlmMessage(response);
       if (usage) {
-        this.metrics.recordLlmTokens('search_parse', 'openai', usage.inputTokens, usage.outputTokens);
+        this.metrics.recordLlmTokens('search_parse', provider, usage.inputTokens, usage.outputTokens);
         this.logger.info('search parse LLM usage', {
           method: 'parse',
           queryPrefix: trimmed.substring(0, 80),
-          ...buildLlmUsageLogFields('search_parse', 'openai', usage.inputTokens, usage.outputTokens),
+          ...buildLlmUsageLogFields('search_parse', provider, usage.inputTokens, usage.outputTokens),
         });
       } else {
         this.logger.debug('search parse LLM usage missing', { method: 'parse' });

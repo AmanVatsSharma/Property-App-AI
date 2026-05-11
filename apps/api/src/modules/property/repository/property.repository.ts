@@ -53,6 +53,11 @@ export class PropertyRepository {
         createdByUserId: filter.createdByUserId,
       });
     }
+    if (filter.status) {
+      qb.andWhere('p.status = :status', { status: filter.status });
+    } else if (!filter.createdByUserId) {
+      qb.andWhere("p.status = 'active'");
+    }
     const hasBounds =
       filter.minLat != null &&
       filter.maxLat != null &&
@@ -137,6 +142,27 @@ export class PropertyRepository {
     return this.repo.count();
   }
 
+  /**
+   * Find properties by locality substring match (case-insensitive), ordered by creation date.
+   * Used for comparable analysis and price trend calculations in area services.
+   */
+  async findByLocality(locality: string, options?: { limit?: number; bedrooms?: number; type?: string }): Promise<Property[]> {
+    const qb = this.repo.createQueryBuilder('p');
+    qb.andWhere('p.status = :status', { status: 'active' });
+    qb.andWhere('p.location ILIKE :locality', { locality: `%${locality}%` });
+    qb.andWhere('p.price IS NOT NULL');
+    qb.andWhere('p.areaSqft IS NOT NULL AND p.areaSqft > 0');
+    if (options?.bedrooms != null) {
+      qb.andWhere('p.bedrooms = :bedrooms', { bedrooms: options.bedrooms });
+    }
+    if (options?.type) {
+      qb.andWhere('p.type = :type', { type: options.type });
+    }
+    qb.orderBy('p.createdAt', 'DESC');
+    qb.take(options?.limit ?? 50);
+    return qb.getMany();
+  }
+
   async incrementViewCount(id: string): Promise<void> {
     await this.repo.increment({ id }, 'viewCount', 1);
   }
@@ -176,6 +202,11 @@ export class PropertyRepository {
         createdByUserId: filter.createdByUserId,
       });
     }
+    if (filter.status) {
+      qb.andWhere('p.status = :status', { status: filter.status });
+    } else if (!filter.createdByUserId) {
+      qb.andWhere("p.status = 'active'");
+    }
     const hasBounds =
       filter.minLat != null &&
       filter.maxLat != null &&
@@ -197,15 +228,15 @@ export class PropertyRepository {
         qb.andWhere('p."createdAt" < :after', { after: afterDate });
       }
     }
-    qb.orderBy('p.createdAt', 'DESC');
+    if (filter.cursor) {
+      qb.andWhere('p.id < :cursor', { cursor: filter.cursor });
+    }
+    qb.orderBy('p.id', 'DESC');
     qb.take(limit + 1);
     const result = await qb.getMany();
     const hasMore = result.length > limit;
     const items = hasMore ? result.slice(0, limit) : result;
-    const nextCursor =
-      hasMore && items.length > 0
-        ? items[items.length - 1].createdAt.toISOString()
-        : null;
+    const nextCursor = hasMore && items.length > 0 ? items[items.length - 1].id : null;
     const countQb = this.repo.createQueryBuilder('p');
     if (hasAreaScoreFilter) {
       countQb.innerJoin('area', 'a', 'a.id = p."areaId"');
@@ -232,6 +263,11 @@ export class PropertyRepository {
       countQb.andWhere('p."createdByUserId" = :createdByUserId', {
         createdByUserId: filter.createdByUserId,
       });
+    }
+    if (filter.status) {
+      countQb.andWhere('p.status = :status', { status: filter.status });
+    } else if (!filter.createdByUserId) {
+      countQb.andWhere("p.status = 'active'");
     }
     if (hasBounds) {
       countQb.andWhere('p.latitude IS NOT NULL AND p.longitude IS NOT NULL');

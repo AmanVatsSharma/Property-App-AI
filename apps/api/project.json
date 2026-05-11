@@ -78,6 +78,24 @@
       "dependsOn": ["prune-lockfile", "copy-workspace-modules"],
       "executor": "nx:noop"
     },
+    "dev": {
+      "continuous": true,
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "apps/api",
+        "parallel": true,
+        "commands": [
+          "NODE_OPTIONS='--max-old-space-size=8192' npx tsc -p tsconfig.app.json --watch",
+          "npx tsc-alias -p tsconfig.app.json --watch",
+          "sh -c 'until [ -f ../../dist/apps/api/src/main.js ]; do sleep 0.3; done; npx tsc-alias -p tsconfig.app.json && exec node --watch ../../dist/apps/api/src/main.js'"
+        ],
+        "env": {
+          "CHOKIDAR_USEPOLLING": "true",
+          "CHOKIDAR_INTERVAL": "1500",
+          "TSC_WATCHFILE": "DynamicPriorityPolling"
+        }
+      }
+    },
     "serve": {
       "continuous": true,
       "executor": "nx:run-commands",

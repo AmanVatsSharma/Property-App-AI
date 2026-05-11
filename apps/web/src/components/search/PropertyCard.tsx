@@ -157,7 +157,7 @@ export function PropertyCard({ property: p, onHeartClick, initialSaved = false }
           : "var(--coral)";
 
   const createdDaysAgo = Math.floor((Date.now() - new Date(p.createdAt).getTime()) / 86_400_000);
-  const viewing = useMemo(() => viewingCount(p.id), [p.id]);
+  const viewing = useMemo(() => (p.viewCount && p.viewCount > 0 ? p.viewCount : viewingCount(p.id)), [p.id, p.viewCount]);
   const emi = useMemo(() => (p.listingFor !== "rent" ? emiMonthly(p.price) : null), [p.price, p.listingFor]);
 
   const handleHeart = (e: React.MouseEvent) => {
@@ -209,9 +209,9 @@ export function PropertyCard({ property: p, onHeartClick, initialSaved = false }
           saved={saved}
           aiPick={p.aiScore != null && p.aiScore >= 90}
           isNew={createdDaysAgo <= 3}
-          hasPriceDrop={"priceDropPercent" in p && typeof (p as Record<string, unknown>).priceDropPercent === "number"}
-          priceDropPct={"priceDropPercent" in p ? (p as Record<string, number>).priceDropPercent : 0}
-          isVerified={"isVerified" in p && !!(p as Record<string, unknown>).isVerified}
+          hasPriceDrop={p.priceDropPercent != null && p.priceDropPercent > 0}
+          priceDropPct={p.priceDropPercent ?? 0}
+          isVerified={!!p.isVerified}
           aiScore={p.aiScore}
           scoreColor={scoreColor}
           viewingCount={viewing}

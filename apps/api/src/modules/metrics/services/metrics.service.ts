@@ -74,4 +74,46 @@ export class MetricsService {
   recordPropertyCreated(): void {
     this.propertyCreatedCounter.inc(1);
   }
+
+  /**
+   * Returns all current metric values as label → value maps.
+   * Used by AdminService to expose AI metrics to the admin dashboard.
+   */
+  async getMetricsSnapshot(): Promise<{
+    agentCalls: Record<string, number>;
+    llmTokens: Record<string, number>;
+    otpSent: Record<string, number>;
+    propertyCreated: number;
+  }> {
+    const agentMetrics = await this.agentCallsCounter.get();
+    const llmMetrics = await this.llmTokensCounter.get();
+    const otpMetrics = await this.otpSentCounter.get();
+    const propertyMetrics = await this.propertyCreatedCounter.get();
+
+    const agentCalls: Record<string, number> = {};
+    for (const entry of agentMetrics.values) {
+      const label = Object.values(entry.labels).join(':') || 'total';
+      agentCalls[label] = (agentCalls[label] ?? 0) + entry.value;
+    }
+
+    const llmTokens: Record<string, number> = {};
+    for (const entry of llmMetrics.values) {
+      const { feature, provider, token_type } = entry.labels as Record<string, string>;
+      const key = `${feature}:${provider}:${token_type}`;
+      llmTokens[key] = (llmTokens[key] ?? 0) + entry.value;
+    }
+
+    const otpSent: Record<string, number> = {};
+    for (const entry of otpMetrics.values) {
+      const label = Object.values(entry.labels).join(':') || 'total';
+      otpSent[label] = (otpSent[label] ?? 0) + entry.value;
+    }
+
+    return {
+      agentCalls,
+      llmTokens,
+      otpSent,
+      propertyCreated: propertyMetrics.values[0]?.value ?? 0,
+    };
+  }
 }

@@ -6,7 +6,7 @@
  * @created 2025-03-11
  */
 
-export type AgentProvider = 'openai' | 'anthropic';
+export type AgentProvider = 'openai' | 'anthropic' | 'google';
 
 export interface AgentConfig {
   openaiApiKey: string;
@@ -17,6 +17,8 @@ export interface AgentConfig {
   provider: AgentProvider;
   anthropicApiKey?: string;
   anthropicModel: string;
+  googleApiKey?: string;
+  googleModel: string;
   thinkingBudgetTokens?: number;
   planFirst: boolean;
 }
@@ -30,6 +32,8 @@ export const AGENT_CONFIG_KEYS = {
   AGENT_PROVIDER: 'AGENT_PROVIDER',
   ANTHROPIC_API_KEY: 'ANTHROPIC_API_KEY',
   AGENT_ANTHROPIC_MODEL: 'AGENT_ANTHROPIC_MODEL',
+  GOOGLE_API_KEY: 'GOOGLE_API_KEY',
+  AGENT_GOOGLE_MODEL: 'AGENT_GOOGLE_MODEL',
   AGENT_THINKING_BUDGET_TOKENS: 'AGENT_THINKING_BUDGET_TOKENS',
   AGENT_PLAN_FIRST: 'AGENT_PLAN_FIRST',
 } as const;

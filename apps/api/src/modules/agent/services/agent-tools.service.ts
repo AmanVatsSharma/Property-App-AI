@@ -13,6 +13,9 @@ import { LoggerService } from '@api/shared/logger';
 import { PropertyService } from '@api/modules/property/services/property.service';
 import { AreaService } from '@api/modules/area/services/area.service';
 import { PriceForecastService } from '@api/modules/area/services/price-forecast.service';
+import { ReraCheckService } from '@api/modules/area/services/rera-check.service';
+import { DocumentAnalysisService } from '@api/modules/area/services/document-analysis.service';
+import { NegotiationAdvisorService } from '@api/modules/area/services/negotiation-advisor.service';
 import type { Area } from '@api/modules/area/entities/area.entity';
 import type { StructuredToolInterface } from '@langchain/core/tools';
 import type { Property } from '@api/modules/property/entities/property.entity';
@@ -45,6 +48,9 @@ export class AgentToolsService {
     private readonly propertyService: PropertyService,
     private readonly areaService: AreaService,
     private readonly priceForecastService: PriceForecastService,
+    private readonly reraCheckService: ReraCheckService,
+    private readonly documentAnalysisService: DocumentAnalysisService,
+    private readonly negotiationAdvisorService: NegotiationAdvisorService,
     private readonly logger: LoggerService,
   ) {}
 
@@ -457,21 +463,36 @@ export class AgentToolsService {
       `Demand: ${result.demandSignal}. Confidence: ${result.confidence}. ${result.rationale}`;
   }
 
-  private async checkReraImpl(_projectNameOrNumber: string): Promise<string> {
-    return 'RERA verification is coming soon. Real-time RERA API integration will be available in a future update.';
+  private async checkReraImpl(projectNameOrNumber: string): Promise<string> {
+    const result = await this.reraCheckService.check(projectNameOrNumber);
+    return this.reraCheckService.formatForAgent(result);
   }
 
-  private async analyzeDocumentImpl(_documentSummaryOrText: string): Promise<string> {
-    return 'Document and legal risk analysis is coming soon. This feature will be available in a future update.';
+  private async analyzeDocumentImpl(documentSummaryOrText: string): Promise<string> {
+    const result = await this.documentAnalysisService.analyze(documentSummaryOrText);
+    return this.documentAnalysisService.formatForAgent(result);
   }
 
   private async getNegotiationAdviceImpl(propertyId: string, context?: string): Promise<string> {
+    let property: Property;
     try {
-      const p = await this.propertyService.findOne(propertyId);
-      return `Negotiation advice for "${p.title}" (${p.location}): Coming soon. Comparables and bid strategy will be available in a future update.${context ? ` You mentioned: ${context}.` : ''}`;
+      property = await this.propertyService.findOne(propertyId);
     } catch {
-      return `Property ${propertyId} not found.`;
+      const notFound = this.negotiationAdvisorService.notFound(propertyId);
+      return this.negotiationAdvisorService.formatForAgent(notFound);
     }
+    const result = await this.negotiationAdvisorService.advise(
+      {
+        propertyId: property.id,
+        title: property.title,
+        location: property.location,
+        price: Number(property.price),
+        bedrooms: property.bedrooms ?? null,
+        areaSqft: property.areaSqft != null ? Number(property.areaSqft) : null,
+      },
+      context,
+    );
+    return this.negotiationAdvisorService.formatForAgent(result, property.title);
   }
 
   private async comparePropertiesImpl(propertyIds: string[]): Promise<string> {

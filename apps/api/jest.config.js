@@ -18,6 +18,7 @@ module.exports = {
     '^@langchain/core/messages$': '<rootDir>/jest-mocks/langchain-messages.cjs',
     '^@langchain/openai$': '<rootDir>/jest-mocks/langchain-openai.cjs',
     '^@langchain/anthropic$': '<rootDir>/jest-mocks/langchain-anthropic.cjs',
+    '^@langchain/google-genai$': '<rootDir>/jest-mocks/langchain-google-genai.cjs',
     '^@api/shared/(.*)$': '<rootDir>/src/shared/$1',
     '^@api/shared$': '<rootDir>/src/shared',
     '^@api/common/(.*)$': '<rootDir>/src/common/$1',

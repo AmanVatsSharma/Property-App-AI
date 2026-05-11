@@ -54,7 +54,7 @@ export class Area {
   @Column({ type: 'varchar', length: 50, nullable: true })
   dataSource: AreaDataSource | null;
 
-  @Column({ type: 'timestamp', nullable: true })
+  @Column({ type: 'datetime', nullable: true })
   lastAssessedAt: Date | null;
 
   @Column({ type: 'decimal', precision: 11, scale: 8, nullable: true })

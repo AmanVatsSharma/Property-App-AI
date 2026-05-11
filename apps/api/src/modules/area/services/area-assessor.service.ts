@@ -8,11 +8,10 @@
 
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { ChatOpenAI } from '@langchain/openai';
-import { ChatAnthropic } from '@langchain/anthropic';
 import { LoggerService } from '@api/shared/logger';
 import { withRetry } from '@api/shared/retry';
 import { MetricsService } from '@api/modules/metrics/services/metrics.service';
+import { tryCreateAgentChatModel } from '@api/shared/llm/create-agent-chat-model';
 import {
   buildLlmUsageLogFields,
   parseLlmUsageFromLlmMessage,
@@ -66,57 +65,37 @@ export class AreaAssessorService {
 
     this.logger.debug('assess start', { areaId: area.id, locality: area.locality, city: area.city });
 
-    const provider = this.config.get<'openai' | 'anthropic'>(AGENT_CONFIG_KEYS.AGENT_PROVIDER) ?? 'openai';
+    const configuredProvider =
+      this.config.get<string>(AGENT_CONFIG_KEYS.AGENT_PROVIDER) ?? 'google';
     const prompt = getAreaAssessPrompt(area.locality, area.city);
 
     let result: AssessResult;
     try {
-      if (provider === 'anthropic') {
-        const apiKey = this.config.get<string>(AGENT_CONFIG_KEYS.ANTHROPIC_API_KEY);
-        if (!apiKey?.trim()) {
-          this.logger.warn('assess: ANTHROPIC_API_KEY not set, using fallback scores');
-          result = this.fallbackAssessResult();
-        } else {
-          const model = this.config.get<string>(AGENT_CONFIG_KEYS.AGENT_ANTHROPIC_MODEL) ?? 'claude-sonnet-4-20250514';
-          const llm = new ChatAnthropic({ anthropicApiKey: apiKey, model, temperature: 0.2, maxTokens: 1024 });
-          const response = await withRetry(() => llm.invoke(prompt), { maxRetries: 2, initialMs: 500 });
-          const usage = parseLlmUsageFromLlmMessage(response);
-          if (usage) {
-            this.metrics.recordLlmTokens('area_assess', 'anthropic', usage.inputTokens, usage.outputTokens);
-            this.logger.info('area assess LLM usage', {
-              method: 'assess',
-              areaId: area.id,
-              ...buildLlmUsageLogFields('area_assess', 'anthropic', usage.inputTokens, usage.outputTokens),
-            });
-          } else {
-            this.logger.debug('area assess LLM usage missing', { method: 'assess', areaId: area.id });
-          }
-          const text = typeof response.content === 'string' ? response.content : String(response.content);
-          result = this.parseAssessResult(text);
-        }
+      const created = tryCreateAgentChatModel(this.config, {
+        temperature: 0.2,
+        maxOutputTokens: 1024,
+      });
+      if (!created) {
+        this.logger.warn('assess: API key not set for agent provider, using fallback scores', {
+          provider: configuredProvider,
+        });
+        result = this.fallbackAssessResult();
       } else {
-        const apiKey = this.config.get<string>(AGENT_CONFIG_KEYS.OPENAI_API_KEY);
-        if (!apiKey?.trim()) {
-          this.logger.warn('assess: OPENAI_API_KEY not set, using fallback scores');
-          result = this.fallbackAssessResult();
+        const { llm, provider } = created;
+        const response = await withRetry(() => llm.invoke(prompt), { maxRetries: 2, initialMs: 500 });
+        const usage = parseLlmUsageFromLlmMessage(response);
+        if (usage) {
+          this.metrics.recordLlmTokens('area_assess', provider, usage.inputTokens, usage.outputTokens);
+          this.logger.info('area assess LLM usage', {
+            method: 'assess',
+            areaId: area.id,
+            ...buildLlmUsageLogFields('area_assess', provider, usage.inputTokens, usage.outputTokens),
+          });
         } else {
-          const model = this.config.get<string>(AGENT_CONFIG_KEYS.AGENT_MODEL) ?? 'gpt-4o';
-          const llm = new ChatOpenAI({ modelName: model, temperature: 0.2, openAIApiKey: apiKey });
-          const response = await withRetry(() => llm.invoke(prompt), { maxRetries: 2, initialMs: 500 });
-          const usage = parseLlmUsageFromLlmMessage(response);
-          if (usage) {
-            this.metrics.recordLlmTokens('area_assess', 'openai', usage.inputTokens, usage.outputTokens);
-            this.logger.info('area assess LLM usage', {
-              method: 'assess',
-              areaId: area.id,
-              ...buildLlmUsageLogFields('area_assess', 'openai', usage.inputTokens, usage.outputTokens),
-            });
-          } else {
-            this.logger.debug('area assess LLM usage missing', { method: 'assess', areaId: area.id });
-          }
-          const text = typeof response.content === 'string' ? response.content : String(response.content);
-          result = this.parseAssessResult(text);
+          this.logger.debug('area assess LLM usage missing', { method: 'assess', areaId: area.id });
         }
+        const text = typeof response.content === 'string' ? response.content : String(response.content);
+        result = this.parseAssessResult(text);
       }
     } catch (err) {
       this.logger.warn('assess LLM failed, using fallback', {

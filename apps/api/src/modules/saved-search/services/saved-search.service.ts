@@ -109,11 +109,8 @@ export class SavedSearchService {
         const siteUrl = this.config.get<string>('NEXT_PUBLIC_SITE_URL') ?? 'https://urbannest.ai';
         const searchUrl = `${siteUrl}/search?savedSearch=${search.id}`;
 
-        // Resolve the user's email address. The current auth model is phone-only,
-        // so we check for an optional email field. [SonuRamTODO] Add email column
-        // to User entity and migration when email sign-in is supported.
         const user = await this.userService.findById(search.userId);
-        const userEmail = (user as unknown as Record<string, unknown>)?.['email'] as string | undefined;
+        const userEmail = user?.email;
 
         if (userEmail && userEmail.includes('@')) {
           this.mail

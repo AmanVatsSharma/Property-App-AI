@@ -29,7 +29,7 @@ import { PropertyCard } from "./PropertyCard";
 import { FilterSidebar } from "./FilterSidebar";
 import { SkeletonGrid } from "@/components/ui/Skeleton";
 import { SaveSearchButton } from "./SaveSearchButton";
-import type { PropertyMapItem } from "./PropertyMap";
+import type { PropertyMapItem, MapBounds } from "./PropertyMap";
 
 const PropertyMap = dynamic(() => import("./PropertyMap").then((m) => m.PropertyMap), {
   ssr: false,
@@ -97,6 +97,61 @@ const cardVariants = {
   }),
 };
 
+/* ── page number helper ───────────────────────────────────────────── */
+
+function buildPageList(current: number, total: number): (number | "…")[] {
+  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+  const pages: (number | "…")[] = [];
+  pages.push(1);
+  if (current > 3) pages.push("…");
+  for (let p = Math.max(2, current - 1); p <= Math.min(total - 1, current + 1); p++) pages.push(p);
+  if (current < total - 2) pages.push("…");
+  pages.push(total);
+  return pages;
+}
+
+function PaginationNav({ page, total, onChange }: { page: number; total: number; onChange: (p: number) => void }) {
+  const pages = buildPageList(page, total);
+  return (
+    <div className="pagination">
+      <button
+        type="button"
+        className="page-btn"
+        onClick={() => onChange(page - 1)}
+        disabled={page <= 1}
+        aria-label="Previous page"
+      >
+        ‹
+      </button>
+      {pages.map((p, i) =>
+        p === "…" ? (
+          <span key={`ellipsis-${i}`} style={{ color: "var(--text-dim)", padding: "0 4px", display: "flex", alignItems: "center" }}>…</span>
+        ) : (
+          <button
+            key={p}
+            type="button"
+            className={`page-btn ${page === p ? "active" : ""}`}
+            onClick={() => onChange(p as number)}
+            aria-label={`Page ${p}`}
+            aria-current={page === p ? "page" : undefined}
+          >
+            {p}
+          </button>
+        ),
+      )}
+      <button
+        type="button"
+        className="page-btn"
+        onClick={() => onChange(page + 1)}
+        disabled={page >= total}
+        aria-label="Next page"
+      >
+        ›
+      </button>
+    </div>
+  );
+}
+
 /* ── component ────────────────────────────────────────────────────── */
 
 export default function SearchPageClient() {
@@ -107,7 +162,9 @@ export default function SearchPageClient() {
   const { showToast } = useToast();
   const [viewMode, setViewMode] = useState<"grid" | "list" | "map">("grid");
   const [apiProperties, setApiProperties] = useState<ApiProperty[] | null>(null);
+  const [totalCount, setTotalCount] = useState(0);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [mapBounds, setMapBounds] = useState<MapBounds | null>(null);
   const [aiQuery, setAiQuery] = useState("");
   const [nlSearchResults, setNlSearchResults] = useState<ApiProperty[] | null>(null);
   const [nlSearchLoading, setNlSearchLoading] = useState(false);
@@ -143,6 +200,7 @@ export default function SearchPageClient() {
       ...(params.bhk && { bedrooms: parseInt(params.bhk, 10) }),
       ...(params.minPrice && { minPrice: parseInt(params.minPrice, 10) }),
       ...(params.maxPrice && { maxPrice: parseInt(params.maxPrice, 10) }),
+      ...(mapBounds ?? {}),
       limit: 20,
       offset: (params.page - 1) * 20,
       ...sortConfig,
@@ -150,9 +208,10 @@ export default function SearchPageClient() {
 
     setApiProperties(null);
     gqlProperties(filter)
-      .then((list) => { setLoadError(null); setApiProperties(list); })
-      .catch((e) => { setApiProperties([]); setLoadError(e instanceof Error ? e.message : "Failed to load properties"); });
-  }, [params.city, params.location, params.type, params.bhk, params.minPrice, params.maxPrice, params.page, params.sort]);
+      .then(({ properties: list, totalCount: count }) => { setLoadError(null); setApiProperties(list); setTotalCount(count); })
+      .catch((e) => { setApiProperties([]); setTotalCount(0); setLoadError(e instanceof Error ? e.message : "Failed to load properties"); });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [params.city, params.location, params.type, params.bhk, params.minPrice, params.maxPrice, params.page, params.sort, mapBounds]);
 
   const setParams = useCallback(
     (updates: Partial<ReturnType<typeof parseSearchParams>>) => {
@@ -218,7 +277,7 @@ export default function SearchPageClient() {
     [token, showToast],
   );
 
-  const resultCount = nlSearchResults !== null ? nlSearchResults.length : (apiProperties?.length ?? null);
+  const resultCount = nlSearchResults !== null ? nlSearchResults.length : totalCount;
 
   return (
     <>
@@ -279,7 +338,9 @@ export default function SearchPageClient() {
                 ? `AI: ${nlSearchResults.length} result${nlSearchResults.length !== 1 ? "s" : ""}`
                 : apiProperties === null
                   ? "Loading…"
-                  : `${apiProperties.length} propert${apiProperties.length !== 1 ? "ies" : "y"}`}
+                  : totalCount > 0
+                    ? `${apiProperties.length} of ${totalCount} propert${totalCount !== 1 ? "ies" : "y"}`
+                    : `${apiProperties.length} propert${apiProperties.length !== 1 ? "ies" : "y"}`}
           </motion.span>
         </AnimatePresence>
 
@@ -397,6 +458,7 @@ export default function SearchPageClient() {
               <PropertyMap
                 properties={apiToMapItems(displayedProperties)}
                 className="search-map-container"
+                onBoundsChange={setMapBounds}
               />
             ) : (
               <>
@@ -481,39 +543,12 @@ export default function SearchPageClient() {
                 )}
 
                 {/* Pagination */}
-                {displayedProperties.length > 0 && nlSearchResults === null && (
-                  <div className="pagination">
-                    <button
-                      type="button"
-                      className="page-btn"
-                      onClick={() => setParams({ page: params.page - 1 })}
-                      disabled={params.page <= 1}
-                      aria-label="Previous page"
-                    >
-                      ‹
-                    </button>
-                    {[1, 2, 3, 4, 5].map((n) => (
-                      <button
-                        key={n}
-                        type="button"
-                        className={`page-btn ${params.page === n ? "active" : ""}`}
-                        onClick={() => setParams({ page: n })}
-                        aria-label={`Page ${n}`}
-                        aria-current={params.page === n ? "page" : undefined}
-                      >
-                        {n}
-                      </button>
-                    ))}
-                    <span style={{ color: "var(--text-dim)", padding: "0 4px", display: "flex", alignItems: "center" }}>…</span>
-                    <button
-                      type="button"
-                      className="page-btn"
-                      onClick={() => setParams({ page: params.page + 1 })}
-                      aria-label="Next page"
-                    >
-                      ›
-                    </button>
-                  </div>
+                {displayedProperties.length > 0 && nlSearchResults === null && totalCount > 0 && (
+                  <PaginationNav
+                    page={params.page}
+                    total={Math.max(1, Math.ceil(totalCount / 20))}
+                    onChange={(p) => setParams({ page: p })}
+                  />
                 )}
               </>
             )}

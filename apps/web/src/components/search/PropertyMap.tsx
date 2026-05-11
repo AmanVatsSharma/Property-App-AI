@@ -8,9 +8,9 @@
 
 "use client";
 
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useCallback } from "react";
 import Link from "next/link";
-import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
@@ -48,12 +48,40 @@ const markerIcon = L.icon({
   iconAnchor: [12, 41],
 });
 
+export interface MapBounds {
+  minLat: number;
+  maxLat: number;
+  minLng: number;
+  maxLng: number;
+}
+
+function BoundsTracker({ onBoundsChange }: { onBoundsChange: (b: MapBounds) => void }) {
+  const cb = useCallback(
+    (map: ReturnType<typeof useMap>) => {
+      const b = map.getBounds();
+      onBoundsChange({
+        minLat: b.getSouth(),
+        maxLat: b.getNorth(),
+        minLng: b.getWest(),
+        maxLng: b.getEast(),
+      });
+    },
+    [onBoundsChange],
+  );
+  const map = useMapEvents({
+    moveend: () => cb(map),
+    zoomend: () => cb(map),
+  });
+  return null;
+}
+
 interface PropertyMapProps {
   properties: PropertyMapItem[];
   className?: string;
+  onBoundsChange?: (bounds: MapBounds) => void;
 }
 
-export function PropertyMap({ properties, className = "" }: PropertyMapProps) {
+export function PropertyMap({ properties, className = "", onBoundsChange }: PropertyMapProps) {
   const withCoords = useMemo(
     () =>
       properties.filter(
@@ -100,6 +128,7 @@ export function PropertyMap({ properties, className = "" }: PropertyMapProps) {
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
         <FitBounds items={withCoords} />
+        {onBoundsChange && <BoundsTracker onBoundsChange={onBoundsChange} />}
         {withCoords.map((p) => (
           <Marker
             key={p.id}

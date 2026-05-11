@@ -30,6 +30,11 @@ interface AuthContextValue {
   signOut: () => void;
   openLoginModal: boolean;
   setOpenLoginModal: (open: boolean) => void;
+  /** Set intended redirect URL before triggering WhatsApp auth */
+  setRedirectUrl: (url: string | null) => void;
+  redirectUrl: string | null;
+  /** Complete WhatsApp auth by exchanging phone for JWT */
+  completeWhatsAppAuth: (phone: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -74,6 +79,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [token, setTokenState] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
   const [openLoginModal, setOpenLoginModal] = useState(false);
+  const [redirectUrl, setRedirectUrlState] = useState<string | null>(null);
 
   useEffect(() => {
     // Hydrate auth state from httpOnly cookie via server API route
@@ -114,6 +120,39 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     clearLegacyLocalStorage();
   }, []);
 
+  const setRedirectUrl = useCallback((url: string | null) => {
+    setRedirectUrlState(url);
+  }, []);
+
+  /**
+   * After WhatsApp QR scan/verify, exchange phone for JWT token.
+   * On success, store token and redirect to intended URL.
+   * Uses the existing /api/auth/login route with the phone number.
+   */
+  const completeWhatsAppAuth = useCallback(async (phone: string) => {
+    try {
+      const res = await fetch("/api/auth/whatsapp-verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone }),
+        credentials: "include",
+      });
+      if (!res.ok) throw new Error("Verification failed");
+      const data = await res.json();
+      const jwt = data?.token ?? data?.accessToken ?? data?.jwt;
+      if (!jwt) throw new Error("No token returned");
+      setTokenState(jwt);
+      await persistTokenToCookie(jwt);
+      setOpenLoginModal(false);
+      if (redirectUrl) {
+        window.location.href = redirectUrl;
+      }
+    } catch (err) {
+      setOpenLoginModal(false);
+      throw err;
+    }
+  }, [redirectUrl]);
+
   const value: AuthContextValue = {
     token: mounted ? token : null,
     isAuthenticated: Boolean(mounted && token),
@@ -121,6 +160,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     signOut,
     openLoginModal,
     setOpenLoginModal,
+    setRedirectUrl,
+    redirectUrl,
+    completeWhatsAppAuth,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
